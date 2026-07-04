@@ -4,6 +4,7 @@ signal status_changed(status: Dictionary)
 
 const ARCHER_ID := "archer"
 const ENEMY_KIND := "normal"
+const BASELINE_ENEMY_KINDS := ["normal", "fast", "tank", "swarm", "shield", "flying", "armored", "commander"]
 const SLICE_SPAWN_LIMIT := 3
 const PROJECTILE_HIT_DISTANCE := 8.0
 const RECOMMENDED_BUILD_SITE := Vector2(300, 243)
@@ -449,25 +450,60 @@ func _update_spawning(delta: float) -> void:
 		return
 	spawn_timer = 0.0
 	spawned_this_wave += 1
-	enemies.append(_create_normal_enemy())
+	enemies.append(create_enemy(_wave_enemy_kind()))
 
 
 func _create_normal_enemy() -> Dictionary:
-	var wave_number: int = wave
+	return create_enemy(ENEMY_KIND)
+
+
+func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Vector2 = Vector2.INF, target_index: int = 1) -> Dictionary:
+	if wave_number < 0:
+		wave_number = wave
+	var enemy_kind := _normalized_enemy_kind(kind)
 	var hp: float = 65.0 + wave_number * 18.0 + max(0, wave_number - 10) * 8.0 + max(0, wave_number - 20) * 18.0
 	var speed: float = 62.0 + wave_number * 2.0
 	var reward: int = 4 + int(floor(float(wave_number) / 8.0))
+	var modifier: Dictionary = _enemy_kind_modifier(enemy_kind)
+	hp *= float(modifier.get("hp_multiplier", 1.0))
+	speed *= float(modifier.get("speed_multiplier", 1.0))
+	reward += int(modifier.get("reward_bonus", 0))
+	var shield_hits: int = int(modifier.get("shield_hits", 0))
+	var spawn_position: Vector2 = path_points[0] if position == Vector2.INF else position
 	return {
-		"kind": ENEMY_KIND,
-		"position": path_points[0],
-		"target_index": 1,
+		"kind": enemy_kind,
+		"position": spawn_position,
+		"target_index": target_index,
 		"hp": hp,
 		"max_hp": hp,
 		"speed": speed,
 		"reward": reward,
 		"reached_end": false,
 		"progress": 0.0,
+		"marked_timer": 0.0,
+		"vulnerable_timer": 0.0,
+		"flying": bool(modifier.get("flying", false)),
+		"shield_hits": shield_hits,
+		"max_shield_hits": shield_hits,
+		"tags": modifier.get("tags", []).duplicate(true),
+		"commander": bool(modifier.get("commander", false)),
 	}
+
+
+func _wave_enemy_kind() -> String:
+	return _normalized_enemy_kind(str(wave_row.get("enemy_kind", ENEMY_KIND)))
+
+
+func _normalized_enemy_kind(kind: String) -> String:
+	if BASELINE_ENEMY_KINDS.has(kind):
+		return kind
+	return ENEMY_KIND
+
+
+func _enemy_kind_modifier(kind: String) -> Dictionary:
+	var modifiers: Dictionary = baseline.get("enemies", {}).get("kind_modifiers", {})
+	var modifier: Variant = modifiers.get(_normalized_enemy_kind(kind), {})
+	return modifier if modifier is Dictionary else {}
 
 
 func _update_enemies(delta: float) -> void:
@@ -672,7 +708,15 @@ func make_test_enemy(id: String, position: Vector2, progress: float, hp: float =
 		"marked_timer": 1.0 if marked else 0.0,
 		"vulnerable_timer": 1.0 if vulnerable else 0.0,
 		"flying": flying,
+		"shield_hits": 0,
+		"max_shield_hits": 0,
+		"tags": [],
+		"commander": false,
 	}
+
+
+func make_baseline_enemy_for_test(kind: String, wave_number: int = 1) -> Dictionary:
+	return create_enemy(kind, wave_number, Vector2(180, 100), 1)
 
 
 func _update_projectiles(delta: float) -> void:
@@ -710,6 +754,10 @@ func _hit_projectile_target(projectile: Dictionary) -> float:
 		projectile["dead"] = true
 		return 0.0
 	var damage: float = float(projectile.get("damage", 0.0))
+	var shield_hits: int = int(target.get("shield_hits", 0))
+	if shield_hits > 0:
+		target["shield_hits"] = shield_hits - 1
+		return 0.0
 	target["hp"] = float(target.get("hp", 0.0)) - damage
 	var tower: Dictionary = projectile.get("tower", {})
 	tower["total_damage"] = float(tower.get("total_damage", 0.0)) + damage
@@ -795,7 +843,7 @@ func snapshot() -> Dictionary:
 		"wave_reward_research": wave_reward_research,
 		"map_name": map_record.get("name", ""),
 		"tower_family": ARCHER_ID,
-		"enemy_family": ENEMY_KIND,
+		"enemy_family": _wave_enemy_kind(),
 		"selected_build_type": selected_build_type,
 		"shop_button_count": get_shop_button_rects().size(),
 	}
@@ -919,6 +967,10 @@ func _serialize_enemies() -> Array:
 			"marked_timer": float(enemy.get("marked_timer", 0.0)),
 			"vulnerable_timer": float(enemy.get("vulnerable_timer", 0.0)),
 			"flying": bool(enemy.get("flying", false)),
+			"shield_hits": int(enemy.get("shield_hits", 0)),
+			"max_shield_hits": int(enemy.get("max_shield_hits", 0)),
+			"tags": enemy.get("tags", []).duplicate(true),
+			"commander": bool(enemy.get("commander", false)),
 		})
 	return records
 
@@ -945,6 +997,10 @@ func _enemy_from_state(record: Dictionary) -> Dictionary:
 		"marked_timer": float(record.get("marked_timer", 0.0)),
 		"vulnerable_timer": float(record.get("vulnerable_timer", 0.0)),
 		"flying": bool(record.get("flying", false)),
+		"shield_hits": int(record.get("shield_hits", 0)),
+		"max_shield_hits": int(record.get("max_shield_hits", 0)),
+		"tags": record.get("tags", []).duplicate(true),
+		"commander": bool(record.get("commander", false)),
 	}
 
 
@@ -1049,11 +1105,14 @@ func _draw_entities() -> void:
 			draw_string(ThemeDB.fallback_font, position + Vector2(-8, 5), "A", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 16, Color.WHITE)
 	for enemy in enemies:
 		var position: Vector2 = enemy["position"]
-		var enemy_tex := _animated_texture("enemies", ENEMY_KIND, ["walk_1", "walk_2"], 220)
+		var enemy_kind := str(enemy.get("kind", ENEMY_KIND))
+		var enemy_tex := _animated_texture("enemies", enemy_kind, ["walk_1", "walk_2"], 220)
 		if enemy_tex != null:
 			_draw_texture(enemy_tex, position, Vector2(34, 34))
 		else:
 			draw_circle(position, 13.0, Color(0.82, 0.20, 0.18))
+		if int(enemy.get("shield_hits", 0)) > 0:
+			draw_arc(position, 17.0, 0.0, TAU, 28, Color(0.62, 0.75, 1.0, 0.85), 2.0)
 		var hp_ratio: float = max(0.0, float(enemy["hp"]) / float(enemy["max_hp"]))
 		draw_rect(Rect2(position + Vector2(-16, -24), Vector2(32, 4)), Color(0.12, 0.12, 0.12))
 		draw_rect(Rect2(position + Vector2(-16, -24), Vector2(32.0 * hp_ratio, 4)), Color(0.2, 0.85, 0.25))
