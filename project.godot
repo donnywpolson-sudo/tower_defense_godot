@@ -10,8 +10,8 @@ config_version=5
 [application]
 
 config/name="Tower Defense Godot"
-config/description="Godot 4 migration shell for the Python/Pygame tower defense baseline."
-config/version="0.1.0-migration-shell"
+config/description="Godot 4 migrated tower defense path; Python/Pygame baseline remains available until final parity cutover."
+config/version="0.2.0-cutover-prep"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
@@ -19,6 +19,9 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 
 GameConfig="*res://scripts/autoload/game_config.gd"
 GameData="*res://scripts/autoload/game_data.gd"
+GameAssets="*res://scripts/autoload/game_assets.gd"
+GameAudio="*res://scripts/autoload/game_audio.gd"
+GameProgress="*res://scripts/autoload/game_progress.gd"
 ParityHarness="*res://scripts/autoload/parity_harness.gd"
 
 [display]

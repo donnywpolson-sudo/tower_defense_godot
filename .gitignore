@@ -3,6 +3,15 @@
 .codex/
 *.tmp
 *.log
+*.bak
+*.old
 __pycache__/
+*.py[cod]
 export/
 build/
+dist/
+crash_logs/
+crash_log.txt
+reports/audit/AUDIT_REPORT_[0-9]*.md
+reports/audit/MANUAL_SMOKE_[0-9]*.md
+*.zip

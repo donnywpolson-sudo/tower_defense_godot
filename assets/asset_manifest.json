@@ -1,0 +1,946 @@
+{
+  "assets": {
+    "sounds/enemies/boss_death.wav": {
+      "design_note": "Layered collapse with low rumble and debris.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/enemies/boss_death.wav",
+      "original_path": "tools/generate_assets.py:boss_death",
+      "recipe": "boss_death",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/enemies/boss_spawn.wav": {
+      "design_note": "Heavy arrival swell and impact.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/enemies/boss_spawn.wav",
+      "original_path": "tools/generate_assets.py:boss_spawn",
+      "recipe": "boss_spawn",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/enemies/death.wav": {
+      "design_note": "Soft packet pop and body thud.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/enemies/death.wav",
+      "original_path": "tools/generate_assets.py:enemy_death",
+      "recipe": "enemy_death",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/enemies/leak.wav": {
+      "design_note": "Dull core impact for leaked enemies.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/enemies/leak.wav",
+      "original_path": "tools/generate_assets.py:enemy_leak",
+      "recipe": "enemy_leak",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/enemies/shield_break.wav": {
+      "design_note": "Crystalline crack and short shimmer tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/enemies/shield_break.wav",
+      "original_path": "tools/generate_assets.py:shield_break",
+      "recipe": "shield_break",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/archer.wav": {
+      "design_note": "Bow twang with a short arrow whoosh.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/archer.wav",
+      "original_path": "tools/generate_assets.py:tower_archer",
+      "recipe": "tower_archer",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/cannon.wav": {
+      "design_note": "Compact cannon boom with low body and air.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/cannon.wav",
+      "original_path": "tools/generate_assets.py:tower_cannon",
+      "recipe": "tower_cannon",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/chain.wav": {
+      "design_note": "Brief chaining zap with a sparkling tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/chain.wav",
+      "original_path": "tools/generate_assets.py:tower_chain",
+      "recipe": "tower_chain",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/flame.wav": {
+      "design_note": "Short flame whoosh without harsh arcade bite.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/flame.wav",
+      "original_path": "tools/generate_assets.py:tower_flame",
+      "recipe": "tower_flame",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/freeze.wav": {
+      "design_note": "Broader ice lock shimmer.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/freeze.wav",
+      "original_path": "tools/generate_assets.py:tower_freeze",
+      "recipe": "tower_freeze",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/frost.wav": {
+      "design_note": "Icy cast with soft wind and glass tones.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/frost.wav",
+      "original_path": "tools/generate_assets.py:tower_frost",
+      "recipe": "tower_frost",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/gold.wav": {
+      "design_note": "Bright coin sparkle for support income.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/gold.wav",
+      "original_path": "tools/generate_assets.py:tower_gold",
+      "recipe": "tower_gold",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/machine_gun.wav": {
+      "design_note": "Small suppressed mechanical tick for rapid fire.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/machine_gun.wav",
+      "original_path": "tools/generate_assets.py:tower_machine_gun",
+      "recipe": "tower_machine_gun",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/mortar.wav": {
+      "design_note": "Deeper mortar launch thump and shell air.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/mortar.wav",
+      "original_path": "tools/generate_assets.py:tower_mortar",
+      "recipe": "tower_mortar",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/poison.wav": {
+      "design_note": "Wet toxic puff with bubbling texture.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/poison.wav",
+      "original_path": "tools/generate_assets.py:tower_poison",
+      "recipe": "tower_poison",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/sniper.wav": {
+      "design_note": "Tight precision snap with a light tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/sniper.wav",
+      "original_path": "tools/generate_assets.py:tower_sniper",
+      "recipe": "tower_sniper",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/towers/tesla.wav": {
+      "design_note": "Layered electric snap and crackle.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/towers/tesla.wav",
+      "original_path": "tools/generate_assets.py:tower_tesla",
+      "recipe": "tower_tesla",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/build.wav": {
+      "design_note": "Soft placement click with a small confirming chime.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/build.wav",
+      "original_path": "tools/generate_assets.py:ui_build",
+      "recipe": "ui_build",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/sell.wav": {
+      "design_note": "Muted descending chime with a restrained close click.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/sell.wav",
+      "original_path": "tools/generate_assets.py:ui_sell",
+      "recipe": "ui_sell",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/upgrade.wav": {
+      "design_note": "Warm ascending chimes for a successful upgrade.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/upgrade.wav",
+      "original_path": "tools/generate_assets.py:ui_upgrade",
+      "recipe": "ui_upgrade",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave.wav": {
+      "design_note": "Short readiness stinger for a normal wave.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave.wav",
+      "original_path": "tools/generate_assets.py:wave_standard",
+      "recipe": "wave_standard",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_boss.wav": {
+      "design_note": "Deep ominous boss warning with a dark strike.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_boss.wav",
+      "original_path": "tools/generate_assets.py:wave_boss",
+      "recipe": "wave_boss",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_complete.wav": {
+      "design_note": "Resolved success arpeggio for wave completion.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_complete.wav",
+      "original_path": "tools/generate_assets.py:wave_complete",
+      "recipe": "wave_complete",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_fast.wav": {
+      "design_note": "Quick airy flutter for fast enemy waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_fast.wav",
+      "original_path": "tools/generate_assets.py:wave_fast",
+      "recipe": "wave_fast",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_flying.wav": {
+      "design_note": "Rising wind tone for flying waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_flying.wav",
+      "original_path": "tools/generate_assets.py:wave_flying",
+      "recipe": "wave_flying",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_shield.wav": {
+      "design_note": "Glassy shimmer for shielded waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_shield.wav",
+      "original_path": "tools/generate_assets.py:wave_shield",
+      "recipe": "wave_shield",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sounds/ui/wave_tank.wav": {
+      "design_note": "Low drum pulse for heavy tank pressure.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sounds/ui/wave_tank.wav",
+      "original_path": "tools/generate_assets.py:wave_tank",
+      "recipe": "wave_tank",
+      "source_pack": "Original Project SFX Generator",
+      "source_page": "assets/licenses/sfx_sources.md"
+    },
+    "sprites/terrain/decor_crystal.png": {
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sprites/terrain/decor_crystal.png",
+      "original_path": "PNG/Details/crystals_1.png",
+      "selection_score": 999,
+      "source_pack": "Kenney Tower Defense",
+      "source_page": "https://kenney.nl/assets/tower-defense"
+    },
+    "sprites/terrain/decor_rock.png": {
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sprites/terrain/decor_rock.png",
+      "original_path": "PNG/Details/rocks_1.png",
+      "selection_score": 999,
+      "source_pack": "Kenney Tower Defense",
+      "source_page": "https://kenney.nl/assets/tower-defense"
+    },
+    "sprites/terrain/decor_tree.png": {
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "local_path": "assets/sprites/terrain/decor_tree.png",
+      "original_path": "PNG/Details/trees_1.png",
+      "selection_score": 999,
+      "source_pack": "Kenney Tower Defense",
+      "source_page": "https://kenney.nl/assets/tower-defense"
+    }
+  },
+  "license": "Creative Commons CC0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "skipped": [
+    {
+      "local_path": "assets/sprites/towers/archer_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/archer_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/archer_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/archer_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/archer_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/archer_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/sniper_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/machine_gun_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/cannon_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/frost_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/tesla_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/poison_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/barracks_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/flame_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/mortar_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/support_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_idle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_fire.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_idle_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_idle_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_fire_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/towers/gold_fire_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/normal.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/normal_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/normal_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/normal_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/fast.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/fast_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/fast_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/fast_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/tank.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/tank_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/tank_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/tank_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/swarm.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/swarm_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/swarm_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/swarm_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/armored.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/armored_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/armored_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/armored_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/flying.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/flying_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/flying_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/flying_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/boss.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/boss_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/boss_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/boss_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/split_child.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/split_child_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/split_child_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/split_child_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_cracked.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_cracked_walk_1.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_cracked_walk_2.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/shield_cracked_hit.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/enemies/boss_rage.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/grass.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/grass_dark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/road.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/road_edge.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/forest_grass.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/forest_grass_dark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/forest_road.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/forest_road_edge.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/swamp_grass.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/swamp_grass_dark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/swamp_road.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/swamp_road_edge.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/snow_grass.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/snow_grass_dark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/snow_road.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/snow_road_edge.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/lava_grass.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/lava_grass_dark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/lava_road.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/lava_road_edge.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/spawn_gate.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/terrain/base_gate.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/archer.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/sniper.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/machine_gun.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/cannon.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/frost.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/tesla.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/poison.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/flame.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/mortar.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/projectiles/gold.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/explosion.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/frost_burst.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/spark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/shield_break.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/smoke.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/explosion_ring.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/frost_mist.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/lightning_spark.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/poison_cloud.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/flame_burst.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    },
+    {
+      "local_path": "assets/sprites/effects/coin_sparkle.png",
+      "reason": "No matching Kenney source found; generated fallback kept."
+    }
+  ],
+  "sources": {
+    "project_generated_sfx": {
+      "name": "Original Project SFX Generator",
+      "page": "assets/licenses/sfx_sources.md",
+      "url": "tools/generate_assets.py"
+    },
+    "tower_defense": {
+      "name": "Kenney Tower Defense",
+      "page": "https://kenney.nl/assets/tower-defense",
+      "url": "https://kenney.nl/media/pages/assets/tower-defense/39d625c6b5-1677699069/kenney_tower-defense.zip"
+    },
+    "tower_defense_top_down": {
+      "name": "Kenney Tower Defense Top-Down",
+      "page": "https://kenney.nl/assets/tower-defense-top-down",
+      "url": "https://kenney.nl/media/pages/assets/tower-defense-top-down/729844df28-1677693738/kenney_tower-defense-top-down.zip"
+    }
+  }
+}

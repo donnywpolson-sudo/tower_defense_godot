@@ -38,6 +38,7 @@ func _check_scene_loads(result: Dictionary) -> void:
 	_record_check(result, "main_scene_root_name", instance.name == "Main", instance.name)
 	_record_check(result, "main_scene_has_script", instance.get_script() != null, MAIN_SCRIPT_PATH)
 	_record_check(result, "main_scene_has_debug_hud", instance.has_node("DebugHUD"), "DebugHUD")
+	_record_check(result, "main_scene_has_vertical_slice", instance.has_node("VerticalSliceGame"), "VerticalSliceGame")
 	instance.queue_free()
 
 

@@ -1,0 +1,251 @@
+{
+  "generator": "tools/generate_assets.py",
+  "license": "Creative Commons CC0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "sounds": {
+    "sounds/enemies/boss_death.wav": {
+      "category": "enemy",
+      "design_note": "Layered collapse with low rumble and debris.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "boss_death",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/enemies/boss_death.wav"
+    },
+    "sounds/enemies/boss_spawn.wav": {
+      "category": "enemy",
+      "design_note": "Heavy arrival swell and impact.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "boss_spawn",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/enemies/boss_spawn.wav"
+    },
+    "sounds/enemies/death.wav": {
+      "category": "enemy",
+      "design_note": "Soft packet pop and body thud.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "enemy_death",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/enemies/death.wav"
+    },
+    "sounds/enemies/leak.wav": {
+      "category": "enemy",
+      "design_note": "Dull core impact for leaked enemies.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "enemy_leak",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/enemies/leak.wav"
+    },
+    "sounds/enemies/shield_break.wav": {
+      "category": "enemy",
+      "design_note": "Crystalline crack and short shimmer tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "shield_break",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/enemies/shield_break.wav"
+    },
+    "sounds/towers/archer.wav": {
+      "category": "tower",
+      "design_note": "Bow twang with a short arrow whoosh.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_archer",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/archer.wav"
+    },
+    "sounds/towers/cannon.wav": {
+      "category": "tower",
+      "design_note": "Compact cannon boom with low body and air.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_cannon",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/cannon.wav"
+    },
+    "sounds/towers/chain.wav": {
+      "category": "tower",
+      "design_note": "Brief chaining zap with a sparkling tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_chain",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/chain.wav"
+    },
+    "sounds/towers/flame.wav": {
+      "category": "tower",
+      "design_note": "Short flame whoosh without harsh arcade bite.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_flame",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/flame.wav"
+    },
+    "sounds/towers/freeze.wav": {
+      "category": "tower",
+      "design_note": "Broader ice lock shimmer.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_freeze",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/freeze.wav"
+    },
+    "sounds/towers/frost.wav": {
+      "category": "tower",
+      "design_note": "Icy cast with soft wind and glass tones.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_frost",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/frost.wav"
+    },
+    "sounds/towers/gold.wav": {
+      "category": "tower",
+      "design_note": "Bright coin sparkle for support income.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_gold",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/gold.wav"
+    },
+    "sounds/towers/machine_gun.wav": {
+      "category": "tower",
+      "design_note": "Small suppressed mechanical tick for rapid fire.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_machine_gun",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/machine_gun.wav"
+    },
+    "sounds/towers/mortar.wav": {
+      "category": "tower",
+      "design_note": "Deeper mortar launch thump and shell air.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_mortar",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/mortar.wav"
+    },
+    "sounds/towers/poison.wav": {
+      "category": "tower",
+      "design_note": "Wet toxic puff with bubbling texture.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_poison",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/poison.wav"
+    },
+    "sounds/towers/sniper.wav": {
+      "category": "tower",
+      "design_note": "Tight precision snap with a light tail.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_sniper",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/sniper.wav"
+    },
+    "sounds/towers/tesla.wav": {
+      "category": "tower",
+      "design_note": "Layered electric snap and crackle.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "tower_tesla",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/towers/tesla.wav"
+    },
+    "sounds/ui/build.wav": {
+      "category": "ui",
+      "design_note": "Soft placement click with a small confirming chime.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "ui_build",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/build.wav"
+    },
+    "sounds/ui/sell.wav": {
+      "category": "ui",
+      "design_note": "Muted descending chime with a restrained close click.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "ui_sell",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/sell.wav"
+    },
+    "sounds/ui/upgrade.wav": {
+      "category": "ui",
+      "design_note": "Warm ascending chimes for a successful upgrade.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "ui_upgrade",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/upgrade.wav"
+    },
+    "sounds/ui/wave.wav": {
+      "category": "wave_stinger",
+      "design_note": "Short readiness stinger for a normal wave.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_standard",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave.wav"
+    },
+    "sounds/ui/wave_boss.wav": {
+      "category": "wave_stinger",
+      "design_note": "Deep ominous boss warning with a dark strike.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_boss",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_boss.wav"
+    },
+    "sounds/ui/wave_complete.wav": {
+      "category": "ui",
+      "design_note": "Resolved success arpeggio for wave completion.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_complete",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_complete.wav"
+    },
+    "sounds/ui/wave_fast.wav": {
+      "category": "wave_stinger",
+      "design_note": "Quick airy flutter for fast enemy waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_fast",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_fast.wav"
+    },
+    "sounds/ui/wave_flying.wav": {
+      "category": "wave_stinger",
+      "design_note": "Rising wind tone for flying waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_flying",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_flying.wav"
+    },
+    "sounds/ui/wave_shield.wav": {
+      "category": "wave_stinger",
+      "design_note": "Glassy shimmer for shielded waves.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_shield",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_shield.wav"
+    },
+    "sounds/ui/wave_tank.wav": {
+      "category": "wave_stinger",
+      "design_note": "Low drum pulse for heavy tank pressure.",
+      "license": "Creative Commons CC0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "recipe": "wave_tank",
+      "source": "Original Project SFX Generator",
+      "target_path": "sounds/ui/wave_tank.wav"
+    }
+  },
+  "source": "Original Project SFX Generator"
+}

@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://asset_sprite_visual"]
+
+[ext_resource type="Script" path="res://scripts/visuals/asset_sprite_visual.gd" id="1_assetvisual"]
+[ext_resource type="Shader" path="res://shaders/sprite_flash.gdshader" id="2_flash"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
+shader = ExtResource("2_flash")
+shader_parameter/flash_color = Color(1, 1, 1, 1)
+shader_parameter/flash_amount = 0.0
+
+[node name="AssetSpriteVisual" type="Node2D"]
+script = ExtResource("1_assetvisual")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_flash")
+centered = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]

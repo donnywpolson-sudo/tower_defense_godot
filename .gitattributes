@@ -1,0 +1,28 @@
+* text=auto eol=lf
+
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.cfg text eol=lf
+*.godot text eol=lf
+*.gd text eol=lf
+*.gdshader text eol=lf
+*.shader text eol=lf
+*.import text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.uid text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ps1 text eol=crlf
+*.py text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.exe binary
+*.zip binary
