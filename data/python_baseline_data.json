@@ -1,0 +1,4068 @@
+{
+  "config": {
+    "base_enemies_per_wave": 10,
+    "base_max_tower_level": 5,
+    "base_tower_range": 145,
+    "build_grid_step": 27,
+    "build_grid_top": 81,
+    "build_tile_size": 54,
+    "enemies_per_wave_growth": 3,
+    "height": 600,
+    "map_width": 900,
+    "max_tower_level": 10,
+    "max_wave": 30,
+    "min_spawn_interval": 0.18,
+    "paragon_level": 6,
+    "paragon_sell_refund_rate": 0.5,
+    "path_width": 54,
+    "protocol_reward_interval": 3,
+    "sell_refund_rate": 0.75,
+    "start_wave_bonus": 10,
+    "starting_lives": 25,
+    "starting_money": 175,
+    "tower_cost": 50,
+    "ui_width": 280,
+    "width": 1180
+  },
+  "enemies": {
+    "base_formula": {
+      "hp": "65 + wave * 18 + max(0, wave - 10) * 8 + max(0, wave - 20) * 18",
+      "reward": "4 + wave // 8",
+      "speed": "62 + wave * 2"
+    },
+    "boss_rules": {
+      "base_formula": {
+        "boss_tier": "wave // 5",
+        "hp": "950 + wave * 190 + boss_tier * 420",
+        "reward": "75 + boss_tier * 25",
+        "speed": "max(35, 58 - boss_tier * 3)"
+      },
+      "protocols": {
+        "10": "ransomware",
+        "30": "ransomware"
+      },
+      "wave_overrides": {
+        "10": {
+          "boss": true,
+          "boss_protocol": "ransomware",
+          "hp_multiplier": 1.25,
+          "kind": "ransomware boss",
+          "reward_bonus": 20,
+          "shield_hits": 6,
+          "speed_multiplier": 0.9
+        },
+        "15": {
+          "boss": true,
+          "hp_multiplier": 1.1,
+          "kind": "iron boss",
+          "reward_bonus": 25,
+          "shield_hits": 8
+        },
+        "20": {
+          "boss": true,
+          "death_spawns": 12,
+          "kind": "summoner boss",
+          "reward_bonus": 35,
+          "speed_multiplier": 0.95
+        },
+        "25": {
+          "boss": true,
+          "flying": true,
+          "hp_multiplier": 1.2,
+          "kind": "sky boss",
+          "reward_bonus": 45,
+          "speed_multiplier": 1.15
+        },
+        "5": {
+          "boss": true,
+          "kind": "ogre boss"
+        },
+        "default": {
+          "boss": true,
+          "death_spawns": 18,
+          "hp_multiplier": 1.55,
+          "kind": "final boss",
+          "reward_bonus": 75,
+          "shield_hits": 8
+        }
+      }
+    },
+    "kind_modifiers": {
+      "armored": {
+        "hp_multiplier": 1.35,
+        "reward_bonus": 4,
+        "shield_hits": 3,
+        "speed_multiplier": 0.85,
+        "tags": [
+          "armored"
+        ]
+      },
+      "commander": {
+        "commander": true,
+        "hp_multiplier": 2.6,
+        "reward_bonus": 18,
+        "shield_hits": 1,
+        "speed_multiplier": 0.86,
+        "tags": [
+          "commander"
+        ]
+      },
+      "fast": {
+        "hp_multiplier": 0.65,
+        "reward_bonus": 1,
+        "speed_multiplier": 1.65,
+        "tags": [
+          "fast"
+        ]
+      },
+      "flying": {
+        "flying": true,
+        "hp_multiplier": 0.9,
+        "reward_bonus": 4,
+        "speed_multiplier": 1.35,
+        "tags": [
+          "flying"
+        ]
+      },
+      "normal": {
+        "hp_multiplier": 1.0,
+        "reward_bonus": 0,
+        "speed_multiplier": 1.0
+      },
+      "shield": {
+        "hp_multiplier": 1.2,
+        "reward_bonus": 3,
+        "shield_hits": 2,
+        "speed_multiplier": 0.9,
+        "tags": [
+          "armored"
+        ]
+      },
+      "swarm": {
+        "hp_multiplier": 0.45,
+        "reward_bonus": 0,
+        "speed_multiplier": 1.15,
+        "tags": [
+          "swarm"
+        ]
+      },
+      "tank": {
+        "hp_multiplier": 2.2,
+        "reward_bonus": 4,
+        "speed_multiplier": 0.62
+      }
+    }
+  },
+  "maps": {
+    "catalog": [
+      {
+        "buildable_sites": 123,
+        "difficulty": "Easy",
+        "lane_count": 1,
+        "name": "Classic Road",
+        "openness": "Open",
+        "paths": [
+          [
+            [
+              0,
+              297
+            ],
+            [
+              189,
+              297
+            ],
+            [
+              189,
+              135
+            ],
+            [
+              432,
+              135
+            ],
+            [
+              432,
+              432
+            ],
+            [
+              702,
+              432
+            ],
+            [
+              702,
+              216
+            ],
+            [
+              900,
+              216
+            ]
+          ]
+        ],
+        "reward_multiplier": 0.9281499999999999,
+        "route_length": 1575.0,
+        "theme": "forest"
+      },
+      {
+        "buildable_sites": 96,
+        "difficulty": "Hard",
+        "lane_count": 2,
+        "name": "Split Road",
+        "openness": "Balanced",
+        "paths": [
+          [
+            [
+              0,
+              190
+            ],
+            [
+              210,
+              190
+            ],
+            [
+              210,
+              95
+            ],
+            [
+              520,
+              95
+            ],
+            [
+              520,
+              285
+            ],
+            [
+              900,
+              285
+            ]
+          ],
+          [
+            [
+              0,
+              405
+            ],
+            [
+              250,
+              405
+            ],
+            [
+              250,
+              505
+            ],
+            [
+              610,
+              505
+            ],
+            [
+              610,
+              340
+            ],
+            [
+              900,
+              340
+            ]
+          ]
+        ],
+        "reward_multiplier": 1.0843200000000002,
+        "route_length": 2350.0,
+        "theme": "swamp"
+      },
+      {
+        "buildable_sites": 100,
+        "difficulty": "Standard",
+        "lane_count": 1,
+        "name": "Zigzag Road",
+        "openness": "Balanced",
+        "paths": [
+          [
+            [
+              0,
+              135
+            ],
+            [
+              170,
+              135
+            ],
+            [
+              170,
+              465
+            ],
+            [
+              345,
+              465
+            ],
+            [
+              345,
+              180
+            ],
+            [
+              560,
+              180
+            ],
+            [
+              560,
+              430
+            ],
+            [
+              755,
+              430
+            ],
+            [
+              755,
+              245
+            ],
+            [
+              900,
+              245
+            ]
+          ]
+        ],
+        "reward_multiplier": 1.0,
+        "route_length": 1950.0,
+        "theme": "snow"
+      },
+      {
+        "buildable_sites": 74,
+        "difficulty": "Hard",
+        "lane_count": 1,
+        "name": "Spiral Road",
+        "openness": "Tight",
+        "paths": [
+          [
+            [
+              0,
+              300
+            ],
+            [
+              150,
+              300
+            ],
+            [
+              150,
+              120
+            ],
+            [
+              750,
+              120
+            ],
+            [
+              750,
+              480
+            ],
+            [
+              285,
+              480
+            ],
+            [
+              285,
+              240
+            ],
+            [
+              615,
+              240
+            ],
+            [
+              615,
+              360
+            ],
+            [
+              900,
+              360
+            ]
+          ]
+        ],
+        "reward_multiplier": 1.1080800000000002,
+        "route_length": 2730.0,
+        "theme": "lava"
+      }
+    ]
+  },
+  "progression": {
+    "card_pool": {
+      "bounty_trace": {
+        "color": [
+          245,
+          225,
+          95
+        ],
+        "description": "Next wave pays bonus CPU per packet.",
+        "label": "Bounty Trace"
+      },
+      "core_patch": {
+        "color": [
+          130,
+          225,
+          145
+        ],
+        "description": "Repair base health.",
+        "label": "HP Patch"
+      },
+      "cpu_cache": {
+        "color": [
+          245,
+          220,
+          120
+        ],
+        "description": "Gain emergency CPU for new defenses.",
+        "label": "CPU Cache"
+      },
+      "damage_patch": {
+        "color": [
+          245,
+          155,
+          110
+        ],
+        "description": "All towers gain permanent damage.",
+        "label": "Damage Boost"
+      },
+      "field_retrofit": {
+        "color": [
+          155,
+          220,
+          255
+        ],
+        "description": "Prototype your best underdeveloped tower, or gain tech if none need work.",
+        "label": "Field Retrofit"
+      },
+      "overclock_patch": {
+        "color": [
+          205,
+          145,
+          255
+        ],
+        "description": "All towers fire faster this run.",
+        "label": "Overclock"
+      },
+      "pierce_patch": {
+        "color": [
+          255,
+          195,
+          135
+        ],
+        "description": "All towers hit shielded targets harder.",
+        "label": "Pierce"
+      },
+      "range_patch": {
+        "color": [
+          180,
+          215,
+          245
+        ],
+        "description": "All towers gain permanent range.",
+        "label": "Range Boost"
+      },
+      "research_grant": {
+        "color": [
+          150,
+          220,
+          255
+        ],
+        "description": "Gain tech for mastery upgrades.",
+        "label": "Tech Cache"
+      }
+    },
+    "max_intel_bonus_level": 6,
+    "max_reward_card_choices": 9,
+    "reward_card_categories": {
+      "bounty_trace": "economy",
+      "core_patch": "progression",
+      "cpu_cache": "economy",
+      "damage_patch": "power",
+      "field_retrofit": "progression",
+      "overclock_patch": "power",
+      "pierce_patch": "power",
+      "range_patch": "power",
+      "research_grant": "progression"
+    },
+    "reward_card_category_colors": {
+      "economy": [
+        235,
+        220,
+        125
+      ],
+      "power": [
+        255,
+        170,
+        120
+      ],
+      "progression": [
+        150,
+        220,
+        255
+      ]
+    },
+    "reward_card_category_labels": {
+      "economy": "Economy",
+      "power": "Power",
+      "progression": "Progression"
+    },
+    "reward_card_category_order": [
+      "economy",
+      "progression",
+      "power"
+    ]
+  },
+  "schema_version": 1,
+  "source": {
+    "modules": {
+      "app_static_literals": "td_game.app",
+      "config": "td_game.config",
+      "data": "td_game.data",
+      "waves": "td_game.waves"
+    },
+    "python_baseline_root": "C:\\Users\\donny\\Desktop\\tower_defense"
+  },
+  "towers": {
+    "branch_definitions": {
+      "archer": {
+        "beastmaster": {
+          "color": [
+            175,
+            210,
+            105
+          ],
+          "descriptions": {
+            "3": "Pet strikes build pack momentum and extra hits",
+            "4": "Wolf attacks briefly hold wounded enemies",
+            "5": "Bearwarden hits punish elites near the path"
+          },
+          "effect_preview": "Falcon/wolf strikes build pack momentum and add periodic damage.",
+          "focus": "weird",
+          "keystone": "Companion packs build into stronger holds and extra strikes",
+          "late_descriptions": {
+            "10": "Beastmaster mastery turns pack momentum into extra strikes",
+            "6": "Paragon companions build pack momentum faster",
+            "7": "Wolf holds last longer on wounded enemies",
+            "8": "Companion assists hit elites harder",
+            "9": "Bearwarden strikes splash to nearby ground enemies"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "pack",
+            "pet_hit",
+            "hold",
+            "assist"
+          ],
+          "milestones": [
+            "T3 Beastmaster Rangers: Pet strikes build pack momentum and extra hits",
+            "T4 Wolf Pack: Wolf attacks briefly hold wounded enemies",
+            "T5 Bearwarden Patrol: Bearwarden hits punish elites near the path",
+            "T6 Keystone: Companion packs build into stronger holds and extra strikes",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Beastmaster Rangers",
+          "primary_mechanic": "pack strikes",
+          "role": "Pet-style pack strikes, extra hits, and holds",
+          "short": "BM",
+          "signature": "companion_strikes",
+          "synergy": "Pairs with companion packs and wounded targets",
+          "tags": [
+            "pack",
+            "weird",
+            "pet",
+            "assist"
+          ],
+          "tiers": {
+            "3": "Beastmaster Rangers",
+            "4": "Wolf Pack",
+            "5": "Bearwarden Patrol"
+          },
+          "upgrade_effects": {
+            "10": "Pack burst +12%",
+            "3": "Pack stacks +1",
+            "4": "Wounded hold +0.3s",
+            "5": "Elite pet damage +25%",
+            "6": "Pack build +20%",
+            "7": "Hold duration +0.3s",
+            "8": "Elite damage +8%",
+            "9": "Pack cleave +1 target"
+          }
+        },
+        "deadeye": {
+          "color": [
+            120,
+            230,
+            120
+          ],
+          "descriptions": {
+            "3": "Arrows stack marks and focus priority targets",
+            "4": "Marked enemies take stronger critical hits",
+            "5": "Boss pressure and mark duration improve"
+          },
+          "effect_preview": "Stacks marks; crits marked/boss enemies and chains focus to nearby armored threats.",
+          "focus": "damage",
+          "keystone": "Focused marks jump to nearby priority threats",
+          "late_descriptions": {
+            "10": "Critline mastery deletes weakened marked enemies",
+            "6": "Paragon arrows stack marks and punish bosses harder",
+            "7": "Marked priority targets take stronger critical hits",
+            "8": "Focus chains to nearby armored threats",
+            "9": "Marks persist longer through crowded waves"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "mark",
+            "crit",
+            "boss_pressure",
+            "focus_chain"
+          ],
+          "milestones": [
+            "T3 Deadeye Rangers: Arrows stack marks and focus priority targets",
+            "T4 Critline Patrol: Marked enemies take stronger critical hits",
+            "T5 Boss Stalkers: Boss pressure and mark duration improve",
+            "T6 Keystone: Focused marks jump to nearby priority threats",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Deadeye Rangers",
+          "primary_mechanic": "priority mark",
+          "role": "Stacks marks and chains focus to nearby bosses",
+          "short": "DE",
+          "signature": "priority_mark_crit",
+          "synergy": "Pairs with Archer, Sniper, and Signal targeting",
+          "tags": [
+            "damage",
+            "mark",
+            "boss"
+          ],
+          "tiers": {
+            "3": "Deadeye Rangers",
+            "4": "Critline Patrol",
+            "5": "Boss Stalkers"
+          },
+          "upgrade_effects": {
+            "10": "Execute threshold +8%",
+            "3": "Mark stacks +1",
+            "4": "Crit damage +35%",
+            "5": "Boss mark duration +0.7s",
+            "6": "Mark uptime +25%",
+            "7": "Marked damage +6%",
+            "8": "Focus chain +1 target",
+            "9": "Mark duration +0.5s"
+          }
+        },
+        "trapline": {
+          "color": [
+            125,
+            220,
+            95
+          ],
+          "descriptions": {
+            "3": "Shots slow and poison enemies briefly",
+            "4": "Venom snares weaken swarms and regen enemies",
+            "5": "Trapline effects spread to nearby enemies"
+          },
+          "effect_preview": "Poisons and slows enemies with spreading trap nets.",
+          "focus": "control",
+          "keystone": "Road traps add control between tower shots",
+          "late_descriptions": {
+            "10": "Wildwood mastery keeps priority targets trapped",
+            "6": "Paragon snares spread farther along the lane",
+            "7": "Venom traps last longer on fast enemies",
+            "8": "Snared enemies carry weaker poison to nearby packs",
+            "9": "Trapline uptime improves during dense waves"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "trap",
+            "poison",
+            "slow",
+            "anti_regen"
+          ],
+          "milestones": [
+            "T3 Trapline Rangers: Shots slow and poison enemies briefly",
+            "T4 Venom Netters: Venom snares weaken swarms and regen enemies",
+            "T5 Wildwood Snareline: Trapline effects spread to nearby enemies",
+            "T6 Keystone: Road traps add control between tower shots",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Trapline Rangers",
+          "primary_mechanic": "snare trap",
+          "role": "Snares, nets, and spreading venom traps",
+          "short": "TR",
+          "signature": "venom_snareline",
+          "synergy": "Pairs with slows that keep enemies in the cloud",
+          "tags": [
+            "control",
+            "poison",
+            "trap"
+          ],
+          "tiers": {
+            "3": "Trapline Rangers",
+            "4": "Venom Netters",
+            "5": "Wildwood Snareline"
+          },
+          "upgrade_effects": {
+            "10": "Priority snare +0.6s",
+            "3": "Snare slow +0.9s",
+            "4": "Anti-regen +25%",
+            "5": "Trap spread +1 target",
+            "6": "Trap spread radius +18",
+            "7": "Snare duration +0.4s",
+            "8": "Poison spread +1 target",
+            "9": "Trap uptime +10%"
+          }
+        }
+      },
+      "barracks": {
+        "champions": {
+          "color": [
+            220,
+            170,
+            95
+          ],
+          "descriptions": {
+            "3": "Guards hold ground enemies longer",
+            "4": "Duelists damage elites and bosses harder",
+            "5": "Shield wall creates surge pressure on bosses"
+          },
+          "effect_preview": "Guards hold enemies and build duel pressure into surge bursts.",
+          "focus": "control",
+          "keystone": "Elite duels build into surge bursts against priority threats",
+          "late_descriptions": {
+            "10": "Elite garrison mastery anchors stronger duel surges",
+            "6": "Champion paragon improves melee lockdown and duel surges",
+            "7": "Held elites and bosses take more champion damage",
+            "8": "Duel surges splash to nearby armored threats",
+            "9": "Champion zones expose held targets more reliably"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "hold",
+            "melee",
+            "elite_duel"
+          ],
+          "milestones": [
+            "T3 Champion Guard: Guards hold ground enemies longer",
+            "T4 Fortress Duelists: Duelists damage elites and bosses harder",
+            "T5 Elite Garrison: Shield wall creates surge pressure on bosses",
+            "T6 Keystone: Elite duels build into surge bursts against priority threats",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Champions",
+          "primary_mechanic": "duel hold",
+          "role": "Melee hold and elite duels that surge on cap",
+          "short": "CH",
+          "signature": "duel_hold",
+          "synergy": "Pairs with bosses, armored fronts, and duel holds",
+          "tags": [
+            "duel",
+            "control",
+            "hold",
+            "melee"
+          ],
+          "tiers": {
+            "3": "Champion Guard",
+            "4": "Fortress Duelists",
+            "5": "Elite Garrison"
+          },
+          "upgrade_effects": {
+            "10": "Surge damage +12%",
+            "3": "Hold strength +8%",
+            "4": "Elite duel +20%",
+            "5": "Melee damage +25%",
+            "6": "Hold duration +0.4s",
+            "7": "Elite damage +10%",
+            "8": "Duel surge +1 target",
+            "9": "Expose +4%"
+          }
+        },
+        "engineers": {
+          "color": [
+            200,
+            160,
+            110
+          ],
+          "descriptions": {
+            "3": "Engineers add slowing road traps",
+            "4": "Spike strips build fortification",
+            "5": "Minefield crews improve trap bursts"
+          },
+          "effect_preview": "Places periodic road traps that fortify after hits.",
+          "focus": "utility",
+          "keystone": "Fortify traps to keep kill zones stronger longer",
+          "late_descriptions": {
+            "10": "Minefield mastery turns holds into burst kill zones",
+            "6": "Engineer paragon improves minefield damage and trap uptime",
+            "7": "Fortified mines hit held enemies harder",
+            "8": "Barricades slow ground lanes longer",
+            "9": "Mine bursts cover more enemies in the hold zone"
+          },
+          "mastery": "Mastery improves team support and consistency",
+          "mechanics": [
+            "trap",
+            "mine",
+            "repair",
+            "barricade",
+            "fortify"
+          ],
+          "milestones": [
+            "T3 Engineer Crew: Engineers add slowing road traps",
+            "T4 Spike Strip: Spike strips build fortification",
+            "T5 Minefield Crew: Minefield crews improve trap bursts",
+            "T6 Keystone: Fortify traps to keep kill zones stronger longer",
+            "M Mastery: Mastery improves team support and consistency"
+          ],
+          "name": "Engineers",
+          "primary_mechanic": "mine fortification",
+          "role": "Barricades, spike strips, mines, fortify lanes",
+          "short": "EN",
+          "signature": "barricade_minefield",
+          "synergy": "Pairs with fortify lanes and repeated mine hits",
+          "tags": [
+            "fortify",
+            "utility",
+            "trap",
+            "mine"
+          ],
+          "tiers": {
+            "3": "Engineer Crew",
+            "4": "Spike Strip",
+            "5": "Minefield Crew"
+          },
+          "upgrade_effects": {
+            "10": "Burst damage +12%",
+            "3": "Fortify +1",
+            "4": "Mine damage +18%",
+            "5": "Mine radius +18",
+            "6": "Fortify duration +0.8s",
+            "7": "Held damage +8%",
+            "8": "Barricade slow +0.3s",
+            "9": "Mine targets +1"
+          }
+        },
+        "mercenary_guild": {
+          "color": [
+            235,
+            195,
+            95
+          ],
+          "descriptions": {
+            "3": "Held kills can grant bounty money",
+            "4": "Contracts build a payout ledger",
+            "5": "Danger pay scales during hard waves"
+          },
+          "effect_preview": "Held kills build a ledger and danger pay that boost future contracts.",
+          "focus": "weird",
+          "keystone": "Danger pay turns hard-wave contracts into bigger payouts",
+          "late_descriptions": {
+            "10": "Guild mastery converts kill zones into reliable economy",
+            "6": "Mercenary paragon increases ledger consistency",
+            "7": "Contracts pay more from held kills",
+            "8": "Danger pay scales during hard waves",
+            "9": "Boss and elite contracts grow danger pay faster"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "bounty",
+            "contract",
+            "ledger",
+            "danger_pay"
+          ],
+          "milestones": [
+            "T3 Mercenary Guild: Held kills can grant bounty money",
+            "T4 Contract Board: Contracts build a payout ledger",
+            "T5 Danger Pay Office: Danger pay scales during hard waves",
+            "T6 Keystone: Danger pay turns hard-wave contracts into bigger payouts",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Mercenary Guild",
+          "primary_mechanic": "contract ledgers",
+          "role": "Bounty, contract ledgers, danger pay",
+          "short": "MG",
+          "signature": "contract_bounty",
+          "synergy": "Pairs with danger pay, hard waves, and contract ledgers",
+          "tags": [
+            "danger_pay",
+            "ledger",
+            "weird",
+            "economy",
+            "hold"
+          ],
+          "tiers": {
+            "3": "Mercenary Guild",
+            "4": "Contract Board",
+            "5": "Danger Pay Office"
+          },
+          "upgrade_effects": {
+            "10": "Economy uptime +15%",
+            "3": "Ledger +1",
+            "4": "Contract payout +1",
+            "5": "Danger pay unlocks",
+            "6": "Ledger cap +2",
+            "7": "Held payout +1",
+            "8": "Hard-wave pay +1",
+            "9": "Boss contract +2"
+          }
+        }
+      },
+      "cannon": {
+        "artillery": {
+          "color": [
+            205,
+            155,
+            95
+          ],
+          "descriptions": {
+            "3": "Mortar-style splash and longer range",
+            "4": "Cluster shells hit wider groups",
+            "5": "Bombardment punishes dense waves"
+          },
+          "effect_preview": "Long-range splash builds barrage and splits into extra blasts.",
+          "focus": "damage",
+          "keystone": "Barrage shells split into extra blasts",
+          "late_descriptions": {
+            "10": "Map bombardment punishes dense waves with extra barrages",
+            "6": "Artillery paragon builds barrage faster",
+            "7": "Cluster shells gain a larger secondary blast",
+            "8": "Barrage shells split to one more nearby target",
+            "9": "Long-range shells retain more splash damage"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "splash",
+            "mortar",
+            "cluster",
+            "barrage"
+          ],
+          "milestones": [
+            "T3 Artillery Battery: Mortar-style splash and longer range",
+            "T4 Cluster Shells: Cluster shells hit wider groups",
+            "T5 Map Bombardment: Bombardment punishes dense waves",
+            "T6 Keystone: Barrage shells split into extra blasts",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Artillery",
+          "primary_mechanic": "barrage shells",
+          "role": "Barrage shells and bombardment",
+          "short": "AR",
+          "signature": "barrage_cluster_shells",
+          "synergy": "Pairs with barrage shells, clustered waves, and long sight lines",
+          "tags": [
+            "barrage",
+            "damage",
+            "splash",
+            "mortar"
+          ],
+          "tiers": {
+            "3": "Artillery Battery",
+            "4": "Cluster Shells",
+            "5": "Map Bombardment"
+          },
+          "upgrade_effects": {
+            "10": "Barrage burst +12%",
+            "3": "Barrage +1",
+            "4": "Splash radius +18",
+            "5": "Cluster targets +1",
+            "6": "Barrage duration +0.4s",
+            "7": "Cluster damage +8%",
+            "8": "Extra blast +1",
+            "9": "Splash falloff -10%"
+          }
+        },
+        "demolition": {
+          "color": [
+            225,
+            125,
+            90
+          ],
+          "descriptions": {
+            "3": "Shells build breach stacks on armored targets",
+            "4": "Breach hits strip shields and expose fronts",
+            "5": "Breach bursts spread to nearby armor"
+          },
+          "effect_preview": "Builds breach stacks, strips shields, and bursts nearby armor.",
+          "focus": "utility",
+          "keystone": "Breach stacks crack armor and open follow-up windows",
+          "late_descriptions": {
+            "10": "Exposed core mastery spikes damage on cracked targets",
+            "6": "Demolition paragon unlocks breach bursts",
+            "7": "Breach spill reaches nearby armored enemies",
+            "8": "Exposed armor takes more burst damage",
+            "9": "Breach duration improves against tanks and bosses"
+          },
+          "mastery": "Mastery improves team support and consistency",
+          "mechanics": [
+            "breach",
+            "shield_break",
+            "vulnerable",
+            "armor_break"
+          ],
+          "milestones": [
+            "T3 Demolition Crew: Shells build breach stacks on armored targets",
+            "T4 Shield Cracker: Breach hits strip shields and expose fronts",
+            "T5 Breach Detonator: Breach bursts spread to nearby armor",
+            "T6 Keystone: Breach stacks crack armor and open follow-up windows",
+            "M Mastery: Mastery improves team support and consistency"
+          ],
+          "name": "Demolition",
+          "primary_mechanic": "breach stacks",
+          "role": "Breach stacks that crack armor and expose fronts",
+          "short": "DM",
+          "signature": "breach_stack_exposure",
+          "synergy": "Pairs with breach stacks, armor crack, burst damage, and follow-up shells",
+          "tags": [
+            "breach",
+            "utility",
+            "armor",
+            "burst"
+          ],
+          "tiers": {
+            "3": "Demolition Crew",
+            "4": "Shield Cracker",
+            "5": "Breach Detonator"
+          },
+          "upgrade_effects": {
+            "10": "Cracked burst +12%",
+            "3": "Breach stacks +1",
+            "4": "Shield strip +1",
+            "5": "Vulnerability +15%",
+            "6": "Breach burst unlocks",
+            "7": "Breach spill +1 target",
+            "8": "Vulnerability +4%",
+            "9": "Breach duration +0.4s"
+          }
+        },
+        "terraformer": {
+          "color": [
+            235,
+            95,
+            55
+          ],
+          "descriptions": {
+            "3": "Shells leave short-lived rubble slow zones",
+            "4": "Lava craters burn enemies in the area",
+            "5": "Molten zones punish clustered ground waves"
+          },
+          "effect_preview": "Leaves slowing hazard zones.",
+          "focus": "weird",
+          "keystone": "Suppression keeps fast enemies in range",
+          "late_descriptions": {
+            "10": "Kill-zone mastery widens persistent ground control",
+            "6": "Terraformer paragon leaves larger molten crater zones",
+            "7": "Crater slows last longer on ground enemies",
+            "8": "Molten zones burn clustered enemies harder",
+            "9": "Repeated crater hits stack stronger terrain denial"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "hazard",
+            "burn",
+            "slow",
+            "crater"
+          ],
+          "milestones": [
+            "T3 Terraformer: Shells leave short-lived rubble slow zones",
+            "T4 Lava Craters: Lava craters burn enemies in the area",
+            "T5 Molten Kill Zone: Molten zones punish clustered ground waves",
+            "T6 Keystone: Suppression keeps fast enemies in range",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Terraformer",
+          "primary_mechanic": "crater zone",
+          "role": "Rubble, craters, fire/lava zones",
+          "short": "TF",
+          "signature": "crater_zone_control",
+          "synergy": "Pairs with slows, pulls, and repeated path crossings",
+          "tags": [
+            "weird",
+            "hazard",
+            "burn"
+          ],
+          "tiers": {
+            "3": "Terraformer",
+            "4": "Lava Craters",
+            "5": "Molten Kill Zone"
+          },
+          "upgrade_effects": {
+            "10": "Kill-zone radius +18",
+            "3": "Crater slow +1.0s",
+            "4": "Crater burn unlocks",
+            "5": "Crater radius +16",
+            "6": "Crater radius +20",
+            "7": "Ground slow +0.4s",
+            "8": "Molten burn +10%",
+            "9": "Zone uptime +12%"
+          }
+        }
+      },
+      "frost": {
+        "glacier": {
+          "color": [
+            155,
+            235,
+            255
+          ],
+          "descriptions": {
+            "3": "Stronger slow on hit",
+            "4": "Cryo prison briefly stops priority enemies",
+            "5": "Deep freeze improves control uptime"
+          },
+          "effect_preview": "Slows harder and freezes longer.",
+          "focus": "control",
+          "keystone": "Suppression keeps fast enemies in range",
+          "late_descriptions": {
+            "10": "Deep freeze mastery keeps dangerous pushes locked down",
+            "6": "Glacier paragon improves slow strength and freeze uptime",
+            "7": "Priority enemies stay frozen longer",
+            "8": "Slow fields cover more nearby targets",
+            "9": "Control uptime improves against bosses and fast waves"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "slow",
+            "freeze",
+            "cryo_prison"
+          ],
+          "milestones": [
+            "T3 Glacier Tower: Stronger slow on hit",
+            "T4 Cryo Prison: Cryo prison briefly stops priority enemies",
+            "T5 Deep Freeze: Deep freeze improves control uptime",
+            "T6 Keystone: Suppression keeps fast enemies in range",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Glacier",
+          "primary_mechanic": "lockdown freeze",
+          "role": "Stronger slows and freezes",
+          "short": "GL",
+          "signature": "glacier_lockdown",
+          "synergy": "Pairs with Shatter, Artillery, and Tesla chains",
+          "tags": [
+            "control",
+            "freeze",
+            "slow"
+          ],
+          "tiers": {
+            "3": "Glacier Tower",
+            "4": "Cryo Prison",
+            "5": "Deep Freeze"
+          },
+          "upgrade_effects": {
+            "10": "Lockdown uptime +12%",
+            "3": "Slow strength +10%",
+            "4": "Freeze window +0.25s",
+            "5": "Lockdown uptime +15%",
+            "6": "Freeze +0.25s",
+            "7": "Priority freeze +0.15s",
+            "8": "Slow radius +18",
+            "9": "Boss control +10%"
+          }
+        },
+        "shatter": {
+          "color": [
+            205,
+            250,
+            255
+          ],
+          "descriptions": {
+            "3": "Frozen enemies take bonus burst damage",
+            "4": "Fractured enemies splash on death",
+            "5": "Crystal detonation improves shatter bursts"
+          },
+          "effect_preview": "Frozen enemies burst on heavy hits/death.",
+          "focus": "damage",
+          "keystone": "Freeze windows set up burst damage",
+          "late_descriptions": {
+            "10": "Shatter mastery detonates frozen packs harder",
+            "6": "Shatter paragon converts frozen targets into stronger bursts",
+            "7": "Frozen hits deal more bonus damage",
+            "8": "Fractured enemies splash damage on death more often",
+            "9": "Crystal detonation radius improves"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "freeze",
+            "shatter",
+            "burst"
+          ],
+          "milestones": [
+            "T3 Shatter Tower: Frozen enemies take bonus burst damage",
+            "T4 Ice Fracture: Fractured enemies splash on death",
+            "T5 Crystal Detonation: Crystal detonation improves shatter bursts",
+            "T6 Keystone: Freeze windows set up burst damage",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Shatter",
+          "primary_mechanic": "shatter burst",
+          "role": "Frozen burst damage",
+          "short": "SH",
+          "signature": "frozen_shatter_burst",
+          "synergy": "Pairs with Shatter, Artillery, and Tesla chains",
+          "tags": [
+            "damage",
+            "freeze",
+            "burst"
+          ],
+          "tiers": {
+            "3": "Shatter Tower",
+            "4": "Ice Fracture",
+            "5": "Crystal Detonation"
+          },
+          "upgrade_effects": {
+            "10": "Pack burst +15%",
+            "3": "Frozen burst +18%",
+            "4": "Death splash unlocks",
+            "5": "Detonation radius +18",
+            "6": "Shatter damage +20%",
+            "7": "Frozen bonus +8%",
+            "8": "Death splash +1 target",
+            "9": "Detonation radius +12"
+          }
+        },
+        "time_control": {
+          "color": [
+            170,
+            210,
+            255
+          ],
+          "descriptions": {
+            "3": "Hits build stasis toward stronger rewind bursts",
+            "4": "Stasis fields hold groups longer",
+            "5": "Rewind engine gives stronger burst control"
+          },
+          "effect_preview": "Builds stasis charges and rewinds enemies harder in bursts.",
+          "focus": "control",
+          "keystone": "Stasis charges build into stronger rewind bursts",
+          "late_descriptions": {
+            "10": "Rewind engine mastery turns stasis into reliable control",
+            "6": "Time paragon stores stasis faster for bigger rewinds",
+            "7": "Stasis bursts last longer on slowed enemies",
+            "8": "Rewind bursts trigger on more priority targets",
+            "9": "Slow-motion fields improve rewind uptime"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "stasis",
+            "slow_motion",
+            "rewind"
+          ],
+          "milestones": [
+            "T3 Time Control: Hits build stasis toward stronger rewind bursts",
+            "T4 Stasis Field: Stasis fields hold groups longer",
+            "T5 Rewind Engine: Rewind engine gives stronger burst control",
+            "T6 Keystone: Stasis charges build into stronger rewind bursts",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Time Control",
+          "primary_mechanic": "rewind stasis",
+          "role": "Stasis charges and rewind bursts",
+          "short": "TC",
+          "signature": "rewind_stasis",
+          "synergy": "Pairs with stasis lanes, slow lanes, and rewind bursts",
+          "tags": [
+            "stasis",
+            "weird",
+            "time",
+            "control"
+          ],
+          "tiers": {
+            "3": "Time Control",
+            "4": "Stasis Field",
+            "5": "Rewind Engine"
+          },
+          "upgrade_effects": {
+            "10": "Burst radius +12%",
+            "3": "Stasis charge +1",
+            "4": "Rewind nudge +8%",
+            "5": "Burst rewind unlocks",
+            "6": "Stasis gain +20%",
+            "7": "Rewind hold +0.08s",
+            "8": "Burst rewinds +1 target",
+            "9": "Slow-motion +0.3s"
+          }
+        }
+      },
+      "machine_gun": {
+        "ammo_fabricator": {
+          "color": [
+            185,
+            220,
+            135
+          ],
+          "descriptions": {
+            "3": "Ammo charge adapts against armor and swarms",
+            "4": "Tracer rounds mark and weaken targets",
+            "5": "Charge cycles keep the next counter round stronger"
+          },
+          "effect_preview": "Builds ammo charge and adapts to armored, swarm, or priority targets.",
+          "focus": "damage",
+          "keystone": "Ammo adapts to the wave's main threat",
+          "late_descriptions": {
+            "10": "Adaptive arsenal rotates stronger counters per hit",
+            "6": "Ammo paragon keeps counter rounds charged longer",
+            "7": "AP rounds strip shields and armor more reliably",
+            "8": "Fragment rounds cleave swarm targets harder",
+            "9": "Tracer rounds expose priority targets longer"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "adaptive_ammo"
+          ],
+          "milestones": [
+            "T3 Ammo Fabricator: Ammo charge adapts against armor and swarms",
+            "T4 Tracer Foundry: Tracer rounds mark and weaken targets",
+            "T5 Adaptive Arsenal: Charge cycles keep the next counter round stronger",
+            "T6 Keystone: Ammo adapts to the wave's main threat",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Ammo Fabricator",
+          "primary_mechanic": "ammo cycle",
+          "role": "Cycles AP, fragment, and tracer rounds",
+          "short": "AF",
+          "signature": "adaptive_round_cycle",
+          "synergy": "Pairs with any high-damage tower nearby",
+          "tags": [
+            "damage",
+            "ammo",
+            "targeting"
+          ],
+          "tiers": {
+            "3": "Ammo Fabricator",
+            "4": "Tracer Foundry",
+            "5": "Adaptive Arsenal"
+          },
+          "upgrade_effects": {
+            "10": "Charge decay -20%",
+            "3": "Ammo charge +1",
+            "4": "Tracer expose +0.5s",
+            "5": "Counter bonus +12%",
+            "6": "Ammo charge +1",
+            "7": "AP strip +1 shield",
+            "8": "Fragment cleave +1",
+            "9": "Tracer spill +1 target"
+          }
+        },
+        "suppression": {
+          "color": [
+            220,
+            205,
+            120
+          ],
+          "descriptions": {
+            "3": "Bullets build pin stacks",
+            "4": "Pinning fire slows harder",
+            "5": "Panic bursts trigger at cap"
+          },
+          "effect_preview": "Rapid hits build pin stacks, then burst into panic.",
+          "focus": "control",
+          "keystone": "Pin stacks build into panic bursts",
+          "late_descriptions": {
+            "10": "Panic zones disrupt dense fast pushes",
+            "6": "Suppression paragon raises pin stacks and panic bursts",
+            "7": "Rapid hits pin fast and hasted enemies harder",
+            "8": "Pinned enemies burst into panic at stack cap",
+            "9": "Suppression stacks last longer between bullets"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "pin",
+            "slow",
+            "panic",
+            "burst"
+          ],
+          "milestones": [
+            "T3 Suppression Team: Bullets build pin stacks",
+            "T4 Pinning Fire: Pinning fire slows harder",
+            "T5 Panic Zone: Panic bursts trigger at cap",
+            "T6 Keystone: Pin stacks build into panic bursts",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Suppression",
+          "primary_mechanic": "pin stacks",
+          "role": "Pin stacks and panic bursts",
+          "short": "SU",
+          "signature": "pin_stack_panic",
+          "synergy": "Pairs with pin stacks and panic windows",
+          "tags": [
+            "control",
+            "pin",
+            "rapid",
+            "burst"
+          ],
+          "tiers": {
+            "3": "Suppression Team",
+            "4": "Pinning Fire",
+            "5": "Panic Zone"
+          },
+          "upgrade_effects": {
+            "10": "Panic radius +20",
+            "3": "Pin stacks +1",
+            "4": "Pin slow +0.05",
+            "5": "Panic burst unlocks",
+            "6": "Pin cap +1",
+            "7": "Fast slow +6%",
+            "8": "Panic burst +10%",
+            "9": "Stack decay -20%"
+          }
+        },
+        "vulcan": {
+          "color": [
+            255,
+            225,
+            90
+          ],
+          "descriptions": {
+            "3": "Sustained fire builds heat stages",
+            "4": "Heat ramps attack speed faster",
+            "5": "Overheat bursts add burst damage"
+          },
+          "effect_preview": "Continuous fire builds heat stages, then vents into burst damage and swarm burns.",
+          "focus": "damage",
+          "keystone": "Heat stages vent into swarm burns and overheat bursts",
+          "late_descriptions": {
+            "10": "Maximum heat triggers stronger overheat bursts",
+            "6": "Vulcan paragon raises heat capacity and burst damage",
+            "7": "Sustained fire reaches higher heat stages faster",
+            "8": "High heat shots vent into extra swarm burns",
+            "9": "Heat decays slower between targets"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "heat",
+            "spin_up",
+            "fire_rate",
+            "overheat",
+            "dps"
+          ],
+          "milestones": [
+            "T3 Vulcan: Sustained fire builds heat stages",
+            "T4 Rotary Engine: Heat ramps attack speed faster",
+            "T5 Bullet Tempest: Overheat bursts add burst damage",
+            "T6 Keystone: Heat stages vent into swarm burns and overheat bursts",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Vulcan",
+          "primary_mechanic": "heat stages",
+          "role": "Heat stages and overheat bursts against swarms",
+          "short": "VU",
+          "signature": "spin_up_heat_overheat",
+          "synergy": "Pairs with rapid fire and swarm-heavy waves",
+          "tags": [
+            "swarm",
+            "heat",
+            "damage",
+            "rapid",
+            "burst"
+          ],
+          "tiers": {
+            "3": "Vulcan",
+            "4": "Rotary Engine",
+            "5": "Bullet Tempest"
+          },
+          "upgrade_effects": {
+            "10": "Max-heat burst +1",
+            "3": "Heat gain +12%",
+            "4": "Heat stage +1",
+            "5": "Overheat burst unlocks",
+            "6": "Heat cap +20%",
+            "7": "Heat ramp +4%",
+            "8": "Overheat burn +0.5s",
+            "9": "Heat decay -15%"
+          }
+        }
+      },
+      "poison": {
+        "plague_mist": {
+          "color": [
+            150,
+            215,
+            95
+          ],
+          "descriptions": {
+            "3": "Poison clouds stack contagion on infected targets",
+            "4": "Spore nets spread control to nearby enemies",
+            "5": "Contagion keeps waves weakened longer"
+          },
+          "effect_preview": "Builds contagion and spreads poison through nearby enemies.",
+          "focus": "control",
+          "keystone": "Road traps add control between tower shots",
+          "late_descriptions": {
+            "10": "Contagion mastery keeps whole packs weakened",
+            "6": "Plague paragon spreads contagion to more nearby enemies",
+            "7": "Contagion weakens infected targets longer",
+            "8": "Spore nets apply stronger control in poison clouds",
+            "9": "Mist coverage improves against dense waves"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "poison",
+            "slow",
+            "trap",
+            "contagion"
+          ],
+          "milestones": [
+            "T3 Plague Mist: Poison clouds stack contagion on infected targets",
+            "T4 Spore Net: Spore nets spread control to nearby enemies",
+            "T5 Contagion Engine: Contagion keeps waves weakened longer",
+            "T6 Keystone: Road traps add control between tower shots",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Plague Mist",
+          "primary_mechanic": "contagion",
+          "role": "Contagion stacks that spread poison",
+          "short": "PM",
+          "signature": "contagion_mist",
+          "synergy": "Pairs with slows that keep enemies in the cloud",
+          "tags": [
+            "control",
+            "poison",
+            "slow",
+            "contagion"
+          ],
+          "tiers": {
+            "3": "Plague Mist",
+            "4": "Spore Net",
+            "5": "Contagion Engine"
+          },
+          "upgrade_effects": {
+            "10": "Pack duration +0.6s",
+            "3": "Contagion stacks +1",
+            "4": "Weakening +8%",
+            "5": "Mist duration +0.5s",
+            "6": "Spread targets +1",
+            "7": "Weakening +3%",
+            "8": "Spore slow +6%",
+            "9": "Mist radius +16"
+          }
+        },
+        "venom_cask": {
+          "color": [
+            120,
+            225,
+            95
+          ],
+          "descriptions": {
+            "3": "Poison builds toxin stacks on high-health enemies",
+            "4": "Toxins hit regenerating enemies harder",
+            "5": "Bosses melt under stacked venom"
+          },
+          "effect_preview": "Poisons build toxin stacks and suppress regeneration.",
+          "focus": "damage",
+          "keystone": "Toxin stacks punish bosses and tanks over time",
+          "late_descriptions": {
+            "10": "Manticore mastery melts priority targets with stacked venom",
+            "6": "Venom paragon extends toxin duration and boss ramp",
+            "7": "Toxin stacks suppress regeneration harder",
+            "8": "Stacked venom ruptures high-health enemies harder",
+            "9": "Boss toxins last longer through long fights"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "toxin",
+            "poison",
+            "anti_regen",
+            "boss_pressure"
+          ],
+          "milestones": [
+            "T3 Venom Cask: Poison builds toxin stacks on high-health enemies",
+            "T4 Toxin Still: Toxins hit regenerating enemies harder",
+            "T5 Manticore Flask: Bosses melt under stacked venom",
+            "T6 Keystone: Toxin stacks punish bosses and tanks over time",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Venom Cask",
+          "primary_mechanic": "toxin stacks",
+          "role": "Toxin stacks for tanks and bosses",
+          "short": "VC",
+          "signature": "long_toxin_stack",
+          "synergy": "Pairs with toxin stacks, burst damage and long fights",
+          "tags": [
+            "toxin",
+            "damage",
+            "poison",
+            "boss"
+          ],
+          "tiers": {
+            "3": "Venom Cask",
+            "4": "Toxin Still",
+            "5": "Manticore Flask"
+          },
+          "upgrade_effects": {
+            "10": "Rupture damage +12%",
+            "3": "Toxin stacks +1",
+            "4": "Anti-regen +25%",
+            "5": "Boss toxin +18%",
+            "6": "Toxin cap +1",
+            "7": "Regen cut +10%",
+            "8": "High-HP damage +8%",
+            "9": "Toxin duration +0.5s"
+          }
+        },
+        "wildfire": {
+          "color": [
+            245,
+            135,
+            65
+          ],
+          "descriptions": {
+            "3": "Toxins ignite into short burn effects",
+            "4": "Burning clouds punish grouped enemies",
+            "5": "Scorch blooms widen the kill zone"
+          },
+          "effect_preview": "Poisoned targets ignite into burning blooms that scorch clustered waves.",
+          "focus": "damage",
+          "keystone": "Ignited poison blooms spread through clustered waves",
+          "late_descriptions": {
+            "10": "Wildfire mastery detonates infected packs harder",
+            "6": "Wildfire paragon makes poisoned targets ignite in bursts",
+            "7": "Volatile burns tick harder on clustered enemies",
+            "8": "Scorch blooms reach more nearby targets",
+            "9": "Burning clouds last longer after poison hits"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "burn",
+            "ignite",
+            "hazard",
+            "splash"
+          ],
+          "milestones": [
+            "T3 Wildfire: Toxins ignite into short burn effects",
+            "T4 Caustic Flame: Burning clouds punish grouped enemies",
+            "T5 Scorch Bloom: Scorch blooms widen the kill zone",
+            "T6 Keystone: Ignited poison blooms spread through clustered waves",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Wildfire",
+          "primary_mechanic": "volatile bloom",
+          "role": "Ignites poisoned targets into burning blooms",
+          "short": "WF",
+          "signature": "volatile_toxin_bloom",
+          "synergy": "Pairs with toxin stacks, burst damage and long fights",
+          "tags": [
+            "damage",
+            "toxin",
+            "hazard",
+            "splash"
+          ],
+          "tiers": {
+            "3": "Wildfire",
+            "4": "Caustic Flame",
+            "5": "Scorch Bloom"
+          },
+          "upgrade_effects": {
+            "10": "Detonation damage +12%",
+            "3": "Ignition burn +1.4s",
+            "4": "Bloom radius +18",
+            "5": "Bloom targets +2",
+            "6": "Ignition damage +18%",
+            "7": "Burn DPS +8%",
+            "8": "Bloom targets +1",
+            "9": "Cloud duration +0.4s"
+          }
+        }
+      },
+      "sniper": {
+        "railgun": {
+          "color": [
+            205,
+            230,
+            245
+          ],
+          "descriptions": {
+            "3": "Shots stack seam pressure on armored targets",
+            "4": "Rail beams crack shields and heavy fronts",
+            "5": "Seam bursts spread pressure to nearby armor"
+          },
+          "effect_preview": "Builds seam pressure and cracks armored targets.",
+          "focus": "damage",
+          "keystone": "Seam shots build pressure on armored fronts",
+          "late_descriptions": {
+            "10": "Rail executor mastery deletes hardened lanes",
+            "6": "Railgun paragon stacks seam pressure faster on heavy fronts",
+            "7": "Charged shots crack elites and bosses harder",
+            "8": "Seam bursts spill into nearby armored enemies",
+            "9": "Shield breaks feed stronger rail follow-up"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "seam_pressure",
+            "pierce",
+            "shield_break",
+            "boss_pressure"
+          ],
+          "milestones": [
+            "T3 Railgun Sniper: Shots stack seam pressure on armored targets",
+            "T4 Coil Piercer: Rail beams crack shields and heavy fronts",
+            "T5 Rail Executor: Seam bursts spread pressure to nearby armor",
+            "T6 Keystone: Seam shots build pressure on armored fronts",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Railgun Sniper",
+          "primary_mechanic": "seam pressure",
+          "role": "Stacks seam pressure on armored fronts",
+          "short": "RG",
+          "signature": "seam_pressure_charge",
+          "synergy": "Pairs with Sniper or Demolition exposure",
+          "tags": [
+            "damage",
+            "armor",
+            "pierce",
+            "boss"
+          ],
+          "tiers": {
+            "3": "Railgun Sniper",
+            "4": "Coil Piercer",
+            "5": "Rail Executor"
+          },
+          "upgrade_effects": {
+            "10": "Execute burst +12%",
+            "3": "Seam stacks +1",
+            "4": "Shield strip +1",
+            "5": "Boss pressure +12%",
+            "6": "Seam duration +0.4s",
+            "7": "Crack damage +8%",
+            "8": "Seam spill +1 target",
+            "9": "Shield pressure +1"
+          }
+        },
+        "spotter": {
+          "color": [
+            170,
+            210,
+            245
+          ],
+          "descriptions": {
+            "3": "Painted enemies are preferred by nearby towers",
+            "4": "Weak points increase allied damage",
+            "5": "Marked kills can grant tactical rewards"
+          },
+          "effect_preview": "Paints enemies, stacks marks, and relays focus to nearby threats.",
+          "focus": "utility",
+          "keystone": "Painted marks relay focus to nearby threats",
+          "late_descriptions": {
+            "10": "Observer mastery keeps elite lanes revealed",
+            "6": "Forward observers stack marks on priority lanes",
+            "7": "Marked priority targets stay exposed longer",
+            "8": "Mark relay reaches one more nearby threat",
+            "9": "Marked kills feed more scan value"
+          },
+          "mastery": "Mastery improves team support and consistency",
+          "mechanics": [
+            "paint",
+            "mark",
+            "relay",
+            "shared_targeting",
+            "marked_reward"
+          ],
+          "milestones": [
+            "T3 Spotter Sniper: Painted enemies are preferred by nearby towers",
+            "T4 Weak Point Team: Weak points increase allied damage",
+            "T5 Forward Observer: Marked kills can grant tactical rewards",
+            "T6 Keystone: Painted marks relay focus to nearby threats",
+            "M Mastery: Mastery improves team support and consistency"
+          ],
+          "name": "Spotter Sniper",
+          "primary_mechanic": "mark relay",
+          "role": "Target paint and mark relay",
+          "short": "SP",
+          "signature": "observer_scan_grid",
+          "synergy": "Pairs with relay marks and clustered waves",
+          "tags": [
+            "relay",
+            "utility",
+            "mark",
+            "targeting"
+          ],
+          "tiers": {
+            "3": "Spotter Sniper",
+            "4": "Weak Point Team",
+            "5": "Forward Observer"
+          },
+          "upgrade_effects": {
+            "10": "Expose +0.5s",
+            "3": "Mark stacks +1",
+            "4": "Shared damage +5%",
+            "5": "Relay unlocks",
+            "6": "Mark duration +0.4s",
+            "7": "Shared damage +6%",
+            "8": "Relay +1 target",
+            "9": "Marked kills +1 reward"
+          }
+        },
+        "time_lag": {
+          "color": [
+            190,
+            170,
+            245
+          ],
+          "descriptions": {
+            "3": "Shots leave delayed echo damage",
+            "4": "Echo bullets detonate harder on marked enemies",
+            "5": "Stored damage bursts against priority enemies"
+          },
+          "effect_preview": "Stores bonus damage, then detonates into ripple echoes.",
+          "focus": "weird",
+          "keystone": "Stored echoes ripple into nearby threats",
+          "late_descriptions": {
+            "10": "Chrono mastery turns delayed shots into chain bursts",
+            "6": "Chrono paragon spills delayed damage into packed waves",
+            "7": "Marked shots detonate faster and hit harder",
+            "8": "Echo bursts ripple into nearby enemies",
+            "9": "Stored damage grows on elite and armored targets"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "delayed_damage",
+            "echo",
+            "ripple",
+            "detonate"
+          ],
+          "milestones": [
+            "T3 Time-Lag Sniper: Shots leave delayed echo damage",
+            "T4 Echo Bullet: Echo bullets detonate harder on marked enemies",
+            "T5 Chrono Detonator: Stored damage bursts against priority enemies",
+            "T6 Keystone: Stored echoes ripple into nearby threats",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Time-Lag Sniper",
+          "primary_mechanic": "ripple echoes",
+          "role": "Delayed damage and ripple echoes",
+          "short": "TL",
+          "signature": "chrono_echo_burst",
+          "synergy": "Pairs with ripple chains and marked targets",
+          "tags": [
+            "weird",
+            "time",
+            "burst",
+            "ripple"
+          ],
+          "tiers": {
+            "3": "Time-Lag Sniper",
+            "4": "Echo Bullet",
+            "5": "Chrono Detonator"
+          },
+          "upgrade_effects": {
+            "10": "Ripple damage +12%",
+            "3": "Echo damage +18%",
+            "4": "Detonation delay -0.08s",
+            "5": "Marked burst +12%",
+            "6": "Ripple radius +8",
+            "7": "Stored damage +8%",
+            "8": "Ripple splash +1 target",
+            "9": "Detonation delay -0.05s"
+          }
+        }
+      },
+      "support": {
+        "research_lab": {
+          "color": [
+            210,
+            220,
+            120
+          ],
+          "descriptions": {
+            "3": "Assists grant small tech progress",
+            "4": "Prototype tiers linger after the buff ends",
+            "5": "Adaptive tech improves long-term scaling"
+          },
+          "effect_preview": "Generates tech, stacks prototype tiers, and discounts upgrades.",
+          "focus": "weird",
+          "keystone": "Prototype tiers persist and cut future upgrade costs",
+          "late_descriptions": {
+            "10": "Adaptive institute mastery accelerates late upgrades",
+            "6": "Tech Lab paragon improves research and prototype tempo",
+            "7": "Prototype tiers persist after the buff ends",
+            "8": "Research casts reduce nearby upgrade pressure",
+            "9": "Prototype towers keep their discounts longer"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "research",
+            "discount",
+            "prototype",
+            "gold"
+          ],
+          "milestones": [
+            "T3 Tech Lab: Assists grant small tech progress",
+            "T4 Prototype Desk: Prototype tiers linger after the buff ends",
+            "T5 Adaptive Institute: Adaptive tech improves long-term scaling",
+            "T6 Keystone: Prototype tiers persist and cut future upgrade costs",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Tech Lab",
+          "primary_mechanic": "prototype tiers",
+          "role": "Tech gain, prototype tiers, and upgrade discounts",
+          "short": "RL",
+          "signature": "prototype_research",
+          "synergy": "Pairs with prototype towers and late upgrades",
+          "tags": [
+            "prototype",
+            "weird",
+            "economy",
+            "research"
+          ],
+          "tiers": {
+            "3": "Tech Lab",
+            "4": "Prototype Desk",
+            "5": "Adaptive Institute"
+          },
+          "upgrade_effects": {
+            "10": "Late tech +1",
+            "3": "Prototype tier +1",
+            "4": "Prototype discount +5%",
+            "5": "Prototype hold +0.8s",
+            "6": "Tech chance +20%",
+            "7": "Assist tech +1",
+            "8": "Prototype buff +6%",
+            "9": "Tier cap +1"
+          }
+        },
+        "signal_tower": {
+          "color": [
+            180,
+            215,
+            245
+          ],
+          "descriptions": {
+            "3": "Signals paint priority enemies",
+            "4": "Scan intel lasts longer on wounded elites",
+            "5": "Tactical grid stacks scan intel and shared focus"
+          },
+          "effect_preview": "Paints priority enemies, stacks scan intel, and sharpens focus fire.",
+          "focus": "control",
+          "keystone": "Threat scans build intel and sharpen focus fire",
+          "late_descriptions": {
+            "10": "Tactical grid keeps the lane painted longer",
+            "6": "Signal paragon scans more priority enemies per cast",
+            "7": "Threat scans linger longer on dense wave fronts",
+            "8": "Painted targets take slightly more focused damage",
+            "9": "Scans build faster on the frontmost threats"
+          },
+          "mastery": "Mastery improves uptime and control coverage",
+          "mechanics": [
+            "paint",
+            "shared_targeting",
+            "threat_scan"
+          ],
+          "milestones": [
+            "T3 Signal Tower: Signals paint priority enemies",
+            "T4 Threat Scanner: Scan intel lasts longer on wounded elites",
+            "T5 Tactical Grid: Tactical grid stacks scan intel and shared focus",
+            "T6 Keystone: Threat scans build intel and sharpen focus fire",
+            "M Mastery: Mastery improves uptime and control coverage"
+          ],
+          "name": "Signal Tower",
+          "primary_mechanic": "threat scan",
+          "role": "Shared targeting and threat scan intel",
+          "short": "ST",
+          "signature": "tactical_scan_grid",
+          "synergy": "Pairs with burst towers and painted targets",
+          "tags": [
+            "threat_scan",
+            "control",
+            "targeting",
+            "mark"
+          ],
+          "tiers": {
+            "3": "Signal Tower",
+            "4": "Threat Scanner",
+            "5": "Tactical Grid"
+          },
+          "upgrade_effects": {
+            "10": "Focus damage +5%",
+            "3": "Scan stacks +1",
+            "4": "Scan duration +0.6s",
+            "5": "Painted damage +3%",
+            "6": "Scan targets +1",
+            "7": "Scan duration +0.4s",
+            "8": "Painted damage +4%",
+            "9": "Scan cap +1"
+          }
+        },
+        "war_banner": {
+          "color": [
+            245,
+            225,
+            145
+          ],
+          "descriptions": {
+            "3": "Aura adds damage and fire-rate buffs",
+            "4": "Command post extends range support",
+            "5": "Battle standard strengthens all aura stats"
+          },
+          "effect_preview": "Strong aura buffs that ramp on nearby kills and command pulses to a second ally.",
+          "focus": "utility",
+          "keystone": "Aura buffs reward tight tower clusters and command pulses",
+          "late_descriptions": {
+            "10": "Battle standard mastery keeps dense defenses empowered",
+            "6": "War Banner paragon unlocks command pulses",
+            "7": "Aura buffs last longer on nearby towers",
+            "8": "Damage and fire-rate buffs improve together",
+            "9": "Command range support reaches more clustered towers"
+          },
+          "mastery": "Mastery improves team support and consistency",
+          "mechanics": [
+            "aura",
+            "damage_buff",
+            "rate_buff",
+            "range_buff"
+          ],
+          "milestones": [
+            "T3 War Banner: Aura adds damage and fire-rate buffs",
+            "T4 Command Post: Command post extends range support",
+            "T5 Battle Standard: Battle standard strengthens all aura stats",
+            "T6 Keystone: Aura buffs reward tight tower clusters and command pulses",
+            "M Mastery: Mastery improves team support and consistency"
+          ],
+          "name": "War Banner",
+          "primary_mechanic": "war aura",
+          "role": "Damage, rate, and range aura that rallies into command pulses",
+          "short": "WB",
+          "signature": "steady_war_aura",
+          "synergy": "Pairs with dense tower clusters",
+          "tags": [
+            "utility",
+            "aura",
+            "buff"
+          ],
+          "tiers": {
+            "3": "War Banner",
+            "4": "Command Post",
+            "5": "Battle Standard"
+          },
+          "upgrade_effects": {
+            "10": "Aura uptime +1.0s",
+            "3": "Aura damage +4%",
+            "4": "Aura range +0.8s",
+            "5": "Aura strength +6%",
+            "6": "Command pulse unlocks",
+            "7": "Extra ally pulse",
+            "8": "Damage/rate +3%",
+            "9": "Range buff +5%"
+          }
+        }
+      },
+      "tesla": {
+        "battery_grid": {
+          "color": [
+            245,
+            225,
+            130
+          ],
+          "descriptions": {
+            "3": "Stores charge on the strongest nearby towers",
+            "4": "Charge relay builds resonance and buff uptime",
+            "5": "Power network deepens the linked defense loop"
+          },
+          "effect_preview": "Stores charge on priority towers and deepens resonance-driven overclock pulses.",
+          "focus": "utility",
+          "keystone": "Resonance turns charge into stronger overclock pulses",
+          "late_descriptions": {
+            "10": "Power network mastery keeps clustered towers overclocked",
+            "6": "Battery paragon keeps the strongest towers charged longer",
+            "7": "Charge pulses build resonance faster",
+            "8": "Linked towers keep resonance stacked longer",
+            "9": "Charge relay adds damage to favored defenses"
+          },
+          "mastery": "Mastery improves team support and consistency",
+          "mechanics": [
+            "resonance",
+            "overclock",
+            "charge",
+            "aura"
+          ],
+          "milestones": [
+            "T3 Battery Grid: Stores charge on the strongest nearby towers",
+            "T4 Charge Relay: Charge relay builds resonance and buff uptime",
+            "T5 Power Network: Power network deepens the linked defense loop",
+            "T6 Keystone: Resonance turns charge into stronger overclock pulses",
+            "M Mastery: Mastery improves team support and consistency"
+          ],
+          "name": "Battery Grid",
+          "primary_mechanic": "charge resonance",
+          "role": "Charge-linked resonance network",
+          "short": "BG",
+          "signature": "charge_overclock_pulse",
+          "synergy": "Pairs with resonance, charged towers, and repeated support pulses",
+          "tags": [
+            "resonance",
+            "utility",
+            "energy",
+            "aura"
+          ],
+          "tiers": {
+            "3": "Battery Grid",
+            "4": "Charge Relay",
+            "5": "Power Network"
+          },
+          "upgrade_effects": {
+            "10": "Network uptime +1.0s",
+            "3": "Resonance +1",
+            "4": "Charge duration +0.6s",
+            "5": "Network radius +20",
+            "6": "Pulse strength +12%",
+            "7": "Pulse interval -0.3s",
+            "8": "Resonance cap +1",
+            "9": "Damage overclock +4%"
+          }
+        },
+        "chain_lightning": {
+          "color": [
+            255,
+            240,
+            95
+          ],
+          "descriptions": {
+            "3": "Lightning builds storm webs on hit",
+            "4": "Storm pulses improve anti-air control",
+            "5": "Thunder web increases chain coverage"
+          },
+          "effect_preview": "Lightning builds storm webs that jump farther and hit flying packs harder.",
+          "focus": "damage",
+          "keystone": "Storm webs widen chain lightning through packed waves",
+          "late_descriptions": {
+            "10": "Thunder web mastery covers wider packed waves",
+            "6": "Chain paragon builds storm webs faster",
+            "7": "Storm webs jump one more clustered target",
+            "8": "Storm pulses hit flying enemies harder",
+            "9": "Lightning retains more damage after each jump"
+          },
+          "mastery": "Mastery adds higher priority-target damage",
+          "mechanics": [
+            "storm_web",
+            "chain",
+            "anti_air",
+            "storm_pulse"
+          ],
+          "milestones": [
+            "T3 Chain Lightning: Lightning builds storm webs on hit",
+            "T4 Storm Pulse: Storm pulses improve anti-air control",
+            "T5 Thunder Web: Thunder web increases chain coverage",
+            "T6 Keystone: Storm webs widen chain lightning through packed waves",
+            "M Mastery: Mastery adds higher priority-target damage"
+          ],
+          "name": "Chain Lightning",
+          "primary_mechanic": "storm webs",
+          "role": "Storm webs and anti-air arcs",
+          "short": "CL",
+          "signature": "storm_web_arc",
+          "synergy": "Pairs with storm webs, chain arcs, and clustered waves",
+          "tags": [
+            "storm",
+            "chain",
+            "anti_air",
+            "damage"
+          ],
+          "tiers": {
+            "3": "Chain Lightning",
+            "4": "Storm Pulse",
+            "5": "Thunder Web"
+          },
+          "upgrade_effects": {
+            "10": "Extra arc +1",
+            "3": "Storm web +1",
+            "4": "Chain range +10",
+            "5": "Storm burst unlocks",
+            "6": "Web cap +1",
+            "7": "Chain targets +1",
+            "8": "Anti-air damage +10%",
+            "9": "Storm duration +0.5s"
+          }
+        },
+        "magnet_tech": {
+          "color": [
+            210,
+            190,
+            255
+          ],
+          "descriptions": {
+            "3": "Magnet hits stack gravity charge on nearby enemies",
+            "4": "EMP strips shields and clusters packs",
+            "5": "Gravity storm improves stacking control"
+          },
+          "effect_preview": "Clusters enemies, stacks magnetization, and builds gravity charge for wider EMP bursts.",
+          "focus": "weird",
+          "keystone": "Gravity charge widens EMP bursts and pull pressure",
+          "late_descriptions": {
+            "10": "Gravity storm mastery sets up splash kill zones",
+            "6": "Magnet paragon stacks gravity charge faster and pulls harder",
+            "7": "Gravity pulses cluster more enemies",
+            "8": "EMP bursts hit more shielded targets nearby",
+            "9": "Pulled enemies remain slowed longer"
+          },
+          "mastery": "Mastery strengthens the branch's special mechanic",
+          "mechanics": [
+            "pull",
+            "emp",
+            "cluster",
+            "gravity_charge"
+          ],
+          "milestones": [
+            "T3 Magnet Tech: Magnet hits stack gravity charge on nearby enemies",
+            "T4 EMP Coil: EMP strips shields and clusters packs",
+            "T5 Gravity Storm: Gravity storm improves stacking control",
+            "T6 Keystone: Gravity charge widens EMP bursts and pull pressure",
+            "M Mastery: Mastery strengthens the branch's special mechanic"
+          ],
+          "name": "Magnet Tech",
+          "primary_mechanic": "gravity EMP",
+          "role": "Builds magnetization stacks and gravity charge for EMP bursts",
+          "short": "MT",
+          "signature": "gravity_emp",
+          "synergy": "Pairs with splash and hazard paths",
+          "tags": [
+            "weird",
+            "magnet",
+            "emp"
+          ],
+          "tiers": {
+            "3": "Magnet Tech",
+            "4": "EMP Coil",
+            "5": "Gravity Storm"
+          },
+          "upgrade_effects": {
+            "10": "Storm radius +18",
+            "3": "Magnet stacks +1",
+            "4": "EMP strip +1 shield",
+            "5": "Gravity targets +2",
+            "6": "Gravity charge +1",
+            "7": "EMP radius +16",
+            "8": "EMP duration +0.4s",
+            "9": "Gravity slow +0.3s"
+          }
+        }
+      }
+    },
+    "branch_unlock_level": 3,
+    "legacy_aliases": {
+      "flame": [
+        "cannon",
+        "terraformer"
+      ],
+      "gold": [
+        "support",
+        "research_lab"
+      ],
+      "mortar": [
+        "cannon",
+        "artillery"
+      ]
+    },
+    "required_branch_keys": [
+      "name",
+      "short",
+      "role",
+      "effect_preview",
+      "mechanics",
+      "tags",
+      "color",
+      "tiers",
+      "descriptions",
+      "signature",
+      "primary_mechanic",
+      "late_descriptions",
+      "upgrade_effects",
+      "focus",
+      "keystone",
+      "synergy",
+      "mastery",
+      "milestones"
+    ],
+    "required_tower_keys": [
+      "label",
+      "short",
+      "role",
+      "good_vs",
+      "weakness",
+      "color",
+      "range_color",
+      "projectile_color",
+      "tiers",
+      "descriptions",
+      "paragon"
+    ],
+    "root_tower_ids": [
+      "archer",
+      "sniper",
+      "machine_gun",
+      "cannon",
+      "frost",
+      "tesla",
+      "poison",
+      "barracks",
+      "support"
+    ],
+    "shop_costs": {
+      "archer": 50,
+      "barracks": 65,
+      "cannon": 80,
+      "flame": 95,
+      "frost": 80,
+      "gold": 110,
+      "machine_gun": 70,
+      "mortar": 120,
+      "poison": 85,
+      "sniper": 100,
+      "support": 100,
+      "tesla": 70
+    },
+    "shop_order": [
+      "machine_gun",
+      "cannon",
+      "frost",
+      "poison",
+      "support",
+      "sniper",
+      "tesla",
+      "barracks"
+    ],
+    "target_modes": [
+      "first",
+      "last",
+      "strongest",
+      "weakest",
+      "closest",
+      "flying"
+    ],
+    "tower_types": {
+      "archer": {
+        "branch_mechanics": {
+          "beastmaster": [
+            "pack",
+            "pet_hit",
+            "hold",
+            "assist"
+          ],
+          "deadeye": [
+            "mark",
+            "crit",
+            "boss_pressure",
+            "focus_chain"
+          ],
+          "trapline": [
+            "trap",
+            "poison",
+            "slow",
+            "anti_regen"
+          ]
+        },
+        "branch_options": [
+          "deadeye",
+          "trapline",
+          "beastmaster"
+        ],
+        "branch_tiers": {
+          "beastmaster": {
+            "3": "Beastmaster Rangers",
+            "4": "Wolf Pack",
+            "5": "Bearwarden Patrol"
+          },
+          "deadeye": {
+            "3": "Deadeye Rangers",
+            "4": "Critline Patrol",
+            "5": "Boss Stalkers"
+          },
+          "trapline": {
+            "3": "Trapline Rangers",
+            "4": "Venom Netters",
+            "5": "Wildwood Snareline"
+          }
+        },
+        "color": [
+          90,
+          180,
+          95
+        ],
+        "descriptions": {
+          "2": "Reliable arrows and balanced stats",
+          "3": "Longer range and stronger arrows",
+          "4": "Focused shots against priority targets",
+          "5": "Fast elite arrows with high range"
+        },
+        "family": "Ranger Family",
+        "family_theme": "Flexible precision, traps, pets",
+        "good_vs": "Normal waves and mixed pressure",
+        "label": "Archer",
+        "paragon": "Windrunner Tower",
+        "projectile_color": [
+          210,
+          160,
+          90
+        ],
+        "range_color": [
+          130,
+          220,
+          140
+        ],
+        "role": "Balanced single-target",
+        "short": "A",
+        "synergies": [
+          "assist",
+          "boss",
+          "control",
+          "damage",
+          "mark",
+          "pack",
+          "pet",
+          "poison",
+          "trap",
+          "weird"
+        ],
+        "tags": [
+          "assist",
+          "boss",
+          "control",
+          "damage",
+          "mark",
+          "pack",
+          "pet",
+          "poison",
+          "trap",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Ranger Tower",
+          "3": "Longbow Tower",
+          "4": "Marksman Tower",
+          "5": "Elite Ranger"
+        },
+        "weakness": "No splash or special control"
+      },
+      "barracks": {
+        "branch_mechanics": {
+          "champions": [
+            "hold",
+            "melee",
+            "elite_duel"
+          ],
+          "engineers": [
+            "trap",
+            "mine",
+            "repair",
+            "barricade",
+            "fortify"
+          ],
+          "mercenary_guild": [
+            "bounty",
+            "contract",
+            "ledger",
+            "danger_pay"
+          ]
+        },
+        "branch_options": [
+          "champions",
+          "engineers",
+          "mercenary_guild"
+        ],
+        "branch_tiers": {
+          "champions": {
+            "3": "Champion Guard",
+            "4": "Fortress Duelists",
+            "5": "Elite Garrison"
+          },
+          "engineers": {
+            "3": "Engineer Crew",
+            "4": "Spike Strip",
+            "5": "Minefield Crew"
+          },
+          "mercenary_guild": {
+            "3": "Mercenary Guild",
+            "4": "Contract Board",
+            "5": "Danger Pay Office"
+          }
+        },
+        "color": [
+          185,
+          145,
+          85
+        ],
+        "descriptions": {
+          "2": "Guards slow nearby ground enemies",
+          "3": "Veterans hold enemies longer",
+          "4": "Shield wall weakens enemy damage taken",
+          "5": "Champions deal steady melee damage"
+        },
+        "family": "Garrison Family",
+        "family_theme": "Guards, engineers, mercenaries",
+        "good_vs": "Ground lanes and slowing pushes",
+        "label": "Garrison",
+        "paragon": "Fortress Gate",
+        "projectile_color": [
+          210,
+          180,
+          120
+        ],
+        "range_color": [
+          220,
+          185,
+          120
+        ],
+        "role": "Holds ground enemies",
+        "short": "GAR",
+        "synergies": [
+          "control",
+          "danger_pay",
+          "duel",
+          "economy",
+          "fortify",
+          "hold",
+          "ledger",
+          "melee",
+          "mine",
+          "trap",
+          "utility",
+          "weird"
+        ],
+        "tags": [
+          "control",
+          "danger_pay",
+          "duel",
+          "economy",
+          "fortify",
+          "hold",
+          "ledger",
+          "melee",
+          "mine",
+          "trap",
+          "utility",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Guard Post",
+          "3": "Veteran Guards",
+          "4": "Shield Wall",
+          "5": "Champion Garrison"
+        },
+        "weakness": "Cannot attack flying enemies"
+      },
+      "cannon": {
+        "branch_mechanics": {
+          "artillery": [
+            "splash",
+            "mortar",
+            "cluster",
+            "barrage"
+          ],
+          "demolition": [
+            "breach",
+            "shield_break",
+            "vulnerable",
+            "armor_break"
+          ],
+          "terraformer": [
+            "hazard",
+            "burn",
+            "slow",
+            "crater"
+          ]
+        },
+        "branch_options": [
+          "artillery",
+          "demolition",
+          "terraformer"
+        ],
+        "branch_tiers": {
+          "artillery": {
+            "3": "Artillery Battery",
+            "4": "Cluster Shells",
+            "5": "Map Bombardment"
+          },
+          "demolition": {
+            "3": "Demolition Crew",
+            "4": "Shield Cracker",
+            "5": "Breach Detonator"
+          },
+          "terraformer": {
+            "3": "Terraformer",
+            "4": "Lava Craters",
+            "5": "Molten Kill Zone"
+          }
+        },
+        "color": [
+          150,
+          105,
+          70
+        ],
+        "descriptions": {
+          "2": "Explosive shots hit groups",
+          "3": "Bigger shells and wider splash",
+          "4": "Siege blasts weaken armor",
+          "5": "Huge area explosions"
+        },
+        "family": "Siege Family",
+        "family_theme": "Splash, armor break, terrain denial",
+        "good_vs": "Grouped enemies and tanks",
+        "label": "Artillery",
+        "paragon": "Artillery Core",
+        "projectile_color": [
+          80,
+          70,
+          60
+        ],
+        "range_color": [
+          200,
+          150,
+          95
+        ],
+        "role": "Slow massive AoE",
+        "short": "ART",
+        "synergies": [
+          "armor",
+          "barrage",
+          "breach",
+          "burn",
+          "burst",
+          "damage",
+          "hazard",
+          "mortar",
+          "splash",
+          "utility",
+          "weird"
+        ],
+        "tags": [
+          "armor",
+          "barrage",
+          "breach",
+          "burn",
+          "burst",
+          "damage",
+          "hazard",
+          "mortar",
+          "splash",
+          "utility",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Artillery Tower",
+          "3": "Heavy Battery",
+          "4": "Siege Platform",
+          "5": "Earthshaker"
+        },
+        "weakness": "Fast leaks and flying enemies"
+      },
+      "flame": {
+        "color": [
+          225,
+          95,
+          45
+        ],
+        "descriptions": {
+          "2": "Burns enemies in close range",
+          "3": "Longer burn and hotter flame",
+          "4": "Inferno splash hits nearby ground",
+          "5": "Dragon fire leaves strong burn"
+        },
+        "good_vs": "Packed ground enemies",
+        "label": "Flame",
+        "legacy_alias_for": "cannon",
+        "legacy_branch": "terraformer",
+        "paragon": "Sun Forge",
+        "projectile_color": [
+          255,
+          120,
+          45
+        ],
+        "range_color": [
+          255,
+          145,
+          80
+        ],
+        "role": "Short-range burn damage",
+        "short": "FL",
+        "tiers": {
+          "2": "Flame Tower",
+          "3": "Firestream",
+          "4": "Inferno Tower",
+          "5": "Dragon Furnace"
+        },
+        "weakness": "Short range and no anti-air"
+      },
+      "frost": {
+        "branch_mechanics": {
+          "glacier": [
+            "slow",
+            "freeze",
+            "cryo_prison"
+          ],
+          "shatter": [
+            "freeze",
+            "shatter",
+            "burst"
+          ],
+          "time_control": [
+            "stasis",
+            "slow_motion",
+            "rewind"
+          ]
+        },
+        "branch_options": [
+          "glacier",
+          "shatter",
+          "time_control"
+        ],
+        "branch_tiers": {
+          "glacier": {
+            "3": "Glacier Tower",
+            "4": "Cryo Prison",
+            "5": "Deep Freeze"
+          },
+          "shatter": {
+            "3": "Shatter Tower",
+            "4": "Ice Fracture",
+            "5": "Crystal Detonation"
+          },
+          "time_control": {
+            "3": "Time Control",
+            "4": "Stasis Field",
+            "5": "Rewind Engine"
+          }
+        },
+        "color": [
+          90,
+          175,
+          225
+        ],
+        "descriptions": {
+          "2": "Slows enemies on hit",
+          "3": "Ice shards slow harder",
+          "4": "Blizzard slows nearby enemies",
+          "5": "Cryo hits briefly freeze targets"
+        },
+        "family": "Cryo Family",
+        "family_theme": "Slow, freeze, shatter, time control",
+        "good_vs": "Fast enemies and boss control",
+        "label": "Frost",
+        "paragon": "Glacier Core",
+        "projectile_color": [
+          175,
+          240,
+          255
+        ],
+        "range_color": [
+          150,
+          225,
+          255
+        ],
+        "role": "Slow and freeze control",
+        "short": "F",
+        "synergies": [
+          "burst",
+          "control",
+          "damage",
+          "freeze",
+          "slow",
+          "stasis",
+          "time",
+          "weird"
+        ],
+        "tags": [
+          "burst",
+          "control",
+          "damage",
+          "freeze",
+          "slow",
+          "stasis",
+          "time",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Frost Tower",
+          "3": "Ice Shard Tower",
+          "4": "Blizzard Tower",
+          "5": "Cryo Engine"
+        },
+        "weakness": "Lower raw damage"
+      },
+      "gold": {
+        "color": [
+          220,
+          180,
+          65
+        ],
+        "descriptions": {
+          "2": "Weak shots and small income over time",
+          "3": "Minting improves income and range",
+          "4": "Treasury earns more during waves",
+          "5": "Royal Vault generates strong income"
+        },
+        "good_vs": "Long games and early economy",
+        "label": "Gold",
+        "legacy_alias_for": "support",
+        "legacy_branch": "research_lab",
+        "paragon": "Golden Engine",
+        "projectile_color": [
+          255,
+          220,
+          90
+        ],
+        "range_color": [
+          255,
+          220,
+          110
+        ],
+        "role": "Weak damage plus bonus income",
+        "short": "$",
+        "tiers": {
+          "2": "Gold Tower",
+          "3": "Mint Tower",
+          "4": "Treasury Tower",
+          "5": "Royal Vault"
+        },
+        "weakness": "Poor emergency damage"
+      },
+      "machine_gun": {
+        "branch_mechanics": {
+          "ammo_fabricator": [
+            "adaptive_ammo"
+          ],
+          "suppression": [
+            "pin",
+            "slow",
+            "panic",
+            "burst"
+          ],
+          "vulcan": [
+            "heat",
+            "spin_up",
+            "fire_rate",
+            "overheat",
+            "dps"
+          ]
+        },
+        "branch_options": [
+          "vulcan",
+          "suppression",
+          "ammo_fabricator"
+        ],
+        "branch_tiers": {
+          "ammo_fabricator": {
+            "3": "Ammo Fabricator",
+            "4": "Tracer Foundry",
+            "5": "Adaptive Arsenal"
+          },
+          "suppression": {
+            "3": "Suppression Team",
+            "4": "Pinning Fire",
+            "5": "Panic Zone"
+          },
+          "vulcan": {
+            "3": "Vulcan",
+            "4": "Rotary Engine",
+            "5": "Bullet Tempest"
+          }
+        },
+        "color": [
+          95,
+          115,
+          125
+        ],
+        "descriptions": {
+          "2": "Rapid shots, low damage per bullet",
+          "3": "Twin barrels increase fire rate",
+          "4": "Minigun fire shreds swarms",
+          "5": "Bullet Storm fires extremely fast"
+        },
+        "family": "Ballistics Family",
+        "family_theme": "Fire-rate, ammo types, suppression",
+        "good_vs": "Swarms and low-health enemies",
+        "label": "Gunner",
+        "paragon": "Vulcan Tower",
+        "projectile_color": [
+          255,
+          225,
+          100
+        ],
+        "range_color": [
+          145,
+          165,
+          175
+        ],
+        "role": "Fast single-target DPS",
+        "short": "GUN",
+        "synergies": [
+          "ammo",
+          "burst",
+          "control",
+          "damage",
+          "heat",
+          "pin",
+          "rapid",
+          "swarm",
+          "targeting"
+        ],
+        "tags": [
+          "ammo",
+          "burst",
+          "control",
+          "damage",
+          "heat",
+          "pin",
+          "rapid",
+          "swarm",
+          "targeting"
+        ],
+        "tiers": {
+          "2": "Gunner Nest",
+          "3": "Twin Barrel",
+          "4": "Minigun Tower",
+          "5": "Bullet Storm"
+        },
+        "weakness": "Heavy armor and shields"
+      },
+      "mortar": {
+        "color": [
+          115,
+          105,
+          90
+        ],
+        "descriptions": {
+          "2": "Huge range with a minimum range",
+          "3": "Heavier shells and wider splash",
+          "4": "Siege blasts punish clusters",
+          "5": "Bombardment hits a large area"
+        },
+        "good_vs": "Clustered enemies far away",
+        "label": "Mortar",
+        "legacy_alias_for": "cannon",
+        "legacy_branch": "artillery",
+        "paragon": "Meteor Battery",
+        "projectile_color": [
+          105,
+          95,
+          80
+        ],
+        "range_color": [
+          195,
+          175,
+          135
+        ],
+        "role": "Huge range, slow splash",
+        "short": "MO",
+        "tiers": {
+          "2": "Mortar Pit",
+          "3": "Heavy Mortar",
+          "4": "Siege Mortar",
+          "5": "Bombardment Core"
+        },
+        "weakness": "Cannot hit close or flying enemies"
+      },
+      "poison": {
+        "branch_mechanics": {
+          "plague_mist": [
+            "poison",
+            "slow",
+            "trap",
+            "contagion"
+          ],
+          "venom_cask": [
+            "toxin",
+            "poison",
+            "anti_regen",
+            "boss_pressure"
+          ],
+          "wildfire": [
+            "burn",
+            "ignite",
+            "hazard",
+            "splash"
+          ]
+        },
+        "branch_options": [
+          "venom_cask",
+          "wildfire",
+          "plague_mist"
+        ],
+        "branch_tiers": {
+          "plague_mist": {
+            "3": "Plague Mist",
+            "4": "Spore Net",
+            "5": "Contagion Engine"
+          },
+          "venom_cask": {
+            "3": "Venom Cask",
+            "4": "Toxin Still",
+            "5": "Manticore Flask"
+          },
+          "wildfire": {
+            "3": "Wildfire",
+            "4": "Caustic Flame",
+            "5": "Scorch Bloom"
+          }
+        },
+        "color": [
+          105,
+          190,
+          85
+        ],
+        "descriptions": {
+          "2": "Poisons enemies for damage over time",
+          "3": "Stronger poison lasts longer",
+          "4": "Poison spreads to nearby enemies",
+          "5": "Bio toxins melt high-health targets"
+        },
+        "family": "Venom Family",
+        "family_theme": "Poison, burn, and spreading debuffs",
+        "good_vs": "Tanks, bosses, and regeneration",
+        "label": "Venom",
+        "paragon": "Venom Core",
+        "projectile_color": [
+          125,
+          235,
+          95
+        ],
+        "range_color": [
+          150,
+          235,
+          125
+        ],
+        "role": "Burn and poison DoT",
+        "short": "VEN",
+        "synergies": [
+          "boss",
+          "contagion",
+          "control",
+          "damage",
+          "hazard",
+          "poison",
+          "slow",
+          "splash",
+          "toxin"
+        ],
+        "tags": [
+          "boss",
+          "contagion",
+          "control",
+          "damage",
+          "hazard",
+          "poison",
+          "slow",
+          "splash",
+          "toxin"
+        ],
+        "tiers": {
+          "2": "Venom Tower",
+          "3": "Toxic Spitter",
+          "4": "Plague Tower",
+          "5": "Bio Reactor"
+        },
+        "weakness": "Fast swarms can outrun the damage"
+      },
+      "sniper": {
+        "branch_mechanics": {
+          "railgun": [
+            "seam_pressure",
+            "pierce",
+            "shield_break",
+            "boss_pressure"
+          ],
+          "spotter": [
+            "paint",
+            "mark",
+            "relay",
+            "shared_targeting",
+            "marked_reward"
+          ],
+          "time_lag": [
+            "delayed_damage",
+            "echo",
+            "ripple",
+            "detonate"
+          ]
+        },
+        "branch_options": [
+          "railgun",
+          "spotter",
+          "time_lag"
+        ],
+        "branch_tiers": {
+          "railgun": {
+            "3": "Railgun Sniper",
+            "4": "Coil Piercer",
+            "5": "Rail Executor"
+          },
+          "spotter": {
+            "3": "Spotter Sniper",
+            "4": "Weak Point Team",
+            "5": "Forward Observer"
+          },
+          "time_lag": {
+            "3": "Time-Lag Sniper",
+            "4": "Echo Bullet",
+            "5": "Chrono Detonator"
+          }
+        },
+        "color": [
+          120,
+          150,
+          170
+        ],
+        "descriptions": {
+          "2": "Very long range, slow heavy shots",
+          "3": "Pierces armor and shields better",
+          "4": "Headshots deal bonus damage",
+          "5": "Deadeye shots delete priority targets"
+        },
+        "family": "Marksman Family",
+        "family_theme": "Long-range deletion and target painting",
+        "good_vs": "Bosses, armor, and flying",
+        "label": "Sniper",
+        "paragon": "Rail Sniper",
+        "projectile_color": [
+          245,
+          245,
+          230
+        ],
+        "range_color": [
+          170,
+          205,
+          230
+        ],
+        "role": "Huge range, slow high damage",
+        "short": "S",
+        "synergies": [
+          "armor",
+          "boss",
+          "burst",
+          "damage",
+          "mark",
+          "pierce",
+          "relay",
+          "ripple",
+          "targeting",
+          "time",
+          "utility",
+          "weird"
+        ],
+        "tags": [
+          "armor",
+          "boss",
+          "burst",
+          "damage",
+          "mark",
+          "pierce",
+          "relay",
+          "ripple",
+          "targeting",
+          "time",
+          "utility",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Sniper Nest",
+          "3": "Armor Piercer",
+          "4": "Headshot Tower",
+          "5": "Deadeye Tower"
+        },
+        "weakness": "Weak into large swarms"
+      },
+      "support": {
+        "branch_mechanics": {
+          "research_lab": [
+            "research",
+            "discount",
+            "prototype",
+            "gold"
+          ],
+          "signal_tower": [
+            "paint",
+            "shared_targeting",
+            "threat_scan"
+          ],
+          "war_banner": [
+            "aura",
+            "damage_buff",
+            "rate_buff",
+            "range_buff"
+          ]
+        },
+        "branch_options": [
+          "war_banner",
+          "research_lab",
+          "signal_tower"
+        ],
+        "branch_tiers": {
+          "research_lab": {
+            "3": "Tech Lab",
+            "4": "Prototype Desk",
+            "5": "Adaptive Institute"
+          },
+          "signal_tower": {
+            "3": "Signal Tower",
+            "4": "Threat Scanner",
+            "5": "Tactical Grid"
+          },
+          "war_banner": {
+            "3": "War Banner",
+            "4": "Command Post",
+            "5": "Battle Standard"
+          }
+        },
+        "color": [
+          200,
+          185,
+          105
+        ],
+        "descriptions": {
+          "2": "Builds mana and casts tower buffs",
+          "3": "Casts faster and marks priority enemies",
+          "4": "Buffs last longer",
+          "5": "Stronger targeted support casts"
+        },
+        "family": "Channeler Family",
+        "family_theme": "Mana casts, buffs, and priority debuffs",
+        "good_vs": "Dense tower clusters",
+        "label": "Channeler",
+        "paragon": "High Conduit",
+        "projectile_color": [
+          245,
+          225,
+          145
+        ],
+        "range_color": [
+          245,
+          225,
+          145
+        ],
+        "role": "Casts buffs and debuffs",
+        "short": "CHN",
+        "synergies": [
+          "aura",
+          "buff",
+          "control",
+          "economy",
+          "mark",
+          "prototype",
+          "research",
+          "targeting",
+          "threat_scan",
+          "utility",
+          "weird"
+        ],
+        "tags": [
+          "aura",
+          "buff",
+          "control",
+          "economy",
+          "mark",
+          "prototype",
+          "research",
+          "targeting",
+          "threat_scan",
+          "utility",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Channeler Tower",
+          "3": "Mana Relay",
+          "4": "Command Focus",
+          "5": "Battle Conduit"
+        },
+        "weakness": "Does not deal direct damage"
+      },
+      "tesla": {
+        "branch_mechanics": {
+          "battery_grid": [
+            "resonance",
+            "overclock",
+            "charge",
+            "aura"
+          ],
+          "chain_lightning": [
+            "storm_web",
+            "chain",
+            "anti_air",
+            "storm_pulse"
+          ],
+          "magnet_tech": [
+            "pull",
+            "emp",
+            "cluster",
+            "gravity_charge"
+          ]
+        },
+        "branch_options": [
+          "chain_lightning",
+          "battery_grid",
+          "magnet_tech"
+        ],
+        "branch_tiers": {
+          "battery_grid": {
+            "3": "Battery Grid",
+            "4": "Charge Relay",
+            "5": "Power Network"
+          },
+          "chain_lightning": {
+            "3": "Chain Lightning",
+            "4": "Storm Pulse",
+            "5": "Thunder Web"
+          },
+          "magnet_tech": {
+            "3": "Magnet Tech",
+            "4": "EMP Coil",
+            "5": "Gravity Storm"
+          }
+        },
+        "color": [
+          230,
+          210,
+          65
+        ],
+        "descriptions": {
+          "2": "Fast electric shots",
+          "3": "Chains to one extra enemy",
+          "4": "Chains to three and hits flying",
+          "5": "Extreme fire rate and stronger chain"
+        },
+        "family": "Storm Family",
+        "family_theme": "Chain lightning, energy, anti-air",
+        "good_vs": "Flying and clustered enemies",
+        "label": "Tesla",
+        "paragon": "Storm Paragon",
+        "projectile_color": [
+          255,
+          245,
+          90
+        ],
+        "range_color": [
+          255,
+          235,
+          105
+        ],
+        "role": "Chain lightning and anti-air",
+        "short": "T",
+        "synergies": [
+          "anti_air",
+          "aura",
+          "chain",
+          "damage",
+          "emp",
+          "energy",
+          "magnet",
+          "resonance",
+          "storm",
+          "utility",
+          "weird"
+        ],
+        "tags": [
+          "anti_air",
+          "aura",
+          "chain",
+          "damage",
+          "emp",
+          "energy",
+          "magnet",
+          "resonance",
+          "storm",
+          "utility",
+          "weird"
+        ],
+        "tiers": {
+          "2": "Tesla Coil",
+          "3": "Chain Coil",
+          "4": "Storm Coil",
+          "5": "Thunder Engine"
+        },
+        "weakness": "Higher cost, lower single hit"
+      }
+    }
+  },
+  "upgrades": {
+    "mastery_upgrade_costs": {
+      "5": 1000,
+      "6": 1800,
+      "7": 3000,
+      "8": 4500,
+      "9": 6500
+    },
+    "mutation_traits": {
+      "armor_piercer": {
+        "color": [
+          190,
+          195,
+          210
+        ],
+        "description": "Bonus vs shields and armor; shield hits count as pierce",
+        "label": "Armor Piercer",
+        "short": "AP"
+      },
+      "corrupted": {
+        "color": [
+          170,
+          90,
+          210
+        ],
+        "description": "Earned in kill zones; bonus vs low-health enemies",
+        "label": "Corrupted",
+        "short": "COR"
+      },
+      "fast_hunter": {
+        "color": [
+          235,
+          95,
+          190
+        ],
+        "description": "Bonus vs fast enemies; hits briefly slow them",
+        "label": "Fast Hunter",
+        "short": "SPD"
+      },
+      "field_medic": {
+        "color": [
+          150,
+          225,
+          145
+        ],
+        "description": "Low-kill tower grants a small nearby damage/rate aura",
+        "label": "Field Medic",
+        "short": "MED"
+      },
+      "sky_watcher": {
+        "color": [
+          165,
+          205,
+          255
+        ],
+        "description": "Learns anti-air and deals bonus to flying enemies",
+        "label": "Sky Watcher",
+        "short": "AIR"
+      },
+      "swarm_reaper": {
+        "color": [
+          240,
+          145,
+          85
+        ],
+        "description": "Bonus vs swarm/split enemies with small cleave",
+        "label": "Swarm Reaper",
+        "short": "SWM"
+      }
+    },
+    "research_upgrade_costs": {
+      "5": 10,
+      "6": 16,
+      "7": 24,
+      "8": 34,
+      "9": 46
+    },
+    "tower_upgrade_costs": {
+      "1": 75,
+      "2": 125,
+      "3": 175,
+      "4": 250
+    }
+  },
+  "waves": {
+    "modifiers": {
+      "armored": {
+        "color": [
+          185,
+          185,
+          205
+        ],
+        "description": "Packets gain extra shield layers and resist damage.",
+        "effects": {
+          "damage_multiplier": 0.8,
+          "shield_hits": 1
+        },
+        "label": "Encrypted",
+        "recommendation": "Encrypted: Sniper or Artillery."
+      },
+      "haste": {
+        "color": [
+          235,
+          95,
+          190
+        ],
+        "description": "Malware packets move faster.",
+        "effects": {
+          "speed_multiplier": 1.22
+        },
+        "label": "Surge",
+        "recommendation": "Surge: Frost or Garrison."
+      },
+      "regen": {
+        "color": [
+          110,
+          220,
+          95
+        ],
+        "description": "Packets regenerate health until cleansed.",
+        "effects": {
+          "regen_scale": 0.012
+        },
+        "label": "Self-Healing",
+        "recommendation": "Self-Healing: Poison or burst."
+      },
+      "split": {
+        "color": [
+          230,
+          135,
+          80
+        ],
+        "description": "Packets split into smaller fragments when deleted.",
+        "effects": {
+          "death_spawns": 1
+        },
+        "label": "Fragmenting",
+        "recommendation": "Fragmenting: Artillery or Gunner."
+      },
+      "volatile": {
+        "color": [
+          255,
+          145,
+          90
+        ],
+        "description": "Packets detonate when deleted.",
+        "effects": {
+          "death_burst_damage_fraction": 0.18,
+          "death_burst_radius": 78
+        },
+        "label": "Volatile",
+        "recommendation": "Volatile: Sniper or Frost."
+      }
+    },
+    "schedule": [
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "normal",
+        "label": "Normal",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 13,
+        "spawn_interval": 0.608,
+        "wave": 1
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "swarm",
+        "label": "Swarm",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 16,
+        "spawn_interval": 0.596,
+        "wave": 2
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "fast",
+        "label": "Fast",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 19,
+        "spawn_interval": 0.584,
+        "wave": 3
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "tank",
+        "label": "Tank",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 22,
+        "spawn_interval": 0.572,
+        "wave": 4
+      },
+      {
+        "boss_count": 1,
+        "commander_count": 0,
+        "enemy_kind": "swarm",
+        "label": "Swarm",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 25,
+        "spawn_interval": 0.56,
+        "wave": 5
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "fast",
+        "label": "Fast",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 28,
+        "spawn_interval": 0.548,
+        "wave": 6
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "tank",
+        "label": "Tank",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 31,
+        "spawn_interval": 0.536,
+        "wave": 7
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 1,
+        "enemy_kind": "normal",
+        "label": "Normal + Encrypted",
+        "modifier": "armored",
+        "modifier_data": {
+          "color": [
+            185,
+            185,
+            205
+          ],
+          "description": "Packets gain extra shield layers and resist damage.",
+          "effects": {
+            "damage_multiplier": 0.8,
+            "shield_hits": 1
+          },
+          "label": "Encrypted",
+          "recommendation": "Encrypted: Sniper or Artillery."
+        },
+        "regular_enemy_count": 34,
+        "spawn_interval": 0.524,
+        "wave": 8
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "swarm",
+        "label": "Swarm + Fragmenting",
+        "modifier": "split",
+        "modifier_data": {
+          "color": [
+            230,
+            135,
+            80
+          ],
+          "description": "Packets split into smaller fragments when deleted.",
+          "effects": {
+            "death_spawns": 1
+          },
+          "label": "Fragmenting",
+          "recommendation": "Fragmenting: Artillery or Gunner."
+        },
+        "regular_enemy_count": 37,
+        "spawn_interval": 0.512,
+        "wave": 9
+      },
+      {
+        "boss_count": 2,
+        "commander_count": 0,
+        "enemy_kind": "tank",
+        "label": "Tank",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 40,
+        "spawn_interval": 0.5,
+        "wave": 10
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "fast",
+        "label": "Fast + Surge",
+        "modifier": "haste",
+        "modifier_data": {
+          "color": [
+            235,
+            95,
+            190
+          ],
+          "description": "Malware packets move faster.",
+          "effects": {
+            "speed_multiplier": 1.22
+          },
+          "label": "Surge",
+          "recommendation": "Surge: Frost or Garrison."
+        },
+        "regular_enemy_count": 43,
+        "spawn_interval": 0.488,
+        "wave": 11
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 1,
+        "enemy_kind": "swarm",
+        "label": "Swarm + Self-Healing",
+        "modifier": "regen",
+        "modifier_data": {
+          "color": [
+            110,
+            220,
+            95
+          ],
+          "description": "Packets regenerate health until cleansed.",
+          "effects": {
+            "regen_scale": 0.012
+          },
+          "label": "Self-Healing",
+          "recommendation": "Self-Healing: Poison or burst."
+        },
+        "regular_enemy_count": 46,
+        "spawn_interval": 0.476,
+        "wave": 12
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "shield",
+        "label": "Shield + Encrypted",
+        "modifier": "armored",
+        "modifier_data": {
+          "color": [
+            185,
+            185,
+            205
+          ],
+          "description": "Packets gain extra shield layers and resist damage.",
+          "effects": {
+            "damage_multiplier": 0.8,
+            "shield_hits": 1
+          },
+          "label": "Encrypted",
+          "recommendation": "Encrypted: Sniper or Artillery."
+        },
+        "regular_enemy_count": 49,
+        "spawn_interval": 0.46399999999999997,
+        "wave": 13
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "shield",
+        "label": "Shield + Fragmenting",
+        "modifier": "split",
+        "modifier_data": {
+          "color": [
+            230,
+            135,
+            80
+          ],
+          "description": "Packets split into smaller fragments when deleted.",
+          "effects": {
+            "death_spawns": 1
+          },
+          "label": "Fragmenting",
+          "recommendation": "Fragmenting: Artillery or Gunner."
+        },
+        "regular_enemy_count": 52,
+        "spawn_interval": 0.45199999999999996,
+        "wave": 14
+      },
+      {
+        "boss_count": 2,
+        "commander_count": 0,
+        "enemy_kind": "tank",
+        "label": "Tank",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 55,
+        "spawn_interval": 0.44,
+        "wave": 15
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 1,
+        "enemy_kind": "fast",
+        "label": "Fast + Surge",
+        "modifier": "haste",
+        "modifier_data": {
+          "color": [
+            235,
+            95,
+            190
+          ],
+          "description": "Malware packets move faster.",
+          "effects": {
+            "speed_multiplier": 1.22
+          },
+          "label": "Surge",
+          "recommendation": "Surge: Frost or Garrison."
+        },
+        "regular_enemy_count": 58,
+        "spawn_interval": 0.428,
+        "wave": 16
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "flying",
+        "label": "Flying + Self-Healing",
+        "modifier": "regen",
+        "modifier_data": {
+          "color": [
+            110,
+            220,
+            95
+          ],
+          "description": "Packets regenerate health until cleansed.",
+          "effects": {
+            "regen_scale": 0.012
+          },
+          "label": "Self-Healing",
+          "recommendation": "Self-Healing: Poison or burst."
+        },
+        "regular_enemy_count": 61,
+        "spawn_interval": 0.416,
+        "wave": 17
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "swarm",
+        "label": "Swarm + Encrypted",
+        "modifier": "armored",
+        "modifier_data": {
+          "color": [
+            185,
+            185,
+            205
+          ],
+          "description": "Packets gain extra shield layers and resist damage.",
+          "effects": {
+            "damage_multiplier": 0.8,
+            "shield_hits": 1
+          },
+          "label": "Encrypted",
+          "recommendation": "Encrypted: Sniper or Artillery."
+        },
+        "regular_enemy_count": 64,
+        "spawn_interval": 0.404,
+        "wave": 18
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "shield",
+        "label": "Shield + Fragmenting",
+        "modifier": "split",
+        "modifier_data": {
+          "color": [
+            230,
+            135,
+            80
+          ],
+          "description": "Packets split into smaller fragments when deleted.",
+          "effects": {
+            "death_spawns": 1
+          },
+          "label": "Fragmenting",
+          "recommendation": "Fragmenting: Artillery or Gunner."
+        },
+        "regular_enemy_count": 67,
+        "spawn_interval": 0.392,
+        "wave": 19
+      },
+      {
+        "boss_count": 3,
+        "commander_count": 0,
+        "enemy_kind": "flying",
+        "label": "Flying",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 70,
+        "spawn_interval": 0.38,
+        "wave": 20
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "armored",
+        "label": "Armored + Volatile",
+        "modifier": "volatile",
+        "modifier_data": {
+          "color": [
+            255,
+            145,
+            90
+          ],
+          "description": "Packets detonate when deleted.",
+          "effects": {
+            "death_burst_damage_fraction": 0.18,
+            "death_burst_radius": 78
+          },
+          "label": "Volatile",
+          "recommendation": "Volatile: Sniper or Frost."
+        },
+        "regular_enemy_count": 73,
+        "spawn_interval": 0.368,
+        "wave": 21
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "tank",
+        "label": "Tank + Self-Healing",
+        "modifier": "regen",
+        "modifier_data": {
+          "color": [
+            110,
+            220,
+            95
+          ],
+          "description": "Packets regenerate health until cleansed.",
+          "effects": {
+            "regen_scale": 0.012
+          },
+          "label": "Self-Healing",
+          "recommendation": "Self-Healing: Poison or burst."
+        },
+        "regular_enemy_count": 76,
+        "spawn_interval": 0.356,
+        "wave": 22
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "fast",
+        "label": "Fast + Encrypted",
+        "modifier": "armored",
+        "modifier_data": {
+          "color": [
+            185,
+            185,
+            205
+          ],
+          "description": "Packets gain extra shield layers and resist damage.",
+          "effects": {
+            "damage_multiplier": 0.8,
+            "shield_hits": 1
+          },
+          "label": "Encrypted",
+          "recommendation": "Encrypted: Sniper or Artillery."
+        },
+        "regular_enemy_count": 79,
+        "spawn_interval": 0.344,
+        "wave": 23
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 1,
+        "enemy_kind": "swarm",
+        "label": "Swarm + Volatile",
+        "modifier": "volatile",
+        "modifier_data": {
+          "color": [
+            255,
+            145,
+            90
+          ],
+          "description": "Packets detonate when deleted.",
+          "effects": {
+            "death_burst_damage_fraction": 0.18,
+            "death_burst_radius": 78
+          },
+          "label": "Volatile",
+          "recommendation": "Volatile: Sniper or Frost."
+        },
+        "regular_enemy_count": 82,
+        "spawn_interval": 0.33199999999999996,
+        "wave": 24
+      },
+      {
+        "boss_count": 3,
+        "commander_count": 0,
+        "enemy_kind": "shield",
+        "label": "Shield",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 85,
+        "spawn_interval": 0.32,
+        "wave": 25
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "flying",
+        "label": "Flying + Surge",
+        "modifier": "haste",
+        "modifier_data": {
+          "color": [
+            235,
+            95,
+            190
+          ],
+          "description": "Malware packets move faster.",
+          "effects": {
+            "speed_multiplier": 1.22
+          },
+          "label": "Surge",
+          "recommendation": "Surge: Frost or Garrison."
+        },
+        "regular_enemy_count": 88,
+        "spawn_interval": 0.308,
+        "wave": 26
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "armored",
+        "label": "Armored + Volatile",
+        "modifier": "volatile",
+        "modifier_data": {
+          "color": [
+            255,
+            145,
+            90
+          ],
+          "description": "Packets detonate when deleted.",
+          "effects": {
+            "death_burst_damage_fraction": 0.18,
+            "death_burst_radius": 78
+          },
+          "label": "Volatile",
+          "recommendation": "Volatile: Sniper or Frost."
+        },
+        "regular_enemy_count": 91,
+        "spawn_interval": 0.296,
+        "wave": 27
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 1,
+        "enemy_kind": "tank",
+        "label": "Tank + Encrypted",
+        "modifier": "armored",
+        "modifier_data": {
+          "color": [
+            185,
+            185,
+            205
+          ],
+          "description": "Packets gain extra shield layers and resist damage.",
+          "effects": {
+            "damage_multiplier": 0.8,
+            "shield_hits": 1
+          },
+          "label": "Encrypted",
+          "recommendation": "Encrypted: Sniper or Artillery."
+        },
+        "regular_enemy_count": 94,
+        "spawn_interval": 0.284,
+        "wave": 28
+      },
+      {
+        "boss_count": 0,
+        "commander_count": 0,
+        "enemy_kind": "fast",
+        "label": "Fast + Fragmenting",
+        "modifier": "split",
+        "modifier_data": {
+          "color": [
+            230,
+            135,
+            80
+          ],
+          "description": "Packets split into smaller fragments when deleted.",
+          "effects": {
+            "death_spawns": 1
+          },
+          "label": "Fragmenting",
+          "recommendation": "Fragmenting: Artillery or Gunner."
+        },
+        "regular_enemy_count": 97,
+        "spawn_interval": 0.27199999999999996,
+        "wave": 29
+      },
+      {
+        "boss_count": 4,
+        "commander_count": 0,
+        "enemy_kind": "swarm",
+        "label": "Swarm",
+        "modifier": null,
+        "modifier_data": null,
+        "regular_enemy_count": 100,
+        "spawn_interval": 0.26,
+        "wave": 30
+      }
+    ]
+  }
+}

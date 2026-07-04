@@ -1,0 +1,8 @@
+.godot/
+.agents/
+.codex/
+*.tmp
+*.log
+__pycache__/
+export/
+build/
