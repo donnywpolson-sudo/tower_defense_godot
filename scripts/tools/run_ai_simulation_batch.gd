@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SCHEMA_VERSION := 4
+const SCHEMA_VERSION := 5
 const DEFAULT_OUTPUT_DIR := "res://.godot/ai_simulation"
 const DEFAULT_SEED := 12345
 const DEFAULT_SEED_COUNT := 1
@@ -14,6 +14,8 @@ const OVERNIGHT_MAX_WAVES := 50
 const STEP_DELTA := 0.2
 const SAMPLED_ACTION_LOG_LIMIT := 80
 const SAMPLED_FLAGGED_RUN_LIMIT := 6
+const COVERAGE_SCOPE := "direct_vertical_slice_api"
+const SCHEMA_BASELINE_TEXT := "Schema 5 starts a new comparison baseline; deltas resume after the next matching schema 5 run."
 const PROFILE_DEFAULTS := {
 	"medium": {"runs": MEDIUM_RUNS, "max_waves": MEDIUM_MAX_WAVES, "seed_count": 5, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "standard_research", "full_action_log": false, "compare_previous": true},
 	"deep": {"runs": DEEP_RUNS, "max_waves": DEEP_MAX_WAVES, "seed_count": 8, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "deep_research", "full_action_log": false, "compare_previous": true},
@@ -233,6 +235,8 @@ func _run_batch() -> Dictionary:
 	var options := _parse_options()
 	if not str(options.get("error", "")).is_empty():
 		return {"ok": false, "errors": [options["error"]]}
+	if not str(options.get("metadata_fixture", "")).is_empty():
+		return _run_metadata_fixture(options)
 
 	var game := _create_game()
 	game.reset_slice()
@@ -304,6 +308,7 @@ func _run_batch() -> Dictionary:
 		"regression": {},
 		"recommendations": _build_recommendations(summary, issues),
 	}
+	_apply_late_report_metadata(report)
 	var previous_report: Dictionary = _load_previous_latest_report(str(options["output_dir"])) if bool(options["compare_previous"]) else {}
 	report["regression"] = _build_regression(report, previous_report)
 
@@ -375,6 +380,79 @@ func _preflight_issues(preflight: Dictionary) -> Array:
 	return issues
 
 
+func _run_metadata_fixture(options: Dictionary) -> Dictionary:
+	var fixture := str(options.get("metadata_fixture", "")).to_lower()
+	var issues: Array = []
+	if fixture == "known_gap":
+		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "frost"}))
+	elif fixture == "balance_empty":
+		pass
+	elif fixture not in ["smoke", "medium", "schema4_previous", "label_only_previous"]:
+		return {"ok": false, "errors": ["Unsupported metadata fixture %s." % fixture]}
+
+	_assign_issue_ids(issues)
+	var summary := {
+		"total_runs": int(options["runs"]),
+		"completed_runs": int(options["runs"]),
+		"game_over_runs": 0,
+		"failed_runs": 0,
+		"normal_runs": int(options["runs"]),
+		"synthetic_runs": 0,
+		"issue_counts": {},
+		"severity_counts": {},
+	}
+	var blocked_action_metrics := {
+		"total": 0,
+		"expected_total": 0,
+		"avoidable_total": 0,
+		"by_action": {},
+		"by_reason": {},
+		"expected_by_action": {},
+		"avoidable_by_action": {},
+	}
+	var report := {
+		"schema_version": 4 if fixture == "schema4_previous" else SCHEMA_VERSION,
+		"config": _public_config(options),
+		"preflight": {},
+		"known_limitations": KNOWN_LIMITATIONS.duplicate(),
+		"telemetry_coverage": _build_telemetry_coverage(),
+		"summary": summary,
+		"runs": [],
+		"issues": issues,
+		"strategy_metrics": {},
+		"wave_metrics": {},
+		"tower_metrics": {},
+		"blocked_action_metrics": blocked_action_metrics,
+		"seed_metrics": {},
+		"economy_metrics": {},
+		"damage_metrics": {},
+		"enemy_kind_metrics": {},
+		"boss_commander_metrics": {},
+		"upgrade_branch_metrics": {},
+		"target_mode_metrics": {},
+		"progression_metrics": {},
+		"late_wave_metrics": {},
+		"regression": {},
+		"recommendations": _build_recommendations(summary, issues),
+	}
+	_apply_late_report_metadata(report)
+	var previous_report: Dictionary = _load_previous_latest_report(str(options["output_dir"])) if bool(options["compare_previous"]) else {}
+	report["regression"] = _build_regression(report, previous_report)
+	var write_result := _write_reports(report, str(options["output_dir"]))
+	if not bool(write_result.get("ok", false)):
+		return {"ok": false, "errors": write_result.get("errors", [])}
+	return {
+		"ok": true,
+		"json_path": write_result["json_path"],
+		"markdown_path": write_result["markdown_path"],
+		"prompt_path": write_result["prompt_path"],
+		"visible_prompt_path": write_result["visible_prompt_path"],
+		"archived_previous_count": write_result["archived_previous_count"],
+		"archived_legacy_count": write_result["archived_legacy_count"],
+		"run_count": int(options["runs"]),
+	}
+
+
 func _string_values(values: Array, limit: int) -> Array:
 	var result: Array = []
 	for index in range(min(limit, values.size())):
@@ -427,6 +505,7 @@ func _parse_options() -> Dictionary:
 		"compare_previous": null,
 		"strategies": [],
 		"report_label": "",
+		"metadata_fixture": "",
 		"profile_explicit": false,
 		"raw_user_args": [],
 		"error": "",
@@ -448,7 +527,7 @@ func _parse_options() -> Dictionary:
 		elif normalized_arg == "overnight":
 			options["profile"] = "overnight"
 			options["profile_explicit"] = true
-		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label"]:
+		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture"]:
 			pending_key = normalized_arg
 		elif normalized_arg.begins_with("profile=") or normalized_arg.begins_with("ai-profile=") or normalized_arg.begins_with("ai_profile=") or normalized_arg.begins_with("mode=") or normalized_arg.begins_with("batch-profile=") or normalized_arg.begins_with("batch_profile="):
 			options["profile"] = _arg_value(normalized_arg)
@@ -475,6 +554,8 @@ func _parse_options() -> Dictionary:
 			options["strategies"] = _parse_csv(_arg_value(normalized_arg))
 		elif normalized_arg.begins_with("report-label=") or normalized_arg.begins_with("report_label="):
 			options["report_label"] = _arg_value(str(arg))
+		elif normalized_arg.begins_with("metadata-fixture=") or normalized_arg.begins_with("metadata_fixture="):
+			options["metadata_fixture"] = _arg_value(normalized_arg)
 	if not pending_key.is_empty():
 		options["error"] = "Missing value for --%s." % pending_key
 		return options
@@ -563,6 +644,8 @@ func _apply_option_value(options: Dictionary, key: String, value: String) -> voi
 		options["strategies"] = _parse_csv(normalized_value)
 	elif key in ["report-label", "report_label"]:
 		options["report_label"] = normalized_value
+	elif key in ["metadata-fixture", "metadata_fixture"]:
+		options["metadata_fixture"] = normalized_value
 
 
 func _parse_csv(value: String) -> Array:
@@ -580,6 +663,43 @@ func _strategies_for_group(group: String) -> Array:
 	return STRATEGY_GROUPS[group].duplicate()
 
 
+func _evidence_tier(runs: int, max_waves: int) -> String:
+	if runs >= OVERNIGHT_RUNS and max_waves >= OVERNIGHT_MAX_WAVES:
+		return "overnight"
+	if runs >= DEEP_RUNS and max_waves >= DEEP_MAX_WAVES:
+		return "deep"
+	if runs >= MEDIUM_RUNS and max_waves >= MEDIUM_MAX_WAVES:
+		return "medium"
+	return "smoke"
+
+
+func _default_strategies_for_profile(profile: String) -> Array:
+	var defaults: Dictionary = PROFILE_DEFAULTS.get(profile, {})
+	return _strategies_for_group(str(defaults.get("strategy_group", "default")))
+
+
+func _arrays_equal(left: Array, right: Array) -> bool:
+	if left.size() != right.size():
+		return false
+	for index in range(left.size()):
+		if str(left[index]) != str(right[index]):
+			return false
+	return true
+
+
+func _profile_overridden(options: Dictionary) -> bool:
+	var profile := str(options.get("profile", ""))
+	var defaults: Dictionary = PROFILE_DEFAULTS.get(profile, {})
+	if defaults.is_empty():
+		return true
+	for key in ["runs", "max_waves", "seed_count"]:
+		if int(options.get(key, 0)) != int(defaults.get(key, 0)):
+			return true
+	if str(options.get("strategy_group", "")) != str(defaults.get("strategy_group", "")):
+		return true
+	return not _arrays_equal(options.get("strategies", []), _default_strategies_for_profile(profile))
+
+
 func _public_config(options: Dictionary) -> Dictionary:
 	return {
 		"profile": str(options["profile"]),
@@ -593,6 +713,9 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"full_action_log": bool(options["full_action_log"]),
 		"compare_previous": bool(options["compare_previous"]),
 		"report_label": str(options.get("report_label", "")),
+		"evidence_tier": _evidence_tier(int(options["runs"]), int(options["max_waves"])),
+		"profile_overridden": _profile_overridden(options),
+		"coverage_scope": COVERAGE_SCOPE,
 		"profile_defaults": PROFILE_DEFAULTS.duplicate(true),
 		"strategy_groups": STRATEGY_GROUPS.duplicate(true),
 		"raw_user_args": options.get("raw_user_args", []).duplicate(),
@@ -601,6 +724,17 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"enabled_tower_types": ENABLED_TOWER_TYPES.duplicate(),
 		"unsupported_tower_types": UNSUPPORTED_TOWER_TYPES.duplicate(),
 	}
+
+
+func _apply_late_report_metadata(report: Dictionary) -> void:
+	var config: Dictionary = report.get("config", {})
+	var evidence_tier := str(config.get("evidence_tier", "smoke"))
+	var avoidable_total := int(report.get("blocked_action_metrics", {}).get("avoidable_total", 0))
+	var balance_actionable := evidence_tier in ["medium", "deep", "overnight"] and avoidable_total == 0
+	report["balance_actionable"] = balance_actionable
+	config["balance_actionable"] = balance_actionable
+	config["coverage_scope"] = str(config.get("coverage_scope", COVERAGE_SCOPE))
+	report["config"] = config
 
 
 func _policy_names(strategies: Array) -> Dictionary:
@@ -2440,14 +2574,21 @@ func _build_regression(current: Dictionary, previous: Dictionary) -> Dictionary:
 	var previous_config: Dictionary = previous.get("config", {})
 	result["previous_label"] = str(previous_config.get("report_label", ""))
 	if int(previous.get("schema_version", 0)) != SCHEMA_VERSION:
-		result["reason"] = "Previous report schema was %s; current schema is %s." % [int(previous.get("schema_version", 0)), SCHEMA_VERSION]
+		result["reason"] = "schema migration: establish a new schema 5 baseline."
 		return result
-	for key in ["profile", "strategy_group"]:
+	for key in ["profile", "evidence_tier", "strategy_group"]:
 		if str(previous_config.get(key, "")) != str(current_config.get(key, "")):
-			result["reason"] = "Previous report has different %s." % key
+			result["reason"] = "same family, not comparable: previous report has different %s." % key
 			return result
-	if int(previous_config.get("max_waves", 0)) != int(current_config.get("max_waves", 0)):
-		result["reason"] = "Previous report has different max_waves."
+	for key in ["runs", "max_waves", "seed", "seed_count", "seed_step"]:
+		if int(previous_config.get(key, 0)) != int(current_config.get(key, 0)):
+			result["reason"] = "same family, not comparable: previous report has different %s." % key
+			return result
+	if bool(previous_config.get("full_action_log", false)) != bool(current_config.get("full_action_log", false)):
+		result["reason"] = "same family, not comparable: previous report has different full_action_log."
+		return result
+	if not _arrays_equal(previous_config.get("strategies", []), current_config.get("strategies", [])):
+		result["reason"] = "same family, not comparable: previous report has different strategies."
 		return result
 	result["comparable"] = true
 	result["reason"] = "Compared against previous latest report."
@@ -2711,6 +2852,11 @@ func _render_markdown(report: Dictionary) -> String:
 		lines.append("- Label: `%s`" % str(config.get("report_label", "")))
 	lines.append("## Run configuration")
 	lines.append("- Profile: `%s`" % str(config.get("profile", "")))
+	lines.append("- Evidence tier: `%s`" % str(config.get("evidence_tier", "")))
+	lines.append("- Profile overridden: `%s`" % ("yes" if bool(config.get("profile_overridden", false)) else "no"))
+	lines.append("- Balance actionable: `%s`" % ("yes" if bool(config.get("balance_actionable", false)) else "no"))
+	lines.append("- Coverage scope: `%s`" % str(config.get("coverage_scope", "")))
+	lines.append("- Scope note: this report exercises direct vertical-slice APIs, not `scenes/main.tscn`, full UI wiring, audio, or manual input behavior.")
 	lines.append("- Profile defaults: %s" % _profile_defaults_inline(config.get("profile_defaults", {})))
 	lines.append("- Runs: `%s`" % int(config.get("runs", 0)))
 	lines.append("- Max waves: `%s`" % int(config.get("max_waves", 0)))
@@ -2720,7 +2866,10 @@ func _render_markdown(report: Dictionary) -> String:
 	lines.append("- Output dir: `%s`" % str(config.get("output_dir", "")))
 	lines.append("- Strategies: `%s`" % _join_strings(config.get("strategies", []), "`, `"))
 	lines.append("- Completed/game over/failed: `%s` / `%s` / `%s`" % [int(summary.get("completed_runs", 0)), int(summary.get("game_over_runs", 0)), int(summary.get("failed_runs", 0))])
-	lines.append("- Diagnostic note: treat these findings as bot diagnostics until avoidable blocked actions are low; do not make balance changes from this report alone.")
+	lines.append("- Diagnostic note: audit and verify this report against current code before making changes.")
+	lines.append("- %s" % SCHEMA_BASELINE_TEXT)
+	if str(config.get("evidence_tier", "")) == "smoke":
+		lines.append("- Warning: This is smoke/custom diagnostic evidence and is not balance-actionable.")
 	lines.append("")
 	lines.append("## Canonical preflight")
 	_append_preflight_lines(lines, preflight)
@@ -2777,12 +2926,12 @@ func _render_markdown(report: Dictionary) -> String:
 	_append_frequency_lines(lines, issues, "qol", 12)
 	lines.append("")
 	lines.append("## Balance outliers")
-	_append_issue_lines(lines, issues, "balance", 12)
+	_append_issue_lines_with_empty(lines, issues, "balance", 12, "- No balance outliers met reporting thresholds for this run size.")
 	lines.append("")
 	lines.append("## Validation issues")
 	_append_issue_lines(lines, issues, "validation", 12)
 	lines.append("")
-	lines.append("## Known gaps excluded from bug counts")
+	lines.append("## Do Not Implement From This Prompt Unless Explicitly Requested")
 	for limitation in report.get("known_limitations", []):
 		lines.append("- %s" % str(limitation))
 	_append_frequency_lines(lines, issues, "known_gap", 12)
@@ -2804,11 +2953,11 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	var recommendations: Dictionary = report.get("recommendations", {})
 	var repo_root := _trim_trailing_slashes(ProjectSettings.globalize_path("res://"))
 	var lines: Array = []
-	lines.append("# Codex Prompt: Implement AI Simulation Findings")
+	lines.append("# Codex Prompt: Audit AI Simulation Findings")
 	lines.append("")
-	lines.append("You are working in `%s` on the Godot tower defense project. Implement the confirmed bugs, QoL fixes, balance improvements, and validation improvements implied by the latest AI simulation report." % repo_root)
+	lines.append("You are working in `%s` on the Godot tower defense project. Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code." % repo_root)
 	lines.append("")
-	lines.append("This report is a diagnostic packet from a simulation bot. Treat findings as evidence to verify, not proof, and do not make gameplay balance changes until bot-quality noise is acceptably low.")
+	lines.append("This report is a diagnostic packet from a simulation bot. Treat findings as evidence to verify, not proof. No gameplay or data changes are acceptable when no confirmed issue exists.")
 	lines.append("")
 	lines.append("Use these generated files as the evidence packet:")
 	lines.append("- Full JSON findings: `%s`" % ProjectSettings.globalize_path(json_path))
@@ -2817,6 +2966,7 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("Important constraints:")
 	lines.append("- First inspect the current repo state with `git status --short`.")
 	lines.append("- Treat simulation findings as evidence to verify against current code, not as unquestioned truth.")
+	lines.append("- This report exercises direct vertical-slice APIs, not `scenes/main.tscn`, full UI wiring, audio, or manual input behavior.")
 	lines.append("- Keep changes small, playable, and reviewable. Do not stage, commit, push, delete, or revert unrelated files.")
 	lines.append("- Keep `data/game_data.json` and current gameplay code as the source of truth. Do not move tower, enemy, wave, upgrade, economy, or progression rules into the AI simulation bot.")
 	lines.append("- Use the AI simulation bot for diagnostics, telemetry-style reporting, balance/stress sweeps, save/load torture coverage, and edge-case exploration that consume the current game APIs.")
@@ -2828,6 +2978,10 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	if not str(config.get("report_label", "")).is_empty():
 		lines.append("- Label: `%s`" % str(config.get("report_label", "")))
 	lines.append("- Profile: `%s`" % str(config.get("profile", "")))
+	lines.append("- Evidence tier: `%s`" % str(config.get("evidence_tier", "")))
+	lines.append("- Profile overridden: `%s`" % ("yes" if bool(config.get("profile_overridden", false)) else "no"))
+	lines.append("- Balance actionable: `%s`" % ("yes" if bool(config.get("balance_actionable", false)) else "no"))
+	lines.append("- Coverage scope: `%s`" % str(config.get("coverage_scope", "")))
 	lines.append("- Profile defaults: %s" % _profile_defaults_inline(config.get("profile_defaults", {})))
 	lines.append("- Runs: `%s`" % int(config.get("runs", 0)))
 	lines.append("- Max waves: `%s`" % int(config.get("max_waves", 0)))
@@ -2836,7 +2990,10 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("- Strategy group: `%s`" % str(config.get("strategy_group", "")))
 	lines.append("- Strategies: `%s`" % _join_strings(config.get("strategies", []), "`, `"))
 	lines.append("- Completed/game over/failed: `%s` / `%s` / `%s`" % [int(summary.get("completed_runs", 0)), int(summary.get("game_over_runs", 0)), int(summary.get("failed_runs", 0))])
-	lines.append("- Diagnostic note: avoid treating balance outliers as actionable until repeated deep or overnight runs show low avoidable blocked-action noise.")
+	lines.append("- Diagnostic note: audit and verify this report against current code before making changes.")
+	lines.append("- %s" % SCHEMA_BASELINE_TEXT)
+	if str(config.get("evidence_tier", "")) == "smoke":
+		lines.append("- Warning: This is smoke/custom diagnostic evidence and is not balance-actionable.")
 	lines.append("")
 	lines.append("## Canonical Preflight")
 	_append_preflight_lines(lines, preflight)
@@ -2903,12 +3060,12 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	_append_frequency_lines(lines, issues, "qol", 12)
 	lines.append("")
 	lines.append("## Balance Outliers To Tune")
-	_append_issue_lines(lines, issues, "balance", 12)
+	_append_issue_lines_with_empty(lines, issues, "balance", 12, "- No balance outliers met reporting thresholds for this run size.")
 	lines.append("")
 	lines.append("## Validation Issues To Fix First")
 	_append_issue_lines(lines, issues, "validation", 12)
 	lines.append("")
-	lines.append("## Known Gaps To Avoid Misclassifying")
+	lines.append("## Do Not Implement From This Prompt Unless Explicitly Requested")
 	for limitation in report.get("known_limitations", []):
 		lines.append("- %s" % str(limitation))
 	_append_frequency_lines(lines, issues, "known_gap", 10)
@@ -2921,6 +3078,7 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 		lines.append("")
 	lines.append("## Acceptance Criteria")
 	lines.append("- Implement all confirmed fixes and improvements that are supported by the report and current code.")
+	lines.append("- If no confirmed issue exists, make no gameplay or data changes and report why.")
 	lines.append("- Update or add focused validation for changed behavior.")
 	lines.append("- If the change touches data rules, update `GameData.validate_game_data()` or a focused validator instead of adding one-off bot-only checks.")
 	lines.append("- If the change touches simulation diagnostics only, keep the bot consuming canonical data and current gameplay APIs.")
@@ -3317,6 +3475,10 @@ func _sorted_numeric_string_keys(values: Dictionary) -> Array:
 
 
 func _append_issue_lines(lines: Array, issues: Array, category: String, limit: int) -> void:
+	_append_issue_lines_with_empty(lines, issues, category, limit, "- None recorded.")
+
+
+func _append_issue_lines_with_empty(lines: Array, issues: Array, category: String, limit: int, empty_text: String) -> void:
 	var count := 0
 	for issue in issues:
 		if str(issue.get("category", "")) != category:
@@ -3325,7 +3487,7 @@ func _append_issue_lines(lines: Array, issues: Array, category: String, limit: i
 		if count <= limit:
 			lines.append("- `%s` %s: %s" % [str(issue.get("id", "")), str(issue.get("label", "")), str(issue.get("message", ""))])
 	if count == 0:
-		lines.append("- None recorded.")
+		lines.append(empty_text)
 	elif count > limit:
 		lines.append("- ...and `%s` more. See JSON for details." % (count - limit))
 

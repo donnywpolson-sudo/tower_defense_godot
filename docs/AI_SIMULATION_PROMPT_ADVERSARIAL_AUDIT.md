@@ -98,11 +98,11 @@ Safer workflow:
 - Keep `latest_smoke/`, `latest_medium/`, `latest_deep/`, and `latest_overnight/` separately, or make the launcher tell the user which evidence tier it opened.
 - In the prompt header, include "This is not the strongest available archived report" when larger same-day archived reports exist.
 
-### A4. README and launcher disagree about the prompt path
+### A4. README and launcher disagreed about the prompt path
 
 Severity: medium.
 
-`README.md` tells the user the generated prompt is saved at `codex_prompts\ai_simulation_latest.md`. The current launcher opens `.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md`. `.gitignore` also ignores `codex_prompts/ai_simulation_latest.md`, but the `codex_prompts` directory does not currently exist.
+Earlier audit evidence showed `README.md` pointing to an obsolete visible prompt path while the current launcher opens `.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md`.
 
 Adversarial failure mode:
 
@@ -112,7 +112,7 @@ Adversarial failure mode:
 
 Safer workflow:
 
-- Update README to match `.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md`, or copy the generated prompt to the documented `codex_prompts` path.
+- Update README to match `.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md`, or copy the generated prompt to any documented stable visible path.
 
 ### A5. Regression comparison is under-specified
 
@@ -218,7 +218,7 @@ Safer workflow:
 | Data preflight passed | Latest Markdown and JSON show `data_validation` and `balance_sanity` OK | Proven for current generated run |
 | No bugs/QoL/validation issues were detected | Latest Markdown says none recorded | Proven only within this smoke-sized run |
 | No balance concerns exist | Latest Markdown says no outliers, but sample is too small for broad balance claims | Not proven |
-| Prompt path in README is current | README points to `codex_prompts`, launcher writes `.godot/ai_simulation/latest` | Contradicted |
+| Prompt path in README is current | Earlier audit evidence showed README pointing to an obsolete prompt path while the launcher wrote `.godot/ai_simulation/latest` | Contradicted at audit time |
 | Generated evidence is committed baseline | Git status shows key files untracked/dirty | Contradicted |
 | Full playable scene is validated | Runner instantiates game nodes directly | Not proven |
 | Regression comparison is meaningful | Current report says not comparable due schema mismatch | Not proven |

@@ -55,7 +55,7 @@ To create a Codex-ready balance report:
 The generated prompt is saved here:
 
 ```text
-codex_prompts\ai_simulation_latest.md
+.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md
 ```
 
 This is useful when you want Codex to review balance, wave difficulty, or tower performance.
