@@ -17,32 +17,30 @@ Related evidence:
 
 This is an adversarial audit of the generated Markdown prompt and the workflow that creates it. It assumes a downstream Codex agent may over-trust the prompt, skip verification, or convert weak diagnostics into gameplay edits.
 
+Repo state claims are point-in-time observations and must be rechecked before implementation.
+
 ## Bottom Line
 
-The generated prompt is useful as a local diagnostic packet, but it is not safe to treat as a direct implementation spec. Its strongest parts are the explicit verification constraints, canonical-data guardrails, runtime invariants, and active scenario-probe plumbing. Its weakest parts are evidence maturity, run-size ambiguity, stale path expectations in surrounding validation, and the fact that API-level simulation still does not prove the playable scene, visual clarity, audio feedback, or player comprehension.
+The generated prompt is useful as a local diagnostic packet, but it is not safe to treat as a direct implementation spec. Its strongest parts are the explicit verification constraints, canonical-data guardrails, runtime invariants, timestamped output paths, evidence-tier metadata, stronger-evidence warnings, stricter regression comparison gates, and scenario-probe plumbing. Its weakest parts are evidence maturity, run-size ambiguity, workflow drift risk, and the fact that API-level simulation still does not prove the playable scene, visual clarity, audio feedback, or player comprehension.
 
 The current generated prompt should be used for triage only. It should not drive balance changes or claims of gameplay correctness without fresh verification against the current worktree, a larger comparable run, focused scene/UI validation, screenshot review when visuals matter, and manual playtesting for feel.
 
 ## Current State Snapshot
 
-Observed repo state:
+Observed repo state as of 2026-07-05 refresh:
 
-- Worktree is broadly dirty.
-- `TOWER_DEFENSE_AI_SIMULATION.bat` is untracked.
-- `RUN_AI_SIMULATION_PROMPT.bat` is deleted in the active worktree.
-- `scripts/tools/run_ai_simulation_batch.gd` is modified and now contains schema 6 scenario-probe plumbing.
-- `README.md`, `CODEX_HANDOFF.md`, `project.godot`, gameplay/autoload scripts, and several validation scripts are modified.
-- `data/game_data.json` is not shown as dirty in current `git status --short`; do not repeat older untracked claims without rechecking.
-- `logs/` and generated simulation outputs are untracked/generated local evidence.
-- Treat all of the above as active worktree evidence, not committed baseline.
+- `git status --short` returned no entries from `C:\Users\donny\Desktop\tower_defense_godot`.
+- `TOWER_DEFENSE_AI_SIMULATION.bat` exists in the repo root and is not reported as untracked by current Git status.
+- `scripts/tools/run_ai_simulation_batch.gd`, `scripts/tools/run_ai_prompt_metadata_validation.gd`, `README.md`, and `data/game_data.json` are not reported as dirty by current Git status.
+- Generated simulation outputs under `.godot/ai_simulation/` remain local evidence. A clean worktree does not make a specific generated report a committed baseline or a current implementation spec.
 
 Current runner/output evidence:
 
 - `scripts/tools/run_ai_simulation_batch.gd` writes timestamped root outputs such as `ai_simulation_report_YYYY_MM_DD_HHMM.md`, `ai_simulation_data_YYYY_MM_DD_HHMM.json`, and `ai_simulation_codex_prompt_YYYY_MM_DD_HHMM.md`.
 - Legacy root `ai_simulation_latest.*` files are archived by the runner, and previous-report loading still checks timestamped output plus legacy latest locations.
-- `scripts/tools/run_ai_prompt_metadata_validation.gd` still expects `latest/ai_simulation_latest.*` paths, so metadata validation may be stale relative to current timestamped output behavior.
-- Current script constants indicate schema 6 and `--scenario-probes=auto|off|smoke|full` support, but this remains modified worktree code until validated and committed.
-- Scenario probes should therefore be treated as active/planned diagnostic coverage unless the current run artifacts and validation logs prove they executed successfully.
+- `scripts/tools/run_ai_prompt_metadata_validation.gd` now searches for timestamped fixture outputs with `ai_simulation_data_`, `ai_simulation_report_`, and `ai_simulation_codex_prompt_` prefixes.
+- Current script constants indicate schema 6 and `--scenario-probes=auto|off|smoke|full` support.
+- Scenario probes should still be treated as diagnostic coverage only; they are not full-scene, visual, audio, or manual-play proof.
 
 Important contradiction from earlier generated evidence: a prompt can display profile `medium` while the actual evidence packet is smoke-sized, such as `14` runs and `2` max waves. The run count and max waves may be explicit, but the profile label can still mislead a reader into over-weighting the report.
 
@@ -51,7 +49,7 @@ Important contradiction from earlier generated evidence: a prompt can display pr
 Use these lanes separately. Passing one lane does not imply passing the others.
 
 1. Direct API simulation: deterministic bot/runtime diagnostics through `VerticalSliceGame`. This catches stalls, impossible state, restore failures, leak spikes, rough tower usage imbalance, blocked actions, and batch-level regressions.
-2. Scenario probes: curated tower-family, branch, enemy-kind, and scheduled-wave diagnostics. These improve coverage of specific mechanics, but active worktree scenario probes are not committed baseline unless validated in the current run artifacts.
+2. Scenario probes: curated tower-family, branch, enemy-kind, and scheduled-wave diagnostics. These improve coverage of specific mechanics, but each generated report still needs to show which probe mode ran before its probe results are treated as evidence.
 3. Scene validation: focused Godot checks around `scenes/main.tscn`, autoload wiring, scene reload, input paths, layout snapshots, and viewport-specific UI geometry.
 4. AI screenshot review: real Godot-rendered screenshots or frames reviewed for concrete visual defects only, including overlap, clipped text, contrast, missing assets, blank panels, bad z-order, confusing disabled/selected/hover states, and unclear gameplay feedback.
 5. Manual playtesting: human review for feel, pacing, fun, learnability, player comprehension, subjective balance, and whether choices feel meaningful.
@@ -113,8 +111,8 @@ Adversarial failure mode:
 
 Safer report behavior:
 
-- Add a derived `evidence_tier` such as `smoke`, `custom`, `medium`, `deep`, or `overnight`.
-- If `runs` or `max_waves` differ from profile defaults, render `Profile: medium (custom override: 14 runs / 2 waves)`.
+- Implemented in current code: reports include `evidence_tier` derived from run count and max waves, and `profile_overridden` flags custom run settings.
+- Remaining hardening: keep the visible Markdown wording explicit enough that readers notice a smoke-sized run even when the selected profile is `medium`.
 
 ### A3. Ambiguous default evidence selection can downgrade confidence
 
@@ -131,41 +129,42 @@ Safer workflow:
 
 - Keep timestamped outputs, and make the launcher tell the user which evidence tier it opened.
 - If any `latest_*` convenience pointers are reintroduced, split them by tier such as `latest_smoke/`, `latest_medium/`, `latest_deep/`, and `latest_overnight/`.
-- In the prompt header, include "This is not the strongest available archived report" when larger same-day archived reports exist.
+- Implemented in current code: reports and prompts emit a stronger-evidence warning when a stronger report exists in the same output folder.
+- Remaining hardening: keep that warning visible enough that a smoke/custom report cannot silently displace stronger medium/deep evidence.
 
-### A4. README and metadata validation disagree about prompt paths
+### A4. Prompt path alignment is currently corrected but should stay guarded
 
-Severity: medium.
+Severity: low.
 
-Current `README.md` describes timestamped root prompt paths under `.godot\ai_simulation`, matching the runner's current output behavior. `scripts/tools/run_ai_prompt_metadata_validation.gd` still expects `.godot/ai_simulation/.../latest/ai_simulation_latest_*` files in fixture output directories, so surrounding validation can still audit the wrong layout.
+Current `README.md` describes timestamped root prompt paths under `.godot\ai_simulation`, matching the runner's current output behavior. `scripts/tools/run_ai_prompt_metadata_validation.gd` now looks for timestamped fixture outputs with `ai_simulation_data_`, `ai_simulation_report_`, and `ai_simulation_codex_prompt_` prefixes instead of `latest/ai_simulation_latest.*`.
 
 Adversarial failure mode:
 
-- A user or validation helper copies an old or nonexistent prompt path.
-- A downstream agent audits the wrong Markdown file.
-- Documentation implies a stable visible prompt location that the current workflow does not write.
+- README, launcher, runner, and metadata validation could drift again if one is changed without the others.
+- A downstream agent could still audit the wrong Markdown file if a user supplies an older opened prompt instead of the intended timestamped artifact.
 
 Safer workflow:
 
-- Update `run_ai_prompt_metadata_validation.gd` to validate the current timestamped output paths, or restore an explicit generated stable pointer that both README and validation agree on.
+- Keep README, launcher, runner, and metadata validation path expectations in one aligned workflow.
+- When auditing a generated prompt, cite the exact timestamped prompt, report, and JSON paths instead of relying on an informal "latest" reference.
 
-### A5. Regression comparison is under-specified
+### A5. Regression comparison is mostly hardened, with one remaining scope caveat
 
-Severity: medium.
+Severity: low.
 
-The runner compares previous and current reports only after checking schema, profile, strategy group, and max waves. It does not appear to require matching run count, seed, seed count, strategy list, report label, or full action log mode before marking reports comparable.
+Current comparison gates check schema, profile, evidence tier, strategy group, runs, max waves, seed, seed count, seed step, full action log mode, and strategy list before marking reports comparable. Current metadata validation also covers runs, seed, strategy, and full-action-log mismatches.
 
-Earlier generated evidence was not comparable because schema changed, so no false comparison was observed there. The risk remains in the comparison logic.
+The remaining caveat is `scenario_probe_mode`: current public config records it, scenario probes can affect issue counts, and regression warnings include high-severity issue deltas. Reports with different probe modes should therefore be treated cautiously even if the normal-run metrics are otherwise comparable.
 
 Adversarial failure mode:
 
-- Future reports with different run counts or seeds could be marked comparable and emit misleading deltas.
-- A small custom run could be compared against a larger run if the checked fields happen to match.
+- A run with different scenario-probe coverage could change issue-count deltas without a true gameplay regression.
+- A reader could over-weight regression warnings without checking whether scenario probe mode and coverage scope matched.
 
 Safer comparison gate:
 
-- Require matching `runs`, `seed`, `seed_count`, `seed_step`, `strategies`, `max_waves`, `profile`, `strategy_group`, and schema before declaring comparable.
-- Otherwise render the comparison as "same family, not comparable."
+- Keep the existing strict gates for `runs`, `seed`, `seed_count`, `seed_step`, `strategies`, `max_waves`, `profile`, `evidence_tier`, `strategy_group`, schema, and full action log mode.
+- Add or manually check `scenario_probe_mode` before treating issue-count regression deltas as comparable.
 
 ### A6. "No balance outliers" does not mean "no balance concern"
 
@@ -282,9 +281,9 @@ Safer workflow:
 | Data preflight passed | Latest Markdown and JSON show `data_validation` and `balance_sanity` OK | Proven for current generated run |
 | No bugs/QoL/validation issues were detected | Latest Markdown says none recorded | Proven only within this smoke-sized run |
 | No balance concerns exist | Latest Markdown says no outliers, but sample is too small for broad balance claims | Not proven |
-| Prompt metadata validation matches current output layout | Metadata validator still expects `latest/ai_simulation_latest.*` while runner writes timestamped root files | Contradicted in current worktree |
-| Scenario probes are implemented in committed baseline | Current dirty runner contains schema 6 and `scenario_probes`, but validation/commit status is not established here | Not proven |
-| Generated evidence is committed baseline | Git status shows broad dirty worktree and untracked launcher | Contradicted |
+| Prompt metadata validation matches current output layout | Metadata validator now searches timestamped fixture outputs with the current file prefixes | Proven from current script |
+| Scenario probes are implemented in current script | Current runner contains schema 6 and `scenario_probes`; individual generated reports still need to prove which probe mode executed | Partially proven |
+| Generated evidence is committed baseline | Current Git status is clean, but generated `.godot/ai_simulation/` artifacts are local evidence unless the exact artifact is tracked and clean | Not proven |
 | Full playable scene is validated | Runner instantiates game nodes directly | Not proven |
 | Main scene wiring is validated | Some focused validators load `scenes/main.tscn`, but the AI simulation report does not launch the full playable flow | Partially proven outside AI sim only |
 | Real input path is validated | Targeted validations can call input handlers, but no full real-player flow is proven by the simulation report | Partially proven |
@@ -292,7 +291,7 @@ Safer workflow:
 | Audio/feedback is validated | Asset/audio checks can prove loading, not timing, clarity, or player feedback quality | Partially proven |
 | Player comprehension is validated | No human or AI review of understandability is part of the direct simulation | Not proven |
 | Statistical confidence supports balance action | Smoke/custom runs and non-comparable reports do not support broad balance claims | Not proven |
-| Regression comparison is meaningful | Current report says not comparable due schema mismatch | Not proven |
+| Regression comparison is meaningful | Current code gates schema, evidence tier, run size, seed fields, strategy group/list, and full action log; scenario probe mode remains a caveat for issue-count deltas | Partially proven |
 
 ## Adversarial Coverage Estimates
 
@@ -326,14 +325,17 @@ Change the prompt contract from implementation-first to verification-first:
 Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code. If no confirmed issue exists, make no gameplay/data changes and report why.
 ```
 
-Add an evidence tier:
+Evidence tier and override metadata are implemented in current code:
 
 ```text
-Evidence tier: smoke/custom/medium/deep/overnight
+Evidence tier: smoke/medium/deep/overnight
 Profile: medium
+Profile overridden: yes
 Overrides: 14 runs, 2 waves
 Balance-actionable: no
 ```
+
+The remaining prompt-hardening task is presentation: make the generated Markdown show `evidence_tier` and `profile_overridden` prominently enough that a smoke-sized report cannot be mistaken for full medium-strength evidence.
 
 Change "None recorded" phrasing for balance:
 
@@ -350,7 +352,7 @@ This report exercises direct vertical-slice APIs in headless Godot. It does not 
 Make scenario-probe status explicit:
 
 ```text
-Scenario probes are diagnostic coverage, not full-scene or manual-play proof. Treat them as active worktree evidence unless the report and validations were generated from a clean committed baseline.
+Scenario probes are diagnostic coverage, not full-scene or manual-play proof. Treat probe results as evidence only for the exact generated report and probe mode that ran.
 ```
 
 Make AI visual review bounded:
@@ -369,10 +371,10 @@ AI screenshot review may flag concrete visual defects from real Godot-rendered f
 
 ## Recommended Workflow Hardening
 
-1. Keep timestamped outputs as the primary evidence, and split any future latest-style convenience pointers by tier so smoke runs do not overwrite medium/deep evidence.
-2. Align README, launcher, and metadata validation prompt paths.
-3. Include custom override warnings whenever run count or max wave count differs from profile defaults.
-4. Tighten regression comparability to include run count, seed settings, strategy list, and action-log mode.
+1. Keep timestamped outputs as the primary evidence, and split any future latest-style convenience pointers by tier so smoke runs do not overwrite medium/deep evidence; current code already emits stronger-evidence warnings when a stronger same-folder report exists.
+2. Keep README, launcher, runner, and metadata validation prompt paths aligned; current metadata validation already searches timestamped outputs.
+3. Keep custom override warnings prominent whenever run count or max wave count differs from profile defaults; current code already records `profile_overridden`.
+4. Keep the current stricter regression comparability gates for run count, seed settings, strategy list, and action-log mode; add or manually check scenario probe mode before acting on issue-count deltas.
 5. Add a "no-op allowed" acceptance criterion to generated prompts.
 6. For surprising findings, rerun with `--full-action-log=true` and targeted strategies before editing gameplay.
 7. Keep known gaps out of implementation scope unless a separate user request explicitly promotes them.
