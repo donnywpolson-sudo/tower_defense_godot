@@ -501,15 +501,6 @@
     ]
   },
   "schema_version": 1,
-  "source": {
-    "modules": {
-      "app_static_literals": "td_game.app",
-      "config": "td_game.config",
-      "data": "td_game.data",
-      "waves": "td_game.waves"
-    },
-    "python_baseline_root": "C:\\Users\\donny\\Desktop\\tower_defense"
-  },
   "towers": {
     "branch_definitions": {
       "archer": {
@@ -3432,7 +3423,7 @@
       "9": 46
     },
     "tower_upgrade_costs": {
-      "1": 75,
+      "1": 60,
       "2": 125,
       "3": 175,
       "4": 250
@@ -3516,8 +3507,8 @@
         "label": "Normal",
         "modifier": null,
         "modifier_data": null,
-        "regular_enemy_count": 13,
-        "spawn_interval": 0.608,
+        "regular_enemy_count": 11,
+        "spawn_interval": 0.66,
         "wave": 1
       },
       {

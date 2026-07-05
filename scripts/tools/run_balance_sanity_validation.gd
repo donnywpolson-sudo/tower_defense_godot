@@ -11,16 +11,16 @@ func _initialize() -> void:
 	config.name = "GameConfig"
 	data_loader.name = "GameData"
 
-	var result: Dictionary = data_loader.validate_game_data()
+	var result: Dictionary = data_loader.validate_balance_sanity()
 	if result["ok"]:
-		print("DATA_VALIDATION_OK")
+		print("BALANCE_SANITY_VALIDATION_OK")
 		for check in result["checks"]:
 			print("  OK %s = %s" % [check["label"], str(check["detail"])])
 		for warning in result.get("warnings", []):
 			print("  WARN %s" % str(warning))
 		quit(0)
 	else:
-		push_error("DATA_VALIDATION_FAILED")
+		push_error("BALANCE_SANITY_VALIDATION_FAILED")
 		for error in result["errors"]:
 			push_error(error)
 		for warning in result.get("warnings", []):

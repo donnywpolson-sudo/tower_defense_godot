@@ -20,6 +20,8 @@ func _check_project_settings(result: Dictionary) -> void:
 	var viewport_height := int(ProjectSettings.get_setting("display/window/size/viewport_height"))
 	_record_check(result, "viewport_width", viewport_width == GameConfig.LOGICAL_WIDTH, viewport_width)
 	_record_check(result, "viewport_height", viewport_height == GameConfig.LOGICAL_HEIGHT, viewport_height)
+	_record_check(result, "stretch_mode_canvas_items", str(ProjectSettings.get_setting("display/window/stretch/mode")) == "canvas_items", ProjectSettings.get_setting("display/window/stretch/mode"))
+	_record_check(result, "stretch_aspect_expand", str(ProjectSettings.get_setting("display/window/stretch/aspect")) == "expand", ProjectSettings.get_setting("display/window/stretch/aspect"))
 	var features: Variant = ProjectSettings.get_setting("application/config/features")
 	_record_check(result, "godot_minor_pin", str(features).contains(GameConfig.GODOT_MINOR_PIN), features)
 

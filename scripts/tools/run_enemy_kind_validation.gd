@@ -21,9 +21,10 @@ func _initialize() -> void:
 		"checks": [],
 		"errors": [],
 	}
-	_check_baseline_enemy_kinds(game, result)
+	_check_game_data_enemy_kinds(game, result)
 	_check_shield_absorption(game, result)
-	_check_flying_targeting_from_baseline_enemy(game, result)
+	_check_flying_targeting_from_game_data_enemy(game, result)
+	_check_wave_modifier_application(game, result)
 
 	if result["ok"]:
 		print("ENEMY_KIND_VALIDATION_OK")
@@ -37,7 +38,7 @@ func _initialize() -> void:
 		quit(1)
 
 
-func _check_baseline_enemy_kinds(game: Node, result: Dictionary) -> void:
+func _check_game_data_enemy_kinds(game: Node, result: Dictionary) -> void:
 	var expected: Dictionary = {
 		"normal": {"hp": 83.0, "speed": 64.0, "reward": 4, "shield_hits": 0, "flying": false, "commander": false},
 		"fast": {"hp": 53.95, "speed": 105.6, "reward": 5, "shield_hits": 0, "flying": false, "commander": false},
@@ -49,7 +50,7 @@ func _check_baseline_enemy_kinds(game: Node, result: Dictionary) -> void:
 		"commander": {"hp": 215.8, "speed": 55.04, "reward": 22, "shield_hits": 1, "flying": false, "commander": true},
 	}
 	for kind in expected:
-		var enemy: Dictionary = game.make_baseline_enemy_for_test(kind, 1)
+		var enemy: Dictionary = game.make_game_data_enemy_for_test(kind, 1)
 		var want: Dictionary = expected[kind]
 		_record_check(result, "%s_kind" % kind, enemy["kind"] == kind, enemy)
 		_record_check(result, "%s_hp" % kind, is_equal_approx(float(enemy["hp"]), float(want["hp"])), enemy)
@@ -63,7 +64,7 @@ func _check_baseline_enemy_kinds(game: Node, result: Dictionary) -> void:
 func _check_shield_absorption(game: Node, result: Dictionary) -> void:
 	var tower: Dictionary = game.make_test_tower("first", "archer", 2)
 	tower["damage"] = 39.0
-	var shielded: Dictionary = game.make_baseline_enemy_for_test("shield", 1)
+	var shielded: Dictionary = game.make_game_data_enemy_for_test("shield", 1)
 	game.enemies = [shielded]
 	var projectile: Dictionary = game.make_test_projectile(tower, shielded, shielded["position"])
 	game.update_projectile_for_test(projectile, 0.01)
@@ -79,18 +80,53 @@ func _check_shield_absorption(game: Node, result: Dictionary) -> void:
 	_record_check(result, "tower_damage_credit_after_shields_drop", is_equal_approx(float(tower.get("total_damage", 0.0)), 39.0), tower)
 
 
-func _check_flying_targeting_from_baseline_enemy(game: Node, result: Dictionary) -> void:
-	var flying: Dictionary = game.make_baseline_enemy_for_test("flying", 1)
-	flying["id"] = "baseline_flying"
-	var normal: Dictionary = game.make_baseline_enemy_for_test("normal", 1)
-	normal["id"] = "baseline_normal"
+func _check_flying_targeting_from_game_data_enemy(game: Node, result: Dictionary) -> void:
+	var flying: Dictionary = game.make_game_data_enemy_for_test("flying", 1)
+	flying["id"] = "game_data_flying"
+	var normal: Dictionary = game.make_game_data_enemy_for_test("normal", 1)
+	normal["id"] = "game_data_normal"
 	normal["position"] = Vector2(170, 100)
 	normal["progress"] = 80.0
 	flying["position"] = Vector2(150, 100)
 	flying["progress"] = 40.0
 	game.enemies = [flying, normal]
-	_record_check(result, "tesla_targets_baseline_flying", str(game.find_target_for_test(game.make_test_tower("flying", "tesla", 4)).get("id", "")) == "baseline_flying", game.enemies)
-	_record_check(result, "archer_ignores_baseline_flying", str(game.find_target_for_test(game.make_test_tower("flying", "archer", 2)).get("id", "")) == "baseline_normal", game.enemies)
+	_record_check(result, "tesla_targets_game_data_flying", str(game.find_target_for_test(game.make_test_tower("flying", "tesla", 4)).get("id", "")) == "game_data_flying", game.enemies)
+	_record_check(result, "archer_ignores_game_data_flying", str(game.find_target_for_test(game.make_test_tower("flying", "archer", 2)).get("id", "")) == "game_data_normal", game.enemies)
+
+
+func _check_wave_modifier_application(game: Node, result: Dictionary) -> void:
+	game.set_wave_for_test(8)
+	var encrypted: Dictionary = game.create_enemy("normal", 8, Vector2(180, 100), 1)
+	_record_check(result, "armored_modifier_adds_shield", int(encrypted["shield_hits"]) == 1 and int(encrypted["max_shield_hits"]) == 1, encrypted)
+	_record_check(result, "armored_modifier_reduces_damage_taken", is_equal_approx(float(encrypted["damage_taken_multiplier"]), 0.8), encrypted)
+
+	game.set_wave_for_test(11)
+	var haste_enemy: Dictionary = game.create_enemy("fast", 11, Vector2(180, 100), 1)
+	var no_haste_speed: float = (62.0 + 11.0 * 2.0) * 1.65
+	_record_check(result, "haste_modifier_increases_speed", is_equal_approx(float(haste_enemy["speed"]), no_haste_speed * 1.22), haste_enemy)
+
+	game.set_wave_for_test(12)
+	var regen_enemy: Dictionary = game.create_enemy("swarm", 12, Vector2(180, 100), 1)
+	regen_enemy["hp"] = float(regen_enemy["max_hp"]) * 0.5
+	game.enemies = [regen_enemy]
+	game.process_step(1.0)
+	_record_check(result, "regen_modifier_restores_hp", float(regen_enemy["hp"]) > float(regen_enemy["max_hp"]) * 0.5, regen_enemy)
+
+	game.set_wave_for_test(9)
+	var split_enemy: Dictionary = game.create_enemy("swarm", 9, Vector2(180, 100), 1)
+	split_enemy["hp"] = 0.0
+	game.enemies = [split_enemy]
+	game.process_step(0.01)
+	_record_check(result, "split_modifier_spawns_child", game.enemies.size() == 1 and int(game.enemies[0].get("death_spawns", -1)) == 0 and int(game.enemies[0].get("reward", -1)) == 0, game.enemies)
+
+	game.set_wave_for_test(21)
+	var volatile_source: Dictionary = game.create_enemy("armored", 21, Vector2(180, 100), 1)
+	var volatile_neighbor: Dictionary = game.create_enemy("armored", 21, Vector2(190, 100), 1)
+	var neighbor_hp: float = float(volatile_neighbor["hp"])
+	volatile_source["hp"] = 0.0
+	game.enemies = [volatile_source, volatile_neighbor]
+	game.process_step(0.01)
+	_record_check(result, "volatile_modifier_damages_nearby_enemy", float(volatile_neighbor["hp"]) < neighbor_hp, volatile_neighbor)
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:

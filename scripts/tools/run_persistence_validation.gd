@@ -51,13 +51,13 @@ func _check_progression_parity(progress: Node, result: Dictionary) -> void:
 		_record_check(result, "buy_%s_upgrade" % skill_key, progress.buy_skill_upgrade(skill_key), progress.progression_state())
 	var defaults: Dictionary = progress.new_run_defaults()
 	_record_check(result, "progression_spends_five_stars", progress.stars == 0, progress.progression_state())
-	_record_check(result, "starting_money_bonus_matches_python", defaults["money"] == 200, defaults)
-	_record_check(result, "starting_lives_bonus_matches_python", defaults["lives"] == 27, defaults)
-	_record_check(result, "starting_research_bonus_matches_python", defaults["research_points"] == 2, defaults)
-	_record_check(result, "tower_damage_bonus_matches_python", is_equal_approx(float(defaults["tower_damage_multiplier"]), 1.05), defaults)
+	_record_check(result, "starting_money_bonus_matches_game_data", defaults["money"] == 200, defaults)
+	_record_check(result, "starting_lives_bonus_matches_game_data", defaults["lives"] == 27, defaults)
+	_record_check(result, "starting_research_bonus_matches_game_data", defaults["research_points"] == 2, defaults)
+	_record_check(result, "tower_damage_bonus_matches_game_data", is_equal_approx(float(defaults["tower_damage_multiplier"]), 1.05), defaults)
 	progress.starting_reward_choice_bonus_level = 6
 	_record_check(result, "intel_cost_maxes_at_level_six", progress.skill_upgrade_cost("intel") == null, progress.skill_upgrade_details("intel"))
-	_record_check(result, "intel_max_copy_matches_python", progress.skill_upgrade_details("intel") == ["Wave Intel", "Lv 6 | MAX"], progress.skill_upgrade_details("intel"))
+	_record_check(result, "intel_max_copy_matches_game_data", progress.skill_upgrade_details("intel") == ["Wave Intel", "Lv 6 | MAX"], progress.skill_upgrade_details("intel"))
 
 
 func _check_save_load_and_run_state(progress: Node, game: Node, save_path: String, result: Dictionary) -> void:
@@ -75,7 +75,10 @@ func _check_save_load_and_run_state(progress: Node, game: Node, save_path: Strin
 	_record_check(result, "run_defaults_apply_to_lives", starting["lives"] == 27, starting)
 	_record_check(result, "run_defaults_apply_to_research", starting["research_points"] == 2, starting)
 	_record_check(result, "place_progressed_archer", game.place_archer(game.RECOMMENDED_BUILD_SITE), game.snapshot())
-	_record_check(result, "progressed_damage_applies", is_equal_approx(float(game.towers[0]["damage"]), 40.95), game.towers[0])
+	var placed_tower: Dictionary = game.towers[0] if game.towers.size() > 0 else {}
+	_record_check(result, "progressed_archer_starts_level_one", int(placed_tower.get("level", 0)) == 1, placed_tower)
+	var expected_damage: float = game._basic_slice_tower_damage("archer", 1) * float(progress.new_run_defaults().get("tower_damage_multiplier", 1.0))
+	_record_check(result, "progressed_damage_applies", is_equal_approx(float(placed_tower.get("damage", 0.0)), expected_damage), {"tower": placed_tower, "expected_damage": expected_damage})
 	_record_check(result, "start_progressed_run", game.start_wave(), game.snapshot())
 	for _step in range(20):
 		game.process_step(0.05)
