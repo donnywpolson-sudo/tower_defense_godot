@@ -11,8 +11,10 @@ set "LOG_DIR=%PROJECT_ROOT%\logs\godot"
 set "LOG_FILE=%LOG_DIR%\godot_ai_simulation.log"
 set "RAW_LOG_FILE=%LOG_DIR%\godot_ai_simulation_raw.log"
 set "ENGINE_STDERR_LOG=%LOG_DIR%\godot_ai_simulation_engine_stderr.log"
+set "RECOMMENDATION_LOG=%LOG_DIR%\godot_ai_audit_recommendation.log"
 set "TEST_MODE=0"
 set "SHOW_COMMAND=%TD_SIM_SHOW_COMMAND%"
+set "RECOMMEND_ONLY=0"
 set "USER_ARGS="
 set "TIER_NAME=Medium"
 set "RUNS_LABEL=420"
@@ -25,6 +27,8 @@ set "PURPOSE=normal research"
 if "%~1"=="" goto args_done
 if /I "%~1"=="--test" (
     set "TEST_MODE=1"
+) else if /I "%~1"=="--recommend" (
+    set "RECOMMEND_ONLY=1"
 ) else if /I "%~1"=="--show-command" (
     set "SHOW_COMMAND=1"
 ) else if /I "%~1"=="debug" (
@@ -58,6 +62,13 @@ goto parse_args
 
 :args_done
 
+if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
+
+if "%RECOMMEND_ONLY%"=="1" (
+    call :show_recommendation
+    goto recommend_done
+)
+
 if "%TEST_MODE%"=="0" if "!USER_ARGS!"=="" (
     call :choose_profile
     set "PROFILE_RESULT=!ERRORLEVEL!"
@@ -66,6 +77,9 @@ if "%TEST_MODE%"=="0" if "!USER_ARGS!"=="" (
         exit /b !PROFILE_RESULT!
     )
 )
+
+:recommend_done
+if "%RECOMMEND_ONLY%"=="1" exit /b 0
 
 echo Tower Defense AI simulation launcher
 echo Godot: 4.7 stable
@@ -108,8 +122,6 @@ if not exist "%GODOT_EXE%" (
     exit /b 1
 )
 
-if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
-
 echo Project:
 echo   %PROJECT_ROOT%
 echo.
@@ -119,13 +131,13 @@ echo   Output: .godot\ai_simulation
 if /I "!SHOW_COMMAND!"=="1" (
     echo.
     echo Command:
-    echo "%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 --output-dir=res://.godot/ai_simulation!USER_ARGS!
+    echo "%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 "--output-dir=res://.godot/ai_simulation" !USER_ARGS!
 )
 echo.
 echo Progress:
 echo.
 
-"%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 --output-dir=res://.godot/ai_simulation!USER_ARGS! 2> "%ENGINE_STDERR_LOG%"
+"%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 "--output-dir=res://.godot/ai_simulation" !USER_ARGS! 2> "%ENGINE_STDERR_LOG%"
 set "RUN_EXIT=%ERRORLEVEL%"
 call :clean_log
 
@@ -137,7 +149,7 @@ if not "%RUN_EXIT%"=="0" (
     echo   Raw log: %RAW_LOG_FILE%
     echo   Engine stderr: %ENGINE_STDERR_LOG%
     echo   Command:
-    echo   "%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 --output-dir=res://.godot/ai_simulation!USER_ARGS!
+    echo   "%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 "--output-dir=res://.godot/ai_simulation" !USER_ARGS!
     if "%TEST_MODE%"=="0" pause
     exit /b %RUN_EXIT%
 )
@@ -172,6 +184,8 @@ exit /b 0
 
 :choose_profile
 echo Tower Defense AI simulation launcher
+echo.
+call :show_recommendation_if_available
 echo.
 echo   #  Tier             Est. Runtime    Runs   Scope      Seeds   Purpose
 echo   1  Strategy Smoke   5 sec          14     2 waves    1       quick bot check
@@ -252,5 +266,34 @@ if exist "%RAW_LOG_FILE%" (
     findstr /V /C:"ERROR: Failed to read the root certificate store." /C:"at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)" "%RAW_LOG_FILE%" > "%LOG_FILE%"
 ) else (
     break > "%LOG_FILE%"
+)
+exit /b 0
+
+:show_recommendation_if_available
+if not exist "%PROJECT_ROOT%\TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md" exit /b 0
+call :show_recommendation
+exit /b 0
+
+:show_recommendation
+if not exist "%GODOT_EXE%" (
+    echo Current audit recommendation:
+    echo   Recommended command args: medium --scenario-probes=auto
+    echo   Confidence: low
+    echo   Reason: Godot executable was not found, so the report helper could not run.
+    exit /b 0
+)
+if not exist "%PROJECT_ROOT%\scripts\tools\recommend_ai_audit_settings.gd" (
+    echo Current audit recommendation:
+    echo   Recommended command args: medium --scenario-probes=auto
+    echo   Confidence: low
+    echo   Reason: Audit recommendation helper was not found.
+    exit /b 0
+)
+"%GODOT_EXE%" --headless --no-header --log-file "%RECOMMENDATION_LOG%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/recommend_ai_audit_settings.gd" 2>nul
+if not "%ERRORLEVEL%"=="0" (
+    echo Current audit recommendation:
+    echo   Recommended command args: medium --scenario-probes=auto
+    echo   Confidence: low
+    echo   Reason: Audit recommendation helper failed; see %RECOMMENDATION_LOG%.
 )
 exit /b 0
