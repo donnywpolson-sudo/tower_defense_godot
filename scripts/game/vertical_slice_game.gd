@@ -50,6 +50,7 @@ var wave_active: bool = false
 var wave_complete: bool = false
 var game_over: bool = false
 var spawned_this_wave: int = 0
+var spawned_extra_this_wave: int = 0
 var spawn_timer: float = 0.0
 var leaks: int = 0
 var kills: int = 0
@@ -89,6 +90,7 @@ func reset_slice() -> void:
 	wave_complete = false
 	game_over = false
 	spawned_this_wave = 0
+	spawned_extra_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -232,6 +234,7 @@ func start_wave() -> bool:
 	wave_active = true
 	spawn_timer = 0.0
 	spawned_this_wave = 0
+	spawned_extra_this_wave = 0
 	_clear_feedback()
 	_play_sound("sounds/ui/wave.wav", 480.0)
 	_emit_status()
@@ -249,6 +252,7 @@ func advance_to_next_wave() -> bool:
 	_refresh_wave_row()
 	wave_complete = false
 	spawned_this_wave = 0
+	spawned_extra_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -593,16 +597,19 @@ func get_shop_button_rects() -> Array:
 			button_size
 		)
 		var enabled: bool = _is_enabled_slice_shop_tower(tower_type)
+		var affordable: bool = money >= _shop_cost(tower_type)
+		var selected: bool = selected_build_type == tower_type
 		rects.append({
 			"rect": rect,
 			"tower_type": tower_type,
 			"label": _tower_label(tower_type),
 			"short_label": _tower_shop_label(tower_type),
 			"cost": _shop_cost(tower_type),
-			"selected": selected_build_type == tower_type,
-			"affordable": money >= _shop_cost(tower_type),
+			"selected": selected,
+			"affordable": affordable,
 			"enabled": enabled,
 			"disabled_reason": "" if enabled else "Not in this slice",
+			"visual_state": _shop_button_visual_state(enabled, affordable, selected),
 		})
 	return rects
 
@@ -619,6 +626,7 @@ func shop_snapshot() -> Dictionary:
 			"affordable": button["affordable"],
 			"enabled": button["enabled"],
 			"disabled_reason": button["disabled_reason"],
+			"visual_state": button["visual_state"],
 		})
 	return {
 		"selected_build_type": selected_build_type,
@@ -628,6 +636,16 @@ func shop_snapshot() -> Dictionary:
 		"speed_control": speed_control_snapshot(),
 		"canonical_shop_order": game_data.get("towers", {}).get("shop_order", []),
 	}
+
+
+func _shop_button_visual_state(enabled: bool, affordable: bool, selected: bool) -> String:
+	if not enabled:
+		return "unavailable"
+	if selected:
+		return "selected"
+	if not affordable:
+		return "unaffordable"
+	return "affordable"
 
 
 func get_start_wave_button_rect() -> Rect2:
@@ -1489,6 +1507,7 @@ func _resolve_enemy_death_effects(enemy: Dictionary, spawned: Array) -> void:
 	var spawn_count: int = max(0, int(enemy.get("death_spawns", 0)))
 	for _index in range(spawn_count):
 		spawned.append(_make_death_spawn_enemy(enemy))
+		spawned_extra_this_wave += 1
 
 
 func _apply_death_burst(source: Dictionary, radius: float, damage_fraction: float) -> void:
@@ -1728,7 +1747,12 @@ func set_wave_for_test(wave_number: int) -> Dictionary:
 	wave_active = false
 	wave_complete = false
 	spawned_this_wave = 0
+	spawned_extra_this_wave = 0
 	spawn_timer = 0.0
+	leaks = 0
+	kills = 0
+	wave_reward_money = 0
+	wave_reward_research = 0
 	enemies = []
 	projectiles = []
 	return wave_row
@@ -1872,6 +1896,10 @@ func _research_reward() -> int:
 	return 1 + int(floor(float(wave) / 5.0))
 
 
+func _spawned_total_this_wave() -> int:
+	return spawned_this_wave + spawned_extra_this_wave
+
+
 func snapshot() -> Dictionary:
 	return {
 		"money": money,
@@ -1882,6 +1910,8 @@ func snapshot() -> Dictionary:
 		"wave_complete": wave_complete,
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
+		"spawned_extra_this_wave": spawned_extra_this_wave,
+		"spawned_total_this_wave": _spawned_total_this_wave(),
 		"spawn_limit": _regular_enemy_count(),
 		"spawn_interval": _spawn_interval(),
 		"slice_spawn_limit": SLICE_SPAWN_LIMIT,
@@ -1970,6 +2000,7 @@ func _debug_set_wave(target_wave: int) -> void:
 	wave_active = false
 	wave_complete = false
 	spawned_this_wave = 0
+	spawned_extra_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -2023,9 +2054,12 @@ func _debug_skip_wave() -> Dictionary:
 	enemies = []
 	projectiles = []
 	spawned_this_wave = _regular_enemy_count()
+	spawned_extra_this_wave = 0
 	if not already_complete:
 		wave_active = false
 		wave_complete = true
+		kills = spawned_this_wave
+		leaks = 0
 		wave_reward_money = _wave_completion_money()
 		wave_reward_research = _research_reward()
 		money += wave_reward_money
@@ -2068,6 +2102,8 @@ func debug_overlay_snapshot() -> Dictionary:
 			"wave_active": wave_active,
 			"wave_complete": wave_complete,
 			"spawned_this_wave": spawned_this_wave,
+			"spawned_extra_this_wave": spawned_extra_this_wave,
+			"spawned_total_this_wave": _spawned_total_this_wave(),
 			"spawn_limit": _regular_enemy_count(),
 			"spawn_interval": _spawn_interval(),
 			"enemy_family": _wave_enemy_kind(),
@@ -2171,6 +2207,7 @@ func serialize_run_state() -> Dictionary:
 		"wave_complete": wave_complete,
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
+		"spawned_extra_this_wave": spawned_extra_this_wave,
 		"spawn_timer": spawn_timer,
 		"leaks": leaks,
 		"kills": kills,
@@ -2210,6 +2247,12 @@ func restore_run_state(state: Dictionary) -> bool:
 	towers = _restore_towers(state.get("towers", []))
 	enemies = _restore_enemies(state.get("enemies", []))
 	projectiles = _restore_projectiles(state.get("projectiles", []))
+	if state.has("spawned_extra_this_wave"):
+		spawned_extra_this_wave = int(state.get("spawned_extra_this_wave", 0))
+	elif wave_complete and enemies.is_empty():
+		spawned_extra_this_wave = max(0, kills + leaks - spawned_this_wave)
+	else:
+		spawned_extra_this_wave = 0
 	var requested_selection: int = int(state.get("selected_tower_index", NO_SELECTED_TOWER))
 	selected_tower_index = requested_selection if requested_selection >= 0 and requested_selection < towers.size() else NO_SELECTED_TOWER
 	if game_over:
@@ -2417,11 +2460,10 @@ func _draw_map_layer(metrics: Dictionary) -> void:
 
 func _draw_map() -> void:
 	var map_rect := Rect2(Vector2.ZERO, Vector2(float(config.get("map_width", 900)), float(config.get("height", 600))))
+	draw_rect(map_rect, Color(0.09, 0.13, 0.10))
 	var grass := _texture("sprites/terrain/grass.png")
 	if grass != null:
-		draw_texture_rect(grass, map_rect, true)
-	else:
-		draw_rect(map_rect, Color(0.09, 0.13, 0.10))
+		_draw_tiled_texture(grass, map_rect)
 	_draw_path()
 	_draw_build_grid(map_rect)
 	if not path_points.is_empty():
@@ -2429,6 +2471,23 @@ func _draw_map() -> void:
 			draw_circle(path_points[0], 22.0, Color(0.25, 0.85, 0.50))
 		if not _draw_texture_centered("sprites/terrain/base_gate.png", path_points[path_points.size() - 1], Vector2(44, 44)):
 			draw_circle(path_points[path_points.size() - 1], 22.0, Color(0.95, 0.28, 0.23))
+
+
+func _draw_tiled_texture(texture: Texture2D, rect: Rect2) -> void:
+	var tile_size := texture.get_size()
+	if tile_size.x <= 0.0 or tile_size.y <= 0.0:
+		return
+	var y := rect.position.y
+	while y < rect.end.y:
+		var tile_height: float = min(tile_size.y, rect.end.y - y)
+		var x := rect.position.x
+		while x < rect.end.x:
+			var tile_width: float = min(tile_size.x, rect.end.x - x)
+			var target_rect := Rect2(Vector2(x, y), Vector2(tile_width, tile_height))
+			var source_rect := Rect2(Vector2.ZERO, Vector2(tile_width, tile_height))
+			draw_texture_rect_region(texture, target_rect, source_rect)
+			x += tile_size.x
+		y += tile_size.y
 
 
 func _draw_game_over_overlay() -> void:
@@ -2524,6 +2583,7 @@ func _draw_entities() -> void:
 		else:
 			draw_circle(position, 18.0, _tower_color(tower_type))
 			draw_string(ThemeDB.fallback_font, position + Vector2(-8, 5), _tower_short_label(tower_type), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 16, Color.WHITE)
+		_draw_tower_level_badge(position, int(tower.get("level", 1)))
 	for enemy in enemies:
 		var position: Vector2 = enemy["position"]
 		var enemy_kind := str(enemy.get("kind", ENEMY_KIND))
@@ -2541,6 +2601,17 @@ func _draw_entities() -> void:
 		var tower_type := str(projectile.get("tower_type", ARCHER_ID))
 		if not _draw_texture_centered("sprites/projectiles/%s.png" % tower_type, projectile["position"], Vector2(14, 14)):
 			draw_circle(projectile["position"], 4.0, Color(0.95, 0.78, 0.35))
+
+
+func _draw_tower_level_badge(position: Vector2, level: int) -> void:
+	if level <= 1:
+		return
+	var label := "L%s" % level
+	var badge_size := Vector2(20.0 if level < 10 else 26.0, 14.0)
+	var badge := Rect2(position + Vector2(7.0, -27.0), badge_size)
+	draw_rect(badge, Color(0.05, 0.06, 0.055, 0.86))
+	draw_rect(badge, Color(1.0, 0.88, 0.34, 0.96), false, 1.0)
+	draw_string(ThemeDB.fallback_font, badge.position + Vector2(0.0, 11.0), label, HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, 9, Color(1.0, 0.96, 0.76))
 
 
 func _draw_debug_overlay() -> void:
@@ -2637,8 +2708,7 @@ func _draw_run_status_panel(panel: Rect2) -> void:
 	var reward_rect: Rect2 = Rect2(panel.position + Vector2(12, reward_y), Vector2(panel.size.x - 24, 20 if compact else 22))
 	draw_rect(reward_rect, Color(0.10, 0.12, 0.105))
 	draw_rect(reward_rect, Color(0.26, 0.31, 0.27), false, 1.0)
-	draw_string(ThemeDB.fallback_font, reward_rect.position + Vector2(8, 15), "Reward", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(0.60, 0.65, 0.58))
-	draw_string(ThemeDB.fallback_font, reward_rect.position + Vector2(reward_rect.size.x - 104, 15), "+$%s  +%s Tech" % [wave_reward_money, wave_reward_research], HORIZONTAL_ALIGNMENT_RIGHT, 96.0, 11, Color(0.90, 0.88, 0.72))
+	draw_string(ThemeDB.fallback_font, reward_rect.position + Vector2(8, 15), "Reward  +$%s  +%s Tech" % [wave_reward_money, wave_reward_research], HORIZONTAL_ALIGNMENT_LEFT, reward_rect.size.x - 16.0, 11, Color(0.90, 0.88, 0.72))
 
 
 func _draw_sidebar_detail(pos: Vector2, label_text: String, value_text: String) -> void:
@@ -2672,25 +2742,53 @@ func _draw_shop_button(button: Dictionary) -> void:
 	var rect: Rect2 = button["rect"]
 	var tower_type: String = str(button["tower_type"])
 	var color := _tower_color(tower_type)
-	var affordable: bool = bool(button["affordable"])
-	var selected: bool = bool(button["selected"])
-	var enabled: bool = bool(button["enabled"])
-	var fill := Color(0.16, 0.24, 0.19) if selected else Color(0.11, 0.13, 0.12)
-	if not enabled:
-		fill = Color(0.085, 0.095, 0.09)
-	elif not affordable:
-		fill = Color(0.19, 0.14, 0.14)
-	var outline := color if enabled and affordable else Color(0.34, 0.37, 0.34)
-	var label_color := Color(0.96, 0.96, 0.92) if enabled else Color(0.43, 0.46, 0.42)
-	var cost_color := Color(0.88, 0.88, 0.80) if enabled else Color(0.39, 0.42, 0.38)
+	var visual_state := str(button.get("visual_state", "affordable"))
+	var hovered := _ui_rect_hovered(rect)
+	var fill := Color(0.105, 0.125, 0.115)
+	var outline := Color(0.34, 0.39, 0.35)
+	var strip := Color(color.r, color.g, color.b, 0.54)
+	var label_color := Color(0.88, 0.91, 0.84)
+	var cost_color := Color(0.78, 0.82, 0.72)
+	if visual_state == "selected":
+		fill = Color(0.13, 0.24, 0.17)
+		outline = Color(0.42, 0.88, 0.45)
+		strip = outline
+		label_color = Color(0.96, 0.99, 0.92)
+		cost_color = Color(0.93, 0.96, 0.80)
+	elif visual_state == "unaffordable":
+		fill = Color(0.16, 0.12, 0.10)
+		outline = Color(0.67, 0.48, 0.32)
+		strip = Color(0.67, 0.48, 0.32, 0.72)
+		label_color = Color(0.86, 0.80, 0.72)
+		cost_color = Color(0.94, 0.62, 0.48)
+	elif visual_state == "unavailable":
+		fill = Color(0.095, 0.105, 0.098)
+		outline = Color(0.28, 0.32, 0.29)
+		strip = Color(0.31, 0.35, 0.32, 0.72)
+		label_color = Color(0.57, 0.61, 0.56)
+		cost_color = Color(0.49, 0.53, 0.49)
+	if hovered:
+		fill = fill.lightened(0.08)
+		outline = outline.lightened(0.18)
 	draw_rect(rect, fill)
 	draw_rect(rect, outline, false, 2.0)
-	draw_rect(Rect2(rect.position, Vector2(rect.size.x, 4)), outline)
-	if not enabled:
-		draw_line(rect.position + Vector2(6, rect.size.y - 6), rect.position + Vector2(rect.size.x - 6, 6), Color(0.42, 0.46, 0.42, 0.45), 1.0)
-		draw_line(rect.position + Vector2(20, rect.size.y - 4), rect.position + Vector2(rect.size.x - 4, 12), Color(0.32, 0.35, 0.32, 0.35), 1.0)
+	draw_rect(Rect2(rect.position, Vector2(rect.size.x, 4)), strip)
+	if visual_state == "selected":
+		draw_rect(Rect2(rect.position + Vector2(0, 4), Vector2(4, rect.size.y - 4)), outline)
+	elif visual_state == "unavailable":
+		draw_rect(Rect2(rect.position + Vector2(rect.size.x - 10, 7), Vector2(4, 7)), Color(0.48, 0.52, 0.48, 0.82), false, 1.0)
+		draw_rect(Rect2(rect.position + Vector2(rect.size.x - 11, 13), Vector2(6, 6)), Color(0.48, 0.52, 0.48, 0.72))
 	draw_string(ThemeDB.fallback_font, rect.position + Vector2(6, 13), str(button["short_label"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, label_color)
 	draw_string(ThemeDB.fallback_font, rect.position + Vector2(6, 23), "$%s" % button["cost"], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, cost_color)
+
+
+func _ui_rect_hovered(rect: Rect2) -> bool:
+	if not is_inside_tree():
+		return false
+	var viewport := get_viewport()
+	if viewport == null:
+		return false
+	return rect.has_point(viewport.get_mouse_position())
 
 
 func _draw_wave_panel() -> void:
@@ -2707,16 +2805,22 @@ func _draw_wave_panel() -> void:
 func _draw_wave_control_button() -> void:
 	var rect := get_start_wave_button_rect()
 	var enabled: bool = _can_start_wave_from_ui()
-	var fill := Color(0.14, 0.24, 0.18) if enabled else Color(0.13, 0.14, 0.13)
-	var outline := Color(0.46, 0.78, 0.50) if enabled else Color(0.33, 0.36, 0.32)
-	var text_color := Color(0.94, 0.98, 0.90) if enabled else Color(0.58, 0.61, 0.56)
+	var hovered := _ui_rect_hovered(rect)
+	var fill := Color(0.14, 0.24, 0.18) if enabled else Color(0.17, 0.13, 0.10)
+	var outline := Color(0.46, 0.78, 0.50) if enabled else Color(0.78, 0.57, 0.34)
+	var text_color := Color(0.94, 0.98, 0.90) if enabled else Color(0.95, 0.86, 0.70)
+	if hovered:
+		fill = fill.lightened(0.08)
+		outline = outline.lightened(0.14)
 	draw_rect(rect, fill)
 	draw_rect(rect, outline, false, 2.0)
 	var disabled_reason := _wave_start_disabled_reason()
 	var label_y := 16.0 if not enabled and not disabled_reason.is_empty() else 20.0
+	if not enabled and not disabled_reason.is_empty():
+		draw_rect(Rect2(rect.position, Vector2(5.0, rect.size.y)), outline)
 	draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, label_y), _wave_control_label(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, text_color)
 	if not enabled and not disabled_reason.is_empty():
-		draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, rect.size.y - 5.0), disabled_reason, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 9, Color(0.86, 0.68, 0.58))
+		draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, rect.size.y - 5.0), disabled_reason, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 9, Color(0.94, 0.68, 0.48))
 	for button in get_speed_button_rects():
 		_draw_speed_button(button)
 
@@ -2776,12 +2880,7 @@ func _draw_upgrade_panel_bottom(panel: Rect2, snapshot: Dictionary, accent: Colo
 
 	var stats: Dictionary = snapshot.get("stat_detail", {})
 	if not stats.is_empty():
-		var stat_text := "Damage %s   Range %s   Fire %s" % [
-			int(stats.get("damage", 0)),
-			int(stats.get("range", 0)),
-			str(stats.get("shooting_speed_label", "0.0/s")),
-		]
-		draw_string(ThemeDB.fallback_font, panel.position + Vector2(212, 27), stat_text, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 232.0, 11, Color(0.76, 0.82, 0.72))
+		_draw_compact_tower_stat_meters(panel.position + Vector2(212, 25), panel.size.x - 232.0, stats)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(212, 48), _truncate_text(str(snapshot["details"]), 82), HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 232.0, 12, Color(0.90, 0.86, 0.60))
 
 	if bool(snapshot.get("needs_branch_choice", false)):
@@ -2862,6 +2961,37 @@ func _draw_stat_bar_row(pos: Vector2, label_text: String, value_text: String, ra
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * ratio, bar.size.y)), _stat_rating_color(ratio))
 	draw_rect(bar, Color(0.31, 0.36, 0.31), false, 1.0)
 	draw_string(ThemeDB.fallback_font, pos + Vector2(142, 0), rating_label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, Color(0.72, 0.76, 0.68))
+
+
+func _draw_compact_tower_stat_meters(pos: Vector2, width: float, stats: Dictionary) -> void:
+	var labels := ["Damage", "Range", "Fire"]
+	var ratings := [
+		stats.get("damage_rating", {}),
+		stats.get("range_rating", {}),
+		stats.get("shooting_speed_rating", {}),
+	]
+	if width < 250.0:
+		var text_parts: Array = []
+		for index in range(labels.size()):
+			text_parts.append("%s %s" % [labels[index], str(ratings[index].get("label", "Med"))])
+		draw_string(ThemeDB.fallback_font, pos + Vector2(0, 10), "   ".join(text_parts), HORIZONTAL_ALIGNMENT_LEFT, width, 10, Color(0.76, 0.82, 0.72))
+		return
+	var gap := 8.0
+	var meter_width: float = (width - gap * 2.0) / 3.0
+	for index in range(labels.size()):
+		var meter_pos := pos + Vector2(float(index) * (meter_width + gap), 0.0)
+		_draw_compact_stat_meter(meter_pos, meter_width, labels[index], ratings[index])
+
+
+func _draw_compact_stat_meter(pos: Vector2, width: float, label_text: String, rating: Dictionary) -> void:
+	var ratio: float = float(rating.get("ratio", 0.5))
+	var rating_label: String = str(rating.get("label", "Med"))
+	draw_string(ThemeDB.fallback_font, pos, label_text, HORIZONTAL_ALIGNMENT_LEFT, width - 34.0, 9, Color(0.58, 0.63, 0.56))
+	draw_string(ThemeDB.fallback_font, pos + Vector2(width - 34.0, 0.0), rating_label, HORIZONTAL_ALIGNMENT_RIGHT, 34.0, 9, Color(0.76, 0.82, 0.72))
+	var bar := Rect2(pos + Vector2(0.0, 5.0), Vector2(width, 6.0))
+	draw_rect(bar, Color(0.13, 0.15, 0.13))
+	draw_rect(Rect2(bar.position, Vector2(bar.size.x * clamp(ratio, 0.0, 1.0), bar.size.y)), _stat_rating_color(ratio))
+	draw_rect(bar, Color(0.31, 0.36, 0.31), false, 1.0)
 
 
 func _stat_rating_color(ratio: float) -> Color:
@@ -2981,6 +3111,7 @@ func _check_global_invariants(failures: Array) -> void:
 	_require_nonnegative_int(failures, "research_points", research_points)
 	_require_nonnegative_int(failures, "wave", wave)
 	_require_nonnegative_int(failures, "spawned_this_wave", spawned_this_wave)
+	_require_nonnegative_int(failures, "spawned_extra_this_wave", spawned_extra_this_wave)
 	_require_nonnegative_int(failures, "leaks", leaks)
 	_require_nonnegative_int(failures, "kills", kills)
 	_require_nonnegative_int(failures, "wave_reward_money", wave_reward_money)
@@ -2999,6 +3130,11 @@ func _check_global_invariants(failures: Array) -> void:
 		failures.append("wave_complete with active wave")
 	if wave_complete and not enemies.is_empty():
 		failures.append("wave_complete with enemies remaining: %s" % enemies.size())
+	if wave_complete and not wave_active and not game_over and enemies.is_empty() and spawned_this_wave >= _regular_enemy_count():
+		var resolved_this_wave: int = kills + leaks
+		var spawned_total: int = _spawned_total_this_wave()
+		if resolved_this_wave != spawned_total:
+			failures.append("wave resolution mismatch: resolved %s != spawned_total %s" % [resolved_this_wave, spawned_total])
 	if selected_tower_index != NO_SELECTED_TOWER and (selected_tower_index < 0 or selected_tower_index >= towers.size()):
 		failures.append("selected_tower_index out of range: %s of %s" % [selected_tower_index, towers.size()])
 	if not selected_build_type.is_empty() and not _current_slice_shop_towers().has(selected_build_type):

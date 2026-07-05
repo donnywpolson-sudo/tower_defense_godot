@@ -35,7 +35,7 @@ baseline:
  D scripts/tools/validate_python_baseline_export.py
  M scripts/ui/debug_hud.gd
 ?? CODEX_HANDOFF.md
-?? RUN_AI_SIMULATION_PROMPT.bat
+?? TOWER_DEFENSE_AI_SIMULATION.bat
 ?? codex_prompts/
 ?? data/game_data.json
 ?? logs/

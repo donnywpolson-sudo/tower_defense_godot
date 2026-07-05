@@ -3,7 +3,7 @@ extends Node
 const GODOT_VERSION_PIN := "4.7.stable.official.5b4e0cb0f"
 const GODOT_MINOR_PIN := "4.7"
 const GODOT_PROJECT_ROOT := "C:/Users/donny/Desktop/tower_defense_godot"
-const GAME_TITLE := "Tower Defense Godot"
+const GAME_TITLE := "Tower Defense"
 const LOGICAL_WIDTH := 1180
 const LOGICAL_HEIGHT := 600
 const MAP_WIDTH := 900

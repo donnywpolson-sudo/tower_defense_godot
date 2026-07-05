@@ -4,9 +4,11 @@ const RUNNER_SCRIPT := "res://scripts/tools/run_ai_simulation_batch.gd"
 const OUTPUT_BASE := "res://.godot/ai_simulation_validation"
 
 var _errors: Array = []
+var _run_id := ""
 
 
 func _initialize() -> void:
+	_run_id = str(Time.get_ticks_usec())
 	_run_validation()
 	if _errors.is_empty():
 		print("AI_PROMPT_METADATA_VALIDATION_OK")
@@ -41,16 +43,16 @@ func _run_validation() -> void:
 
 	_run_fixture("schema4", ["--metadata-fixture=schema4_previous", "--runs=14", "--max-waves=2", "--report-label=schema4_previous", "--compare-previous=false"])
 	var schema5_after_schema4 := _run_fixture("schema4", ["--metadata-fixture=smoke", "--runs=14", "--max-waves=2", "--report-label=schema5_current", "--compare-previous=true"])
-	_expect_contains(schema5_after_schema4.get("markdown", ""), "schema migration: establish a new schema 5 baseline.", "schema migration reason")
-	_expect_contains(schema5_after_schema4.get("markdown", ""), "Schema 5 starts a new comparison baseline; deltas resume after the next matching schema 5 run.", "schema baseline text")
+	_expect_contains(schema5_after_schema4.get("markdown", ""), "schema migration: establish a new schema 6 baseline.", "schema migration reason")
+	_expect_contains(schema5_after_schema4.get("markdown", ""), "Schema 6 starts a new comparison baseline; deltas resume after the next matching schema 6 run.", "schema baseline text")
 
 	_run_fixture("label", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=old_label", "--compare-previous=false"])
 	var label_only := _run_fixture("label", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=new_label", "--compare-previous=true"])
 	_expect_contains(label_only.get("markdown", ""), "Comparable: `yes`", "label-only comparable")
 	_expect_not_contains(label_only.get("markdown", ""), "report_label", "label-only mismatch")
 
-	_run_fixture("runs_mismatch", ["--metadata-fixture=medium", "--runs=421", "--max-waves=6", "--report-label=previous_runs", "--compare-previous=false"])
-	var runs_mismatch := _run_fixture("runs_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=current_runs", "--compare-previous=true"])
+	_run_fixture("runs_mismatch", ["--metadata-fixture=medium", "medium", "--runs=421", "--max-waves=6", "--report-label=previous_runs", "--compare-previous=false"])
+	var runs_mismatch := _run_fixture("runs_mismatch", ["--metadata-fixture=medium", "medium", "--runs=420", "--max-waves=6", "--report-label=current_runs", "--compare-previous=true"])
 	_expect_contains(runs_mismatch.get("markdown", ""), "same family, not comparable: previous report has different runs.", "runs mismatch")
 
 	_run_fixture("seed_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--seed=999", "--report-label=previous_seed", "--compare-previous=false"])
@@ -65,12 +67,17 @@ func _run_validation() -> void:
 	var log_mismatch := _run_fixture("log_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--full-action-log=false", "--report-label=current_log", "--compare-previous=true"])
 	_expect_contains(log_mismatch.get("markdown", ""), "same family, not comparable: previous report has different full_action_log.", "full action log mismatch")
 
+	_run_fixture("stronger_evidence", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=stronger_medium", "--compare-previous=false"])
+	var weaker_after_stronger := _run_fixture("stronger_evidence", ["--metadata-fixture=smoke", "--runs=14", "--max-waves=2", "--report-label=weaker_smoke", "--compare-previous=false"])
+	_expect_contains(weaker_after_stronger.get("markdown", ""), "Evidence warning: Stronger medium evidence exists", "stronger evidence markdown warning")
+	_expect_contains(weaker_after_stronger.get("prompt", ""), "Evidence warning: Stronger medium evidence exists", "stronger evidence prompt warning")
+
 	var readme := FileAccess.get_file_as_string("res://README.md")
 	_expect_not_contains(readme, "codex_" + "prompts\\ai_simulation_latest.md", "README stale prompt path")
 
 
 func _run_fixture(name: String, user_args: Array) -> Dictionary:
-	var output_dir := "%s/%s" % [OUTPUT_BASE, name]
+	var output_dir := "%s/%s/%s" % [OUTPUT_BASE, _run_id, name]
 	var args := ["--headless", "--no-header", "--path", ProjectSettings.globalize_path("res://"), "--script", RUNNER_SCRIPT, "--"]
 	for arg in user_args:
 		args.append(str(arg))
@@ -80,10 +87,12 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 	if exit_code != 0:
 		_errors.append("Fixture %s failed with exit code %s: %s" % [name, exit_code, _join_strings(output, "\n")])
 		return {"json": {}, "markdown": "", "prompt": ""}
-	var latest_dir := "%s/latest" % output_dir
-	var json_path := "%s/ai_simulation_latest.json" % latest_dir
-	var markdown_path := "%s/ai_simulation_latest.md" % latest_dir
-	var prompt_path := "%s/ai_simulation_latest_codex_prompt.md" % latest_dir
+	var json_path := _latest_file(output_dir, "ai_simulation_data_", ".json")
+	var markdown_path := _latest_file(output_dir, "ai_simulation_report_", ".md")
+	var prompt_path := _latest_file(output_dir, "ai_simulation_codex_prompt_", ".md")
+	if json_path.is_empty() or markdown_path.is_empty() or prompt_path.is_empty():
+		_errors.append("Fixture %s did not write timestamped outputs under %s." % [name, output_dir])
+		return {"json": {}, "markdown": "", "prompt": ""}
 	var json_text := FileAccess.get_file_as_string(json_path)
 	var parsed = JSON.parse_string(json_text)
 	if typeof(parsed) != TYPE_DICTIONARY:
@@ -94,6 +103,22 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 		"markdown": FileAccess.get_file_as_string(markdown_path),
 		"prompt": FileAccess.get_file_as_string(prompt_path),
 	}
+
+
+func _latest_file(output_dir: String, prefix: String, suffix: String) -> String:
+	var dir := DirAccess.open(output_dir)
+	if dir == null:
+		return ""
+	var latest := ""
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and file_name.begins_with(prefix) and file_name.ends_with(suffix):
+			if latest.is_empty() or file_name > latest:
+				latest = file_name
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	return "" if latest.is_empty() else "%s/%s" % [output_dir, latest]
 
 
 func _expect_json_value(fixture: Dictionary, path: Array, expected, label: String) -> void:

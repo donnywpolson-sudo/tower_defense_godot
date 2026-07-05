@@ -1,6 +1,6 @@
 extends SceneTree
 
-const SCHEMA_VERSION := 5
+const SCHEMA_VERSION := 6
 const DEFAULT_OUTPUT_DIR := "res://.godot/ai_simulation"
 const DEFAULT_SEED := 12345
 const DEFAULT_SEED_COUNT := 1
@@ -15,7 +15,16 @@ const STEP_DELTA := 0.2
 const SAMPLED_ACTION_LOG_LIMIT := 80
 const SAMPLED_FLAGGED_RUN_LIMIT := 6
 const COVERAGE_SCOPE := "direct_vertical_slice_api"
-const SCHEMA_BASELINE_TEXT := "Schema 5 starts a new comparison baseline; deltas resume after the next matching schema 5 run."
+const SCHEMA_BASELINE_TEXT := "Schema 6 starts a new comparison baseline; deltas resume after the next matching schema 6 run."
+const SCENARIO_PROBE_MODES := ["auto", "off", "smoke", "full"]
+const SCENARIO_SMOKE_TOWERS := ["archer", "cannon", "tesla"]
+const SCENARIO_SMOKE_ENEMY_KINDS := ["normal", "fast", "tank", "flying"]
+const SCENARIO_FULL_SPECIAL_WAVES := [5, 8, 10, 12, 15, 16, 20, 24, 25, 28, 30]
+const SCENARIO_SMOKE_SPECIAL_WAVES := [5, 8]
+const SCENARIO_MIXED_DEFENSE := ["archer", "cannon", "sniper", "tesla"]
+const SCENARIO_MAX_CYCLES_CAP := 900
+const SCENARIO_SETUP_MONEY := 5000
+const SCENARIO_SETUP_LIVES := 25
 const PROFILE_DEFAULTS := {
 	"medium": {"runs": MEDIUM_RUNS, "max_waves": MEDIUM_MAX_WAVES, "seed_count": 5, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "standard_research", "full_action_log": false, "compare_previous": true},
 	"deep": {"runs": DEEP_RUNS, "max_waves": DEEP_MAX_WAVES, "seed_count": 8, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "deep_research", "full_action_log": false, "compare_previous": true},
@@ -222,9 +231,9 @@ func _initialize() -> void:
 		return
 
 	print("AI_SIMULATION_BATCH_OK")
-	print("  Latest JSON %s" % str(batch_result.get("json_path", "")))
-	print("  Latest Markdown %s" % str(batch_result.get("markdown_path", "")))
-	print("  Latest Codex prompt %s" % str(batch_result.get("prompt_path", "")))
+	print("  Report JSON %s" % str(batch_result.get("json_path", "")))
+	print("  Report Markdown %s" % str(batch_result.get("markdown_path", "")))
+	print("  Codex prompt %s" % str(batch_result.get("prompt_path", "")))
 	print("  Archived previous files %s" % int(batch_result.get("archived_previous_count", 0)))
 	print("  Archived legacy root files %s" % int(batch_result.get("archived_legacy_count", 0)))
 	print("  Runs %s" % int(batch_result.get("run_count", 0)))
@@ -267,7 +276,12 @@ func _run_batch() -> Dictionary:
 
 	for issue in _build_balance_issues(runs):
 		issues.append(issue)
+
+	var scenario_probes := _run_scenario_probes(options)
+	for issue in scenario_probes.get("issues", []):
+		issues.append(issue)
 	_assign_issue_ids(issues)
+	_sync_scenario_issue_ids(scenario_probes, issues)
 
 	var summary := _build_summary(runs, issues)
 	var strategy_metrics := _build_strategy_metrics(runs)
@@ -305,10 +319,12 @@ func _run_batch() -> Dictionary:
 		"target_mode_metrics": target_mode_metrics,
 		"progression_metrics": progression_metrics,
 		"late_wave_metrics": late_wave_metrics,
+		"scenario_probes": scenario_probes,
 		"regression": {},
 		"recommendations": _build_recommendations(summary, issues),
 	}
 	_apply_late_report_metadata(report)
+	_apply_evidence_warnings(report, str(options["output_dir"]))
 	var previous_report: Dictionary = _load_previous_latest_report(str(options["output_dir"])) if bool(options["compare_previous"]) else {}
 	report["regression"] = _build_regression(report, previous_report)
 
@@ -432,10 +448,12 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"target_mode_metrics": {},
 		"progression_metrics": {},
 		"late_wave_metrics": {},
+		"scenario_probes": _empty_scenario_probe_report("off", "metadata_fixture"),
 		"regression": {},
 		"recommendations": _build_recommendations(summary, issues),
 	}
 	_apply_late_report_metadata(report)
+	_apply_evidence_warnings(report, str(options["output_dir"]))
 	var previous_report: Dictionary = _load_previous_latest_report(str(options["output_dir"])) if bool(options["compare_previous"]) else {}
 	report["regression"] = _build_regression(report, previous_report)
 	var write_result := _write_reports(report, str(options["output_dir"]))
@@ -475,20 +493,32 @@ func _print_progress(completed: int, total: int, started_usec: int) -> void:
 	for index in range(width):
 		bar += "#" if index < filled else "-"
 	var elapsed_sec: float = float(Time.get_ticks_usec() - started_usec) / 1000000.0
-	var eta_text := "ETA --"
+	var eta_text := "--"
 	if completed > 0 and completed < safe_total:
 		var avg_sec: float = elapsed_sec / float(completed)
-		eta_text = "ETA %ss" % int(round(avg_sec * float(safe_total - completed)))
+		eta_text = _format_duration(int(round(avg_sec * float(safe_total - completed))))
 	elif completed >= safe_total:
-		eta_text = "done"
-	print("PROGRESS [%s] %d%% %d/%d runs elapsed %ss %s" % [
+		eta_text = "0s"
+	print("  [%s] %d%% | %d/%d runs | elapsed %s | ETA %s" % [
 		bar,
 		int(round(ratio * 100.0)),
 		completed,
 		safe_total,
-		int(round(elapsed_sec)),
+		_format_duration(int(round(elapsed_sec))),
 		eta_text,
 	])
+
+
+func _format_duration(total_seconds: int) -> String:
+	var safe_seconds: int = max(0, total_seconds)
+	var hours: int = int(floor(float(safe_seconds) / 3600.0))
+	var minutes: int = int(floor(float(safe_seconds % 3600) / 60.0))
+	var seconds: int = safe_seconds % 60
+	if hours > 0:
+		return "%dh%02dm" % [hours, minutes]
+	if minutes > 0:
+		return "%dm%02ds" % [minutes, seconds]
+	return "%ds" % seconds
 
 
 func _parse_options() -> Dictionary:
@@ -506,6 +536,7 @@ func _parse_options() -> Dictionary:
 		"strategies": [],
 		"report_label": "",
 		"metadata_fixture": "",
+		"scenario_probes": "auto",
 		"profile_explicit": false,
 		"raw_user_args": [],
 		"error": "",
@@ -527,7 +558,7 @@ func _parse_options() -> Dictionary:
 		elif normalized_arg == "overnight":
 			options["profile"] = "overnight"
 			options["profile_explicit"] = true
-		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture"]:
+		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes"]:
 			pending_key = normalized_arg
 		elif normalized_arg.begins_with("profile=") or normalized_arg.begins_with("ai-profile=") or normalized_arg.begins_with("ai_profile=") or normalized_arg.begins_with("mode=") or normalized_arg.begins_with("batch-profile=") or normalized_arg.begins_with("batch_profile="):
 			options["profile"] = _arg_value(normalized_arg)
@@ -556,6 +587,8 @@ func _parse_options() -> Dictionary:
 			options["report_label"] = _arg_value(str(arg))
 		elif normalized_arg.begins_with("metadata-fixture=") or normalized_arg.begins_with("metadata_fixture="):
 			options["metadata_fixture"] = _arg_value(normalized_arg)
+		elif normalized_arg.begins_with("scenario-probes=") or normalized_arg.begins_with("scenario_probes="):
+			options["scenario_probes"] = _arg_value(normalized_arg)
 	if not pending_key.is_empty():
 		options["error"] = "Missing value for --%s." % pending_key
 		return options
@@ -597,6 +630,9 @@ func _parse_options() -> Dictionary:
 		if not BOT_POLICIES.has(str(strategy)):
 			options["error"] = "Unsupported --strategies entry '%s'; expected one of %s." % [str(strategy), _join_strings(BOT_POLICIES.keys(), ", ")]
 			return options
+	if not SCENARIO_PROBE_MODES.has(str(options["scenario_probes"])):
+		options["error"] = "Unsupported --scenario-probes=%s; expected one of %s." % [str(options["scenario_probes"]), _join_strings(SCENARIO_PROBE_MODES, ", ")]
+		return options
 	return options
 
 
@@ -646,6 +682,8 @@ func _apply_option_value(options: Dictionary, key: String, value: String) -> voi
 		options["report_label"] = normalized_value
 	elif key in ["metadata-fixture", "metadata_fixture"]:
 		options["metadata_fixture"] = normalized_value
+	elif key in ["scenario-probes", "scenario_probes"]:
+		options["scenario_probes"] = normalized_value
 
 
 func _parse_csv(value: String) -> Array:
@@ -671,6 +709,16 @@ func _evidence_tier(runs: int, max_waves: int) -> String:
 	if runs >= MEDIUM_RUNS and max_waves >= MEDIUM_MAX_WAVES:
 		return "medium"
 	return "smoke"
+
+
+func _resolve_scenario_probe_mode(options: Dictionary) -> String:
+	var requested := str(options.get("scenario_probes", "auto"))
+	if requested == "off":
+		return "off"
+	if requested in ["smoke", "full"]:
+		return requested
+	var tier := _evidence_tier(int(options.get("runs", 0)), int(options.get("max_waves", 0)))
+	return "full" if tier in ["medium", "deep", "overnight"] else "smoke"
 
 
 func _default_strategies_for_profile(profile: String) -> Array:
@@ -715,6 +763,8 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"report_label": str(options.get("report_label", "")),
 		"evidence_tier": _evidence_tier(int(options["runs"]), int(options["max_waves"])),
 		"profile_overridden": _profile_overridden(options),
+		"scenario_probes": str(options.get("scenario_probes", "auto")),
+		"scenario_probe_mode": _resolve_scenario_probe_mode(options),
 		"coverage_scope": COVERAGE_SCOPE,
 		"profile_defaults": PROFILE_DEFAULTS.duplicate(true),
 		"strategy_groups": STRATEGY_GROUPS.duplicate(true),
@@ -735,6 +785,134 @@ func _apply_late_report_metadata(report: Dictionary) -> void:
 	config["balance_actionable"] = balance_actionable
 	config["coverage_scope"] = str(config.get("coverage_scope", COVERAGE_SCOPE))
 	report["config"] = config
+
+
+func _apply_evidence_warnings(report: Dictionary, output_dir: String) -> void:
+	var warnings := _build_evidence_warnings(report, output_dir)
+	report["evidence_warnings"] = warnings
+	var config: Dictionary = report.get("config", {})
+	config["evidence_warnings"] = warnings.duplicate()
+	report["config"] = config
+
+
+func _build_evidence_warnings(report: Dictionary, output_dir: String) -> Array:
+	var config: Dictionary = report.get("config", {})
+	var current_tier := str(config.get("evidence_tier", "smoke"))
+	if _evidence_tier_rank(current_tier) >= _evidence_tier_rank("medium"):
+		return []
+	var stronger := _stronger_evidence_reports(output_dir, current_tier)
+	if stronger.is_empty():
+		return []
+	var strongest: Dictionary = stronger[0]
+	return [
+		"Stronger %s evidence exists in this output folder (%s runs / %s waves at `%s`); do not treat this smoke/custom run as the strongest balance packet." % [
+			str(strongest.get("evidence_tier", "")),
+			int(strongest.get("runs", 0)),
+			int(strongest.get("max_waves", 0)),
+			str(strongest.get("path", "")),
+		]
+	]
+
+
+func _stronger_evidence_reports(output_dir: String, current_tier: String) -> Array:
+	var reports: Array = []
+	for dir_path in [output_dir, _join_path(output_dir, "archive")]:
+		reports.append_array(_evidence_reports_in_dir(str(dir_path), current_tier))
+	reports.sort_custom(func(left, right): return _evidence_report_sort_key(left) > _evidence_report_sort_key(right))
+	return reports
+
+
+func _evidence_reports_in_dir(dir_path: String, current_tier: String) -> Array:
+	var reports: Array = []
+	var dir := DirAccess.open(dir_path)
+	if dir == null:
+		return reports
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and _is_evidence_report_file(file_name):
+			var path := _join_path(dir_path, file_name)
+			var config := _evidence_config_from_file_name(file_name)
+			if config.is_empty() and file_name.ends_with(".json"):
+				config = _load_report_config(path)
+			var tier := str(config.get("evidence_tier", ""))
+			if _evidence_tier_rank(tier) > _evidence_tier_rank(current_tier):
+				reports.append({
+					"path": path,
+					"evidence_tier": tier,
+					"runs": int(config.get("runs", 0)),
+					"max_waves": int(config.get("max_waves", 0)),
+					"seed": int(config.get("seed", 0)),
+				})
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	return reports
+
+
+func _is_evidence_report_file(file_name: String) -> bool:
+	if file_name.ends_with("_codex_prompt.md"):
+		return false
+	return file_name.ends_with(".json") or file_name.ends_with(".md")
+
+
+func _evidence_config_from_file_name(file_name: String) -> Dictionary:
+	var tier := ""
+	for candidate in ["overnight", "deep", "medium", "smoke"]:
+		if file_name.contains("ai_simulation_%s_" % candidate):
+			tier = candidate
+			break
+	if tier.is_empty():
+		return {}
+	return {
+		"evidence_tier": tier,
+		"runs": _number_before_token(file_name, "runs"),
+		"max_waves": _number_before_token(file_name, "waves"),
+		"seed": _number_after_token(file_name, "seed"),
+	}
+
+
+func _number_before_token(text: String, token: String) -> int:
+	var index := text.find(token)
+	if index <= 0:
+		return 0
+	var start := index - 1
+	while start >= 0 and text.substr(start, 1).is_valid_int():
+		start -= 1
+	return int(text.substr(start + 1, index - start - 1))
+
+
+func _number_after_token(text: String, token: String) -> int:
+	var index := text.find(token)
+	if index < 0:
+		return 0
+	var start := index + token.length()
+	var end := start
+	while end < text.length() and text.substr(end, 1).is_valid_int():
+		end += 1
+	return int(text.substr(start, end - start))
+
+
+func _evidence_report_sort_key(report: Dictionary) -> String:
+	return "%s_%010d_%010d_%s" % [
+		_evidence_tier_rank(str(report.get("evidence_tier", ""))),
+		int(report.get("runs", 0)),
+		int(report.get("max_waves", 0)),
+		str(report.get("path", "")),
+	]
+
+
+func _evidence_tier_rank(tier: String) -> int:
+	match tier:
+		"overnight":
+			return 4
+		"deep":
+			return 3
+		"medium":
+			return 2
+		"smoke":
+			return 1
+		_:
+			return 0
 
 
 func _policy_names(strategies: Array) -> Dictionary:
@@ -974,7 +1152,9 @@ func _simulate_current_wave(game: Node, rng: RandomNumberGenerator, run: Diction
 	var start_damage: float = float(start_tower_totals.get("total_damage", 0.0))
 	var end_damage: float = float(final_tower_totals.get("total_damage", 0.0))
 	var damage_delta: float = max(0.0, end_damage - start_damage)
-	var spawned := int(final_snapshot.get("spawned_this_wave", 0))
+	var spawned_regular := int(final_snapshot.get("spawned_this_wave", 0))
+	var spawned_extra := int(final_snapshot.get("spawned_extra_this_wave", 0))
+	var spawned := int(final_snapshot.get("spawned_total_this_wave", spawned_regular + spawned_extra))
 	var leaks := int(final_snapshot.get("leaks", 0))
 	var outcome := {
 		"wave": wave_number,
@@ -986,8 +1166,10 @@ func _simulate_current_wave(game: Node, rng: RandomNumberGenerator, run: Diction
 		"scheduled_regular_count": int(wave_schedule.get("regular_enemy_count", spawn_limit)),
 		"scheduled_boss_count": int(wave_schedule.get("boss_count", 0)),
 		"scheduled_commander_count": int(wave_schedule.get("commander_count", 0)),
-		"spawned_boss_count": _spawned_special_count(enemy_kind, spawned, "boss"),
-		"spawned_commander_count": _spawned_special_count(enemy_kind, spawned, "commander"),
+		"spawned_boss_count": _spawned_special_count(enemy_kind, spawned_regular, "boss"),
+		"spawned_commander_count": _spawned_special_count(enemy_kind, spawned_regular, "commander"),
+		"spawned_regular": spawned_regular,
+		"spawned_extra": spawned_extra,
 		"spawned": spawned,
 		"kills": int(final_snapshot.get("kills", 0)),
 		"leaks": leaks,
@@ -1432,7 +1614,7 @@ func _check_state_invariants(game: Node, run: Dictionary, wave_number: int) -> v
 			})
 		run["_runtime_invariant_labels"] = seen
 	var snapshot: Dictionary = game.snapshot()
-	for key in ["money", "lives", "research_points", "spawned_this_wave", "kills", "leaks", "tower_count", "enemy_count", "projectile_count"]:
+	for key in ["money", "lives", "research_points", "spawned_this_wave", "spawned_extra_this_wave", "spawned_total_this_wave", "kills", "leaks", "tower_count", "enemy_count", "projectile_count"]:
 		if int(snapshot.get(key, 0)) < 0:
 			_add_issue(run, "bug", "high", "negative_state_value", "Snapshot contains a negative state value.", {"wave": wave_number, "key": key, "value": int(snapshot.get(key, 0))})
 	if bool(snapshot.get("wave_complete", false)) and int(snapshot.get("enemy_count", 0)) > 0:
@@ -1440,12 +1622,24 @@ func _check_state_invariants(game: Node, run: Dictionary, wave_number: int) -> v
 
 
 func _check_wave_resolution(game: Node, run: Dictionary, wave_number: int, snapshot: Dictionary) -> void:
-	var spawned := int(snapshot.get("spawned_this_wave", 0))
+	var spawned_regular := int(snapshot.get("spawned_this_wave", 0))
+	var spawned_extra := int(snapshot.get("spawned_extra_this_wave", 0))
+	var has_total_accounting := snapshot.has("spawned_total_this_wave")
+	var spawned := int(snapshot.get("spawned_total_this_wave", spawned_regular))
 	var resolved := int(snapshot.get("kills", 0)) + int(snapshot.get("leaks", 0))
+	if bool(snapshot.get("wave_complete", false)) and not has_total_accounting and _wave_has_death_spawns(wave_number):
+		_add_issue(run, "validation", "medium", "wave_total_accounting_unavailable", "Completed split-capable wave could not verify total spawned participants from this snapshot.", {
+			"wave": wave_number,
+			"spawned_regular": spawned_regular,
+			"resolved": resolved,
+		})
+		return
 	if bool(snapshot.get("wave_complete", false)) and resolved != spawned:
 		_add_issue(run, "bug", "high", "wave_resolution_mismatch", "Completed wave has unresolved kills/leaks count.", {
 			"wave": wave_number,
-			"spawned": spawned,
+			"spawned_regular": spawned_regular,
+			"spawned_extra": spawned_extra,
+			"spawned_total": spawned,
 			"resolved": resolved,
 		})
 	if bool(snapshot.get("wave_complete", false)) and int(snapshot.get("projectile_count", 0)) > 0:
@@ -1459,6 +1653,20 @@ func _check_wave_resolution(game: Node, run: Dictionary, wave_number: int, snaps
 		if not restored:
 			_add_issue(run, "bug", "high", "invalid_state_restore", "Serialized run state could not be restored.", {"wave": wave_number})
 		restored_game.queue_free()
+
+
+func _wave_has_death_spawns(wave_number: int) -> bool:
+	var schedule: Array = _game_data.get("waves", {}).get("schedule", [])
+	if wave_number < 1 or wave_number > schedule.size():
+		return false
+	var row: Variant = schedule[wave_number - 1]
+	if not (row is Dictionary):
+		return false
+	var modifier_data: Variant = row.get("modifier_data", {})
+	if not (modifier_data is Dictionary):
+		return false
+	var effects: Variant = modifier_data.get("effects", {})
+	return effects is Dictionary and int(effects.get("death_spawns", 0)) > 0
 
 
 func _create_restore_probe(game: Node) -> Node:
@@ -1597,6 +1805,8 @@ func _trim_snapshot(snapshot: Dictionary) -> Dictionary:
 		"wave_complete": bool(snapshot.get("wave_complete", false)),
 		"game_over": bool(snapshot.get("game_over", false)),
 		"spawned_this_wave": int(snapshot.get("spawned_this_wave", 0)),
+		"spawned_extra_this_wave": int(snapshot.get("spawned_extra_this_wave", 0)),
+		"spawned_total_this_wave": int(snapshot.get("spawned_total_this_wave", snapshot.get("spawned_this_wave", 0))),
 		"spawn_limit": int(snapshot.get("spawn_limit", 0)),
 		"kills": int(snapshot.get("kills", 0)),
 		"leaks": int(snapshot.get("leaks", 0)),
@@ -2521,6 +2731,438 @@ func _reward_card_data_summary() -> Dictionary:
 	}
 
 
+func _empty_scenario_probe_report(mode: String, reason: String = "") -> Dictionary:
+	return {
+		"mode": mode,
+		"enabled": false,
+		"reason": reason,
+		"summary": {
+			"total": 0,
+			"passed": 0,
+			"failed": 0,
+			"diagnostic": 0,
+			"stalled": 0,
+		},
+		"tower_family_probes": [],
+		"branch_probes": [],
+		"enemy_kind_probes": [],
+		"scheduled_wave_probes": [],
+		"issues": [],
+	}
+
+
+func _run_scenario_probes(options: Dictionary) -> Dictionary:
+	var mode := _resolve_scenario_probe_mode(options)
+	if mode == "off":
+		return _empty_scenario_probe_report(mode, "disabled")
+	var report := _empty_scenario_probe_report(mode)
+	report["enabled"] = true
+	report["reason"] = ""
+	report["tower_family_probes"] = _run_tower_family_probes(mode)
+	report["branch_probes"] = _run_branch_probes(mode)
+	report["enemy_kind_probes"] = _run_enemy_kind_probes(mode)
+	report["scheduled_wave_probes"] = _run_scheduled_wave_probes(mode)
+	report["issues"] = _scenario_issues_from_report(report)
+	report["summary"] = _scenario_summary(report)
+	return report
+
+
+func _scenario_summary(report: Dictionary) -> Dictionary:
+	var summary := {
+		"total": 0,
+		"passed": 0,
+		"failed": 0,
+		"diagnostic": 0,
+		"stalled": 0,
+	}
+	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes"]:
+		for probe in report.get(group, []):
+			summary["total"] = int(summary["total"]) + 1
+			if bool(probe.get("diagnostic_only", false)):
+				summary["diagnostic"] = int(summary["diagnostic"]) + 1
+			elif bool(probe.get("passed", false)):
+				summary["passed"] = int(summary["passed"]) + 1
+			else:
+				summary["failed"] = int(summary["failed"]) + 1
+			if bool(probe.get("stalled", false)):
+				summary["stalled"] = int(summary["stalled"]) + 1
+	return summary
+
+
+func _scenario_issues_from_report(report: Dictionary) -> Array:
+	var issues: Array = []
+	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes"]:
+		for probe in report.get(group, []):
+			for failure in probe.get("failures", []):
+				var label := str(failure.get("label", "scenario_probe_failed"))
+				var severity := str(failure.get("severity", "medium"))
+				var message := str(failure.get("message", "Scenario probe failed."))
+				var detail: Dictionary = probe.duplicate(true)
+				detail.erase("failures")
+				detail["failure"] = failure
+				issues.append(_batch_issue("scenario", severity, label, message, detail))
+	return issues
+
+
+func _sync_scenario_issue_ids(_scenario_probes: Dictionary, _issues: Array) -> void:
+	return
+
+
+func _run_tower_family_probes(mode: String) -> Array:
+	var towers := SCENARIO_SMOKE_TOWERS if mode == "smoke" else ENABLED_TOWER_TYPES
+	var probes: Array = []
+	for tower_type in towers:
+		var game := _create_probe_game()
+		var probe := _new_scenario_probe("tower_family", str(tower_type))
+		probe["tower_type"] = str(tower_type)
+		probe["wave"] = 6
+		_prepare_scenario_game(game)
+		game.set_wave_for_test(6)
+		var built := _scenario_place_towers(game, str(tower_type), 3)
+		if built.size() > 0:
+			game.selected_tower_index = 0
+			_upgrade_selected_with_branch_if_needed(game, probe, {}, false)
+		probe["setup"] = {"requested_towers": 3, "placed_towers": built.size(), "sites": built}
+		if built.size() < 3:
+			_add_probe_failure(probe, "scenario_probe_stalled", "medium", "Scenario probe could not place the required towers.", {"required": 3, "placed": built.size()})
+		else:
+			var result := _run_started_wave_probe(game, 6)
+			_merge_probe_result(probe, result)
+			_apply_probe_expectations(probe, 0.35, 0.15)
+		_finalize_probe(probe)
+		probes.append(probe)
+		_teardown_probe_game(game)
+	return probes
+
+
+func _run_branch_probes(mode: String) -> Array:
+	var catalog := _available_branch_catalog()
+	var tower_types := SCENARIO_SMOKE_TOWERS if mode == "smoke" else ENABLED_TOWER_TYPES
+	var probes: Array = []
+	for tower_type in tower_types:
+		var branches: Array = catalog.get(str(tower_type), [])
+		if mode == "smoke" and not branches.is_empty():
+			branches = [branches[0]]
+		for branch_id in branches:
+			var game := _create_probe_game()
+			var probe := _new_scenario_probe("branch", "%s:%s" % [str(tower_type), str(branch_id)])
+			probe["tower_type"] = str(tower_type)
+			probe["branch_id"] = str(branch_id)
+			probe["wave"] = 8
+			_prepare_scenario_game(game)
+			game.set_wave_for_test(8)
+			var built := _scenario_place_towers(game, str(tower_type), 1)
+			var selected_branch := ""
+			var post_branch_upgrade := false
+			if built.size() > 0:
+				game.selected_tower_index = 0
+				_upgrade_selected_with_branch_if_needed(game, probe, {}, false)
+				var chose: bool = game.choose_selected_tower_branch(str(branch_id))
+				selected_branch = str(branch_id) if chose else ""
+				post_branch_upgrade = _upgrade_selected_with_branch_if_needed(game, probe, {}, false)
+				var extra := _scenario_place_towers(game, str(tower_type), 2)
+				for site in extra:
+					built.append(site)
+			probe["selected_branch"] = selected_branch
+			probe["post_branch_upgrade_succeeded"] = post_branch_upgrade
+			probe["setup"] = {"placed_towers": built.size(), "sites": built}
+			if selected_branch != str(branch_id) or not post_branch_upgrade:
+				_add_probe_failure(probe, "scenario_branch_not_exercised", "medium", "Scenario branch probe did not select and upgrade the requested branch.", {
+					"target_branch": str(branch_id),
+					"selected_branch": selected_branch,
+					"post_branch_upgrade_succeeded": post_branch_upgrade,
+				})
+			else:
+				var result := _run_started_wave_probe(game, 8)
+				_merge_probe_result(probe, result)
+				_apply_probe_expectations(probe, 0.40, 0.0)
+			_finalize_probe(probe)
+			probes.append(probe)
+			_teardown_probe_game(game)
+	return probes
+
+
+func _run_enemy_kind_probes(mode: String) -> Array:
+	var kinds := SCENARIO_SMOKE_ENEMY_KINDS if mode == "smoke" else _sorted_string_keys(_game_data.get("enemies", {}).get("kind_modifiers", {}))
+	var probes: Array = []
+	for enemy_kind in kinds:
+		var game := _create_probe_game()
+		var probe := _new_scenario_probe("enemy_kind", str(enemy_kind))
+		probe["enemy_kind"] = str(enemy_kind)
+		probe["wave"] = 1
+		_prepare_scenario_game(game)
+		game.set_wave_for_test(1)
+		_scenario_place_mixed_defense(game, SCENARIO_MIXED_DEFENSE)
+		if str(enemy_kind) == "flying":
+			_scenario_set_target_mode_for_tower(game, "tesla", "flying")
+		var result := _run_direct_enemy_probe(game, str(enemy_kind), 12)
+		_merge_probe_result(probe, result)
+		_apply_probe_expectations(probe, 0.35, 0.15)
+		_finalize_probe(probe)
+		probes.append(probe)
+		_teardown_probe_game(game)
+	return probes
+
+
+func _run_scheduled_wave_probes(mode: String) -> Array:
+	var waves := SCENARIO_SMOKE_SPECIAL_WAVES if mode == "smoke" else SCENARIO_FULL_SPECIAL_WAVES
+	var probes: Array = []
+	for wave_number in waves:
+		var game := _create_probe_game()
+		var probe := _new_scenario_probe("scheduled_wave", "wave_%s" % int(wave_number))
+		probe["wave"] = int(wave_number)
+		_prepare_scenario_game(game)
+		game.set_wave_for_test(int(wave_number))
+		_scenario_place_mixed_defense(game, ["archer", "cannon", "sniper", "tesla", "machine_gun"])
+		for index in range(min(2, int(game.snapshot().get("tower_count", 0)))):
+			game.selected_tower_index = index
+			_upgrade_selected_with_branch_if_needed(game, probe, {}, false)
+		var result := _run_started_wave_probe(game, int(wave_number))
+		_merge_probe_result(probe, result)
+		_apply_probe_expectations(probe, 0.50, 0.0)
+		var scheduled_special := int(probe.get("scheduled_boss_count", 0)) + int(probe.get("scheduled_commander_count", 0))
+		var spawned_special := int(probe.get("spawned_boss_count", 0)) + int(probe.get("spawned_commander_count", 0))
+		if scheduled_special > 0 and spawned_special == 0:
+			probe["diagnostic_only"] = true
+			_add_probe_failure(probe, "scenario_scheduled_special_unspawned", "info", "Scheduled boss or commander pressure is not spawned by the current vertical slice.", {
+				"scheduled_special": scheduled_special,
+				"spawned_special": spawned_special,
+			})
+		_finalize_probe(probe)
+		probes.append(probe)
+		_teardown_probe_game(game)
+	return probes
+
+
+func _create_probe_game() -> Node:
+	var slice_script := load("res://scripts/game/vertical_slice_game.gd")
+	var game: Node = slice_script.new()
+	root.add_child(game)
+	game.name = "ScenarioProbeGame"
+	game.reset_slice()
+	return game
+
+
+func _teardown_probe_game(game: Node) -> void:
+	if game != null:
+		game.queue_free()
+
+
+func _prepare_scenario_game(game: Node) -> void:
+	game.reset_slice()
+	game.money = SCENARIO_SETUP_MONEY
+	game.lives = SCENARIO_SETUP_LIVES
+	game.set_game_speed(4.0)
+
+
+func _new_scenario_probe(kind: String, probe_id: String) -> Dictionary:
+	return {
+		"id": probe_id,
+		"kind": kind,
+		"passed": false,
+		"diagnostic_only": false,
+		"stalled": false,
+		"failures": [],
+		"action_counts": {},
+		"blocked_actions": [],
+		"upgrade_events": [],
+		"upgrade_usage": {},
+	}
+
+
+func _scenario_place_mixed_defense(game: Node, tower_types: Array) -> Array:
+	var sites: Array = []
+	for tower_type in tower_types:
+		var placed := _scenario_place_towers(game, str(tower_type), 1)
+		for site in placed:
+			sites.append(site)
+	return sites
+
+
+func _scenario_place_towers(game: Node, tower_type: String, count: int) -> Array:
+	var placed: Array = []
+	for _index in range(count):
+		var site := _scenario_next_build_site(game, tower_type)
+		if site == Vector2.INF:
+			break
+		if game.place_selected_tower(site, tower_type):
+			placed.append([site.x, site.y])
+	return placed
+
+
+func _scenario_set_target_mode_for_tower(game: Node, tower_type: String, target_mode: String) -> void:
+	var towers: Array = game.serialize_run_state().get("towers", [])
+	for index in range(towers.size()):
+		if str(towers[index].get("type", "")) == tower_type:
+			game.set_tower_target_mode(index, target_mode)
+
+
+func _scenario_next_build_site(game: Node, tower_type: String) -> Vector2:
+	var candidates: Array = []
+	for y in range(108, 568, 27):
+		for x in range(54, 838, 27):
+			var site := Vector2(float(x), float(y))
+			var preview: Dictionary = game.placement_preview_snapshot(site, tower_type)
+			if not bool(preview.get("can_place", false)):
+				continue
+			candidates.append({
+				"site": site,
+				"score": _build_site_score(game, site, "mixed"),
+				"x": x,
+				"y": y,
+			})
+	if candidates.is_empty():
+		return Vector2.INF
+	candidates.sort_custom(func(a, b):
+		var score_delta := float(b["score"]) - float(a["score"])
+		if abs(score_delta) > 0.0001:
+			return float(a["score"]) > float(b["score"])
+		if int(a["x"]) != int(b["x"]):
+			return int(a["x"]) < int(b["x"])
+		return int(a["y"]) < int(b["y"])
+	)
+	return candidates[0]["site"]
+
+
+func _run_started_wave_probe(game: Node, wave_number: int) -> Dictionary:
+	var before_totals := _tower_totals_by_type(game)
+	var started: bool = game.start_wave()
+	if not started:
+		return {
+			"stalled": true,
+			"completed": false,
+			"game_over": false,
+			"failures": [{
+				"label": "scenario_probe_stalled",
+				"severity": "medium",
+				"message": "Scenario probe could not start the configured wave.",
+				"detail": game.wave_control_snapshot(),
+			}],
+		}
+	return _simulate_probe_resolution(game, wave_number, before_totals, false, 0)
+
+
+func _run_direct_enemy_probe(game: Node, enemy_kind: String, count: int) -> Dictionary:
+	var before_totals := _tower_totals_by_type(game)
+	for _index in range(count):
+		game.enemies.append(game.create_enemy(enemy_kind, 1))
+	return _simulate_probe_resolution(game, 1, before_totals, true, count)
+
+
+func _simulate_probe_resolution(game: Node, wave_number: int, before_totals: Dictionary, direct_enemy_probe: bool, direct_spawned: int) -> Dictionary:
+	var spawn_limit: int = direct_spawned if direct_enemy_probe else int(game.snapshot().get("spawn_limit", 0))
+	var max_cycles: int = min(SCENARIO_MAX_CYCLES_CAP, max(360, spawn_limit * 40 + wave_number * 35))
+	var invariant_failures: Array = []
+	var cycles_elapsed := max_cycles
+	var completed := false
+	var game_over := false
+	for cycle in range(max_cycles):
+		cycles_elapsed = cycle + 1
+		game.set_game_speed(4.0)
+		game._process_scaled_delta(STEP_DELTA)
+		if cycle % 20 == 0 and game.has_method("runtime_invariant_failures"):
+			for failure in game.runtime_invariant_failures():
+				if not invariant_failures.has(str(failure)):
+					invariant_failures.append(str(failure))
+		var snapshot: Dictionary = game.snapshot()
+		game_over = bool(snapshot.get("game_over", false))
+		if game_over:
+			break
+		if direct_enemy_probe:
+			if int(snapshot.get("enemy_count", 0)) == 0 and int(snapshot.get("projectile_count", 0)) == 0:
+				completed = true
+				break
+		elif bool(snapshot.get("wave_complete", false)):
+			completed = true
+			break
+	var final_snapshot: Dictionary = game.snapshot()
+	var after_totals: Dictionary = _tower_totals_by_type(game)
+	var spawned: int = direct_spawned if direct_enemy_probe else int(final_snapshot.get("spawned_total_this_wave", final_snapshot.get("spawned_this_wave", 0)))
+	var leaks: int = int(final_snapshot.get("leaks", 0))
+	var damage_delta: float = max(0.0, float(after_totals.get("total_damage", 0.0)) - float(before_totals.get("total_damage", 0.0)))
+	var spend_delta: int = int(after_totals.get("money_spent", 0))
+	var result: Dictionary = {
+		"completed": completed,
+		"game_over": game_over,
+		"stalled": not completed and not game_over,
+		"cycles_to_resolution": cycles_elapsed,
+		"max_cycles": max_cycles,
+		"spawned": spawned,
+		"kills": int(final_snapshot.get("kills", 0)),
+		"leaks": leaks,
+		"leak_rate": _safe_ratio(leaks, spawned),
+		"damage_delta": damage_delta,
+		"spend_delta": spend_delta,
+		"damage_per_spend": damage_delta / float(max(1, spend_delta)),
+		"runtime_invariant_failures": invariant_failures,
+		"scheduled_boss_count": int(_wave_schedule_row(wave_number).get("boss_count", 0)),
+		"scheduled_commander_count": int(_wave_schedule_row(wave_number).get("commander_count", 0)),
+		"spawned_boss_count": 0,
+		"spawned_commander_count": 0,
+		"final_snapshot": _trim_snapshot(final_snapshot),
+		"failures": [],
+	}
+	if not invariant_failures.is_empty():
+		result["failures"].append({
+			"label": "scenario_probe_stalled",
+			"severity": "high",
+			"message": "Scenario probe hit runtime invariant failures.",
+			"detail": invariant_failures,
+		})
+	return result
+
+
+func _merge_probe_result(probe: Dictionary, result: Dictionary) -> void:
+	for key in result.keys():
+		if key == "failures":
+			for failure in result.get("failures", []):
+				probe["failures"].append(failure)
+		else:
+			probe[key] = result[key]
+
+
+func _apply_probe_expectations(probe: Dictionary, max_leak_rate: float, min_damage_per_spend: float) -> void:
+	if bool(probe.get("stalled", false)):
+		_add_probe_failure(probe, "scenario_probe_stalled", "medium", "Scenario probe did not resolve within its bounded cycle budget.", {
+			"cycles_to_resolution": int(probe.get("cycles_to_resolution", 0)),
+			"max_cycles": int(probe.get("max_cycles", 0)),
+		})
+	if float(probe.get("leak_rate", 0.0)) > max_leak_rate:
+		_add_probe_failure(probe, "scenario_leak_rate_out_of_range", "medium", "Scenario probe leak rate exceeded its conservative v1 range.", {
+			"leak_rate": float(probe.get("leak_rate", 0.0)),
+			"max_leak_rate": max_leak_rate,
+		})
+	if int(probe.get("cycles_to_resolution", 0)) <= 0 or int(probe.get("cycles_to_resolution", 0)) > int(probe.get("max_cycles", 0)):
+		_add_probe_failure(probe, "scenario_kill_time_out_of_range", "medium", "Scenario probe kill time was outside its bounded range.", {
+			"cycles_to_resolution": int(probe.get("cycles_to_resolution", 0)),
+			"max_cycles": int(probe.get("max_cycles", 0)),
+		})
+	if min_damage_per_spend > 0.0 and float(probe.get("damage_per_spend", 0.0)) < min_damage_per_spend:
+		_add_probe_failure(probe, "scenario_spend_efficiency_out_of_range", "medium", "Scenario probe damage per spend was below its conservative v1 floor.", {
+			"damage_per_spend": float(probe.get("damage_per_spend", 0.0)),
+			"min_damage_per_spend": min_damage_per_spend,
+		})
+
+
+func _add_probe_failure(probe: Dictionary, label: String, severity: String, message: String, detail: Dictionary) -> void:
+	probe["failures"].append({
+		"label": label,
+		"severity": severity,
+		"message": message,
+		"detail": detail,
+	})
+	if label == "scenario_probe_stalled":
+		probe["stalled"] = true
+
+
+func _finalize_probe(probe: Dictionary) -> void:
+	var hard_failures := 0
+	for failure in probe.get("failures", []):
+		if str(failure.get("severity", "")) != "info":
+			hard_failures += 1
+	probe["passed"] = hard_failures == 0
+
+
 func _build_telemetry_coverage() -> Dictionary:
 	return {
 		"implemented": {
@@ -2550,10 +3192,37 @@ func _build_telemetry_coverage() -> Dictionary:
 
 
 func _load_previous_latest_report(output_dir: String) -> Dictionary:
-	var latest_json := _join_path(_join_path(output_dir, "latest"), "ai_simulation_latest.json")
-	if not FileAccess.file_exists(latest_json):
-		return {}
-	var parsed = JSON.parse_string(FileAccess.get_file_as_string(latest_json))
+	for candidate in [
+		_latest_timestamped_report_json(output_dir),
+		_join_path(output_dir, "ai_simulation_latest.json"),
+		_join_path(_join_path(output_dir, "latest"), "ai_simulation_latest.json"),
+	]:
+		if str(candidate).is_empty() or not FileAccess.file_exists(str(candidate)):
+			continue
+		var parsed := _load_json_dictionary(str(candidate))
+		if not parsed.is_empty():
+			return parsed
+	return {}
+
+
+func _latest_timestamped_report_json(output_dir: String) -> String:
+	var dir := DirAccess.open(output_dir)
+	if dir == null:
+		return ""
+	var latest_name := ""
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and file_name.begins_with("ai_simulation_data_") and file_name.ends_with(".json"):
+			if latest_name.is_empty() or file_name > latest_name:
+				latest_name = file_name
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	return "" if latest_name.is_empty() else _join_path(output_dir, latest_name)
+
+
+func _load_json_dictionary(path: String) -> Dictionary:
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
 	return parsed if typeof(parsed) == TYPE_DICTIONARY else {}
 
 
@@ -2574,7 +3243,7 @@ func _build_regression(current: Dictionary, previous: Dictionary) -> Dictionary:
 	var previous_config: Dictionary = previous.get("config", {})
 	result["previous_label"] = str(previous_config.get("report_label", ""))
 	if int(previous.get("schema_version", 0)) != SCHEMA_VERSION:
-		result["reason"] = "schema migration: establish a new schema 5 baseline."
+		result["reason"] = "schema migration: establish a new schema 6 baseline."
 		return result
 	for key in ["profile", "evidence_tier", "strategy_group"]:
 		if str(previous_config.get(key, "")) != str(current_config.get(key, "")):
@@ -2680,24 +3349,21 @@ func _has_label(issues: Array, label: String) -> bool:
 
 func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 	var errors: Array = []
-	var latest_dir := _join_path(output_dir, "latest")
 	var archive_dir := _join_path(output_dir, "archive")
-	var dir_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(latest_dir))
+	var dir_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output_dir))
 	if dir_error != OK:
-		return {"ok": false, "errors": ["Could not create latest output directory %s: %s" % [latest_dir, dir_error]]}
+		return {"ok": false, "errors": ["Could not create AI simulation output directory %s: %s" % [output_dir, dir_error]]}
 	var archive_dir_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(archive_dir))
 	if archive_dir_error != OK:
 		return {"ok": false, "errors": ["Could not create archive output directory %s: %s" % [archive_dir, archive_dir_error]]}
 
 	var timestamp := _timestamp()
-	var latest_json := _join_path(latest_dir, "ai_simulation_latest.json")
-	var latest_md := _join_path(latest_dir, "ai_simulation_latest.md")
-	var latest_prompt := _join_path(latest_dir, "ai_simulation_latest_codex_prompt.md")
+	var output_paths := _timestamped_output_paths(output_dir, timestamp)
+	var latest_json := str(output_paths["json"])
+	var latest_md := str(output_paths["markdown"])
+	var latest_prompt := str(output_paths["prompt"])
 	var legacy_result := _archive_legacy_root_outputs(output_dir, archive_dir)
 	for error in legacy_result.get("errors", []):
-		errors.append(error)
-	var previous_result := _archive_previous_latest(latest_json, latest_md, latest_prompt, archive_dir, timestamp)
-	for error in previous_result.get("errors", []):
 		errors.append(error)
 	if not errors.is_empty():
 		return {"ok": false, "errors": errors}
@@ -2721,9 +3387,25 @@ func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 		"markdown_path": latest_md,
 		"prompt_path": latest_prompt,
 		"visible_prompt_path": latest_prompt,
-		"archived_previous_count": int(previous_result.get("paths", []).size()),
+		"archived_previous_count": 0,
 		"archived_legacy_count": int(legacy_result.get("paths", []).size()),
 	}
+
+
+func _timestamped_output_paths(output_dir: String, timestamp: String) -> Dictionary:
+	var suffix := timestamp
+	var collision_index := 2
+	while true:
+		var paths := {
+			"json": _join_path(output_dir, "ai_simulation_data_%s.json" % suffix),
+			"markdown": _join_path(output_dir, "ai_simulation_report_%s.md" % suffix),
+			"prompt": _join_path(output_dir, "ai_simulation_codex_prompt_%s.md" % suffix),
+		}
+		if not FileAccess.file_exists(str(paths["json"])) and not FileAccess.file_exists(str(paths["markdown"])) and not FileAccess.file_exists(str(paths["prompt"])):
+			return paths
+		suffix = "%s_%s" % [timestamp, collision_index]
+		collision_index += 1
+	return {}
 
 
 func _write_text(path: String, text: String) -> String:
@@ -2798,9 +3480,11 @@ func _archive_legacy_root_outputs(output_dir: String, archive_dir: String) -> Di
 
 
 func _is_legacy_root_output_name(file_name: String) -> bool:
-	if not file_name.begins_with("ai_simulation_"):
-		return false
-	return file_name.ends_with(".json") or file_name.ends_with(".md")
+	return file_name in [
+		"ai_simulation_latest.json",
+		"ai_simulation_latest.md",
+		"ai_simulation_latest_codex_prompt.md",
+	]
 
 
 func _move_file(source: String, target: String) -> String:
@@ -2870,12 +3554,17 @@ func _render_markdown(report: Dictionary) -> String:
 	lines.append("- %s" % SCHEMA_BASELINE_TEXT)
 	if str(config.get("evidence_tier", "")) == "smoke":
 		lines.append("- Warning: This is smoke/custom diagnostic evidence and is not balance-actionable.")
+	for warning in report.get("evidence_warnings", []):
+		lines.append("- Evidence warning: %s" % str(warning))
 	lines.append("")
 	lines.append("## Canonical preflight")
 	_append_preflight_lines(lines, preflight)
 	lines.append("")
 	lines.append("## Telemetry coverage")
 	_append_telemetry_coverage(lines, report.get("telemetry_coverage", {}))
+	lines.append("")
+	lines.append("## Scenario probes")
+	_append_scenario_probe_lines(lines, report.get("scenario_probes", {}))
 	lines.append("")
 	lines.append("## Strategy metrics")
 	_append_strategy_metrics_table(lines, report.get("strategy_metrics", {}))
@@ -2994,12 +3683,17 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("- %s" % SCHEMA_BASELINE_TEXT)
 	if str(config.get("evidence_tier", "")) == "smoke":
 		lines.append("- Warning: This is smoke/custom diagnostic evidence and is not balance-actionable.")
+	for warning in report.get("evidence_warnings", []):
+		lines.append("- Evidence warning: %s" % str(warning))
 	lines.append("")
 	lines.append("## Canonical Preflight")
 	_append_preflight_lines(lines, preflight)
 	lines.append("")
 	lines.append("## Telemetry Coverage")
 	_append_telemetry_coverage(lines, report.get("telemetry_coverage", {}))
+	lines.append("")
+	lines.append("## Scenario Probes")
+	_append_scenario_probe_lines(lines, report.get("scenario_probes", {}))
 	lines.append("")
 	lines.append("## Metrics Snapshot")
 	lines.append("### Strategy Metrics")
@@ -3145,6 +3839,58 @@ func _append_preflight_lines(lines: Array, preflight: Dictionary) -> void:
 			int(row.get("error_count", 0)),
 			int(row.get("warning_count", 0)),
 		])
+
+
+func _append_scenario_probe_lines(lines: Array, scenario: Dictionary) -> void:
+	if scenario.is_empty() or not bool(scenario.get("enabled", false)):
+		lines.append("- Scenario probes disabled: `%s`." % str(scenario.get("reason", "unavailable")))
+		return
+	var summary: Dictionary = scenario.get("summary", {})
+	lines.append("- Mode: `%s`" % str(scenario.get("mode", "")))
+	lines.append("- Summary: `%s` total, `%s` passed, `%s` failed, `%s` diagnostic, `%s` stalled." % [
+		int(summary.get("total", 0)),
+		int(summary.get("passed", 0)),
+		int(summary.get("failed", 0)),
+		int(summary.get("diagnostic", 0)),
+		int(summary.get("stalled", 0)),
+	])
+	lines.append("- Scope note: deterministic scenario probes use direct vertical-slice APIs and do not prove scene wiring, visuals, audio, or manual play.")
+	_append_scenario_probe_group(lines, "Tower families", scenario.get("tower_family_probes", []), "tower_type")
+	_append_scenario_probe_group(lines, "Branches", scenario.get("branch_probes", []), "branch_id")
+	_append_scenario_probe_group(lines, "Pure enemy kinds", scenario.get("enemy_kind_probes", []), "enemy_kind")
+	_append_scenario_probe_group(lines, "Scheduled waves", scenario.get("scheduled_wave_probes", []), "wave")
+
+
+func _append_scenario_probe_group(lines: Array, label: String, probes: Array, detail_key: String) -> void:
+	lines.append("### %s" % label)
+	if probes.is_empty():
+		lines.append("- None recorded.")
+		return
+	lines.append("| Probe | Detail | Result | Leak | Cycles | Damage/spend | Failures |")
+	lines.append("| --- | --- | --- | ---: | ---: | ---: | --- |")
+	for probe in probes:
+		var result := "diagnostic" if bool(probe.get("diagnostic_only", false)) else "pass" if bool(probe.get("passed", false)) else "fail"
+		var failures := _scenario_failure_labels(probe.get("failures", []), 3)
+		lines.append("| `%s` | `%s` | `%s` | %s | %s | %.3f | %s |" % [
+			str(probe.get("id", "")),
+			str(probe.get(detail_key, "")),
+			result,
+			_percent(float(probe.get("leak_rate", 0.0))),
+			int(probe.get("cycles_to_resolution", 0)),
+			float(probe.get("damage_per_spend", 0.0)),
+			failures,
+		])
+
+
+func _scenario_failure_labels(failures: Array, limit: int) -> String:
+	if failures.is_empty():
+		return "`none`"
+	var labels: Array = []
+	for index in range(min(limit, failures.size())):
+		labels.append("`%s`" % str(failures[index].get("label", "")))
+	if failures.size() > limit:
+		labels.append("`+%s more`" % (failures.size() - limit))
+	return _join_strings(labels, ", ")
 
 
 func _append_wave_metrics_table(lines: Array, metrics: Dictionary) -> void:
@@ -3529,7 +4275,14 @@ func _trim_trailing_slashes(path: String) -> String:
 
 
 func _timestamp() -> String:
-	return Time.get_datetime_string_from_system(false, false).replace("-", "").replace(":", "").replace("T", "_")
+	var now := Time.get_datetime_dict_from_system(false)
+	return "%04d_%02d_%02d_%02d%02d" % [
+		int(now.get("year", 0)),
+		int(now.get("month", 0)),
+		int(now.get("day", 0)),
+		int(now.get("hour", 0)),
+		int(now.get("minute", 0)),
+	]
 
 
 func _archive_file_stem_from_config(config: Dictionary, timestamp: String) -> String:

@@ -29,6 +29,7 @@ func _initialize() -> void:
 
 	_check_progression_parity(progress, result)
 	_check_save_load_and_run_state(progress, game, save_path, result)
+	_check_split_wave_run_state_restore(game, result)
 	_check_scene_reload(result)
 	_cleanup_save(save_path)
 
@@ -112,6 +113,132 @@ func _check_save_load_and_run_state(progress: Node, game: Node, save_path: Strin
 	_record_check(result, "restored_entity_counts_match", restored["tower_count"] == original["tower_count"] and restored["enemy_count"] == original["enemy_count"] and restored["projectile_count"] == original["projectile_count"], {"restored": restored, "original": original})
 	restored_game.process_step(0.05)
 	_record_check(result, "restored_run_survives_process_step", restored_game.snapshot()["lives"] > 0, restored_game.snapshot())
+
+
+func _check_split_wave_run_state_restore(game: Node, result: Dictionary) -> void:
+	var split_wave: int = _find_split_wave(game)
+	_record_check(result, "persistence_split_wave_exists", split_wave > 0, {"split_wave": split_wave})
+	if split_wave <= 0:
+		return
+	var active_setup: Dictionary = _prepare_active_split_child(game, split_wave)
+	_record_check(result, "persistence_active_split_child_setup", bool(active_setup.get("ok", false)), active_setup)
+	if not bool(active_setup.get("ok", false)):
+		return
+	var active_restored: Node = _restored_game_from_state(game.serialize_run_state())
+	_record_check(result, "active_split_restore_accepts_state", active_restored != null, active_setup)
+	if active_restored == null:
+		return
+	var active_snapshot: Dictionary = active_restored.snapshot()
+	_record_check(result, "active_split_extra_counter_roundtrip", int(active_snapshot.get("spawned_extra_this_wave", -1)) == int(game.snapshot().get("spawned_extra_this_wave", -2)), {"restored": active_snapshot, "original": game.snapshot()})
+	_record_check(result, "active_split_child_roundtrip", int(active_snapshot.get("enemy_count", 0)) == int(game.snapshot().get("enemy_count", -1)), {"restored": active_snapshot, "original": game.snapshot()})
+
+	var completed_setup: Dictionary = _complete_active_split_child(game)
+	_record_check(result, "persistence_completed_split_child_setup", bool(completed_setup.get("ok", false)), completed_setup)
+	if not bool(completed_setup.get("ok", false)):
+		return
+	var completed_restored: Node = _restored_game_from_state(game.serialize_run_state())
+	_record_check(result, "completed_split_restore_accepts_state", completed_restored != null, completed_setup)
+	if completed_restored == null:
+		return
+	var completed_snapshot: Dictionary = completed_restored.snapshot()
+	_record_check(result, "completed_split_restore_resolution_consistent", int(completed_snapshot.get("kills", 0)) + int(completed_snapshot.get("leaks", 0)) == int(completed_snapshot.get("spawned_total_this_wave", -1)), completed_snapshot)
+	_record_check(result, "completed_split_restore_invariants_clean", completed_restored.runtime_invariant_failures().is_empty(), completed_restored.runtime_invariant_failures())
+
+
+func _find_split_wave(game: Node) -> int:
+	var schedule: Array = game.game_data.get("waves", {}).get("schedule", [])
+	for index in range(schedule.size()):
+		var wave_number := index + 1
+		game.set_wave_for_test(wave_number)
+		var row: Variant = schedule[index]
+		var kind := "normal"
+		if row is Dictionary:
+			kind = str(row.get("enemy_kind", "normal"))
+		var enemy: Dictionary = game.create_enemy(kind, wave_number, Vector2(180, 100), 1)
+		if int(enemy.get("death_spawns", 0)) > 0:
+			return wave_number
+	return 0
+
+
+func _prepare_active_split_child(game: Node, split_wave: int) -> Dictionary:
+	var wave_info: Dictionary = game.spawn_regular_wave_for_test(split_wave)
+	game.wave_active = true
+	game.lives = max(game.lives, 200)
+	var target_index := -1
+	for index in range(game.enemies.size()):
+		if int(game.enemies[index].get("death_spawns", 0)) > 0:
+			target_index = index
+			break
+	if target_index < 0:
+		return {"ok": false, "reason": "no split enemy", "wave_info": wave_info}
+	var target: Dictionary = game.enemies[target_index]
+	for index in range(game.enemies.size()):
+		if index == target_index:
+			continue
+		game.enemies[index]["target_index"] = 999
+	game.process_step(0.01)
+	var tower: Dictionary = _test_tower_near(target)
+	game.towers = [tower]
+	_kill_enemy_with_projectile(game, target, tower)
+	game.process_step(0.01)
+	return {
+		"ok": game.enemies.size() == int(target.get("death_spawns", 0)) and int(game.snapshot().get("spawned_extra_this_wave", 0)) == int(target.get("death_spawns", 0)),
+		"snapshot": game.snapshot(),
+	}
+
+
+func _complete_active_split_child(game: Node) -> Dictionary:
+	if game.enemies.is_empty():
+		return {"ok": false, "reason": "no active child", "snapshot": game.snapshot()}
+	var tower: Dictionary = game.towers[0] if game.towers.size() > 0 else _test_tower_near(game.enemies[0])
+	if game.towers.is_empty():
+		game.towers = [tower]
+	for enemy in game.enemies.duplicate():
+		_kill_enemy_with_projectile(game, enemy, tower)
+		game.process_step(0.01)
+	game.process_step(0.01)
+	var snapshot: Dictionary = game.snapshot()
+	return {
+		"ok": bool(snapshot.get("wave_complete", false)) and int(snapshot.get("kills", 0)) + int(snapshot.get("leaks", 0)) == int(snapshot.get("spawned_total_this_wave", -1)),
+		"snapshot": snapshot,
+	}
+
+
+func _restored_game_from_state(state: Dictionary) -> Node:
+	var slice_script := load("res://scripts/game/vertical_slice_game.gd")
+	var restored_game: Node = slice_script.new()
+	root.add_child(restored_game)
+	restored_game.name = "SplitRestoreProbe"
+	if not restored_game.restore_run_state(state):
+		return null
+	return restored_game
+
+
+func _test_tower_near(enemy: Dictionary) -> Dictionary:
+	return {
+		"type": "archer",
+		"position": enemy.get("position", Vector2.ZERO),
+		"level": 2,
+		"range": 250.0,
+		"damage": max(1.0, float(enemy.get("max_hp", 1.0)) * 2.0),
+		"fire_rate": 0.5,
+		"cooldown": 999.0,
+		"target_mode": "first",
+		"kills": 0,
+		"money_spent": 0,
+		"mutations": [],
+		"selected_branch": "",
+		"is_paragon": false,
+		"total_damage": 0.0,
+		"mastery_xp": 0.0,
+	}
+
+
+func _kill_enemy_with_projectile(game: Node, enemy: Dictionary, tower: Dictionary) -> void:
+	tower["position"] = enemy.get("position", Vector2.ZERO)
+	tower["damage"] = max(1.0, float(enemy.get("max_hp", 1.0)) * 2.0)
+	var projectile: Dictionary = game.make_test_projectile(tower, enemy, enemy.get("position", Vector2.ZERO))
+	game.update_projectile_for_test(projectile, 0.01)
 
 
 func _check_scene_reload(result: Dictionary) -> void:

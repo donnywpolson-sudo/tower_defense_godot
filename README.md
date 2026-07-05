@@ -48,14 +48,17 @@ For bigger ideas, ask Codex to make a short plan first.
 
 To create a Codex-ready balance report:
 
-1. Double-click `RUN_AI_SIMULATION_PROMPT.bat`.
+1. Double-click `TOWER_DEFENSE_AI_SIMULATION.bat`.
 2. Wait for Notepad to open.
 3. Copy the contents into Codex.
 
-The generated prompt is saved here:
+The generated AI simulation files are saved under `.godot\ai_simulation` with a
+`YYYY_MM_DD_HHMM` timestamp, for example:
 
 ```text
-.godot\ai_simulation\latest\ai_simulation_latest_codex_prompt.md
+.godot\ai_simulation\ai_simulation_codex_prompt_2026_07_05_1532.md
+.godot\ai_simulation\ai_simulation_report_2026_07_05_1532.md
+.godot\ai_simulation\ai_simulation_data_2026_07_05_1532.json
 ```
 
 This is useful when you want Codex to review balance, wave difficulty, or tower performance.

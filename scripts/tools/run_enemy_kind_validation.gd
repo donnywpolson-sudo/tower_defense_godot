@@ -25,6 +25,7 @@ func _initialize() -> void:
 	_check_shield_absorption(game, result)
 	_check_flying_targeting_from_game_data_enemy(game, result)
 	_check_wave_modifier_application(game, result)
+	_check_split_wave_resolution_accounting(game, result)
 
 	if result["ok"]:
 		print("ENEMY_KIND_VALIDATION_OK")
@@ -127,6 +128,167 @@ func _check_wave_modifier_application(game: Node, result: Dictionary) -> void:
 	game.enemies = [volatile_source, volatile_neighbor]
 	game.process_step(0.01)
 	_record_check(result, "volatile_modifier_damages_nearby_enemy", float(volatile_neighbor["hp"]) < neighbor_hp, volatile_neighbor)
+
+
+func _check_split_wave_resolution_accounting(game: Node, result: Dictionary) -> void:
+	var split_wave: int = _find_split_wave(game)
+	_record_check(result, "effective_split_wave_exists", split_wave > 0, {"split_wave": split_wave})
+	if split_wave <= 0:
+		return
+	_check_split_child_kill_path(game, result, split_wave)
+	_check_split_child_leak_path(game, result, split_wave)
+
+
+func _find_split_wave(game: Node) -> int:
+	var schedule: Array = game.game_data.get("waves", {}).get("schedule", [])
+	for index in range(schedule.size()):
+		var wave_number := index + 1
+		game.set_wave_for_test(wave_number)
+		var row: Variant = schedule[index]
+		var kind := "normal"
+		if row is Dictionary:
+			kind = str(row.get("enemy_kind", "normal"))
+		var enemy: Dictionary = game.create_enemy(kind, wave_number, Vector2(180, 100), 1)
+		if int(enemy.get("death_spawns", 0)) > 0:
+			return wave_number
+	return 0
+
+
+func _check_split_child_kill_path(game: Node, result: Dictionary, split_wave: int) -> void:
+	var setup: Dictionary = _prepare_controlled_split_wave(game, split_wave)
+	if not bool(setup.get("ok", false)):
+		_record_check(result, "split_kill_setup", false, setup)
+		return
+	var target: Dictionary = setup["target"]
+	var expected_children := int(target.get("death_spawns", 0))
+	_record_check(result, "split_kill_target_has_death_spawns", expected_children > 0, target)
+	if expected_children <= 0:
+		return
+	var tower: Dictionary = _test_tower_near(target)
+	game.towers = [tower]
+	_kill_enemy_with_projectile(game, target, tower)
+	game.process_step(0.01)
+	var after_parent: Dictionary = game.snapshot()
+	_record_check(result, "split_kill_child_created", game.enemies.size() == expected_children and int(after_parent.get("spawned_extra_this_wave", 0)) == expected_children, {"enemies": game.enemies, "snapshot": after_parent})
+	var parent_resolved := _resolved_count(after_parent)
+	_kill_enemy_with_projectile(game, target, tower)
+	game.process_step(0.01)
+	var after_parent_retry: Dictionary = game.snapshot()
+	_record_check(result, "split_parent_not_duplicate_resolved", _resolved_count(after_parent_retry) == parent_resolved and int(after_parent_retry.get("spawned_extra_this_wave", 0)) == expected_children, {"before": after_parent, "after_retry": after_parent_retry})
+	if game.enemies.is_empty():
+		return
+	var child: Dictionary = game.enemies[0]
+	_record_check(result, "split_kill_child_reward_zero", int(child.get("reward", -1)) == 0, child)
+	var tower_damage_before := float(tower.get("total_damage", 0.0))
+	var tower_mastery_before := float(tower.get("mastery_xp", 0.0))
+	_kill_enemy_with_projectile(game, child, tower)
+	game.process_step(0.01)
+	game.process_step(0.01)
+	var final_snapshot: Dictionary = game.snapshot()
+	var final_resolved := _resolved_count(final_snapshot)
+	_kill_enemy_with_projectile(game, child, tower)
+	game.process_step(0.01)
+	var after_child_retry: Dictionary = game.snapshot()
+	_record_check(result, "split_child_kill_completes_wave", bool(final_snapshot.get("wave_complete", false)) and not bool(final_snapshot.get("game_over", false)), final_snapshot)
+	_record_check(result, "split_child_kill_total_resolution", _resolved_count(final_snapshot) == int(final_snapshot.get("spawned_total_this_wave", -1)), final_snapshot)
+	_record_check(result, "split_child_kill_no_over_resolution", _resolved_count(final_snapshot) <= int(final_snapshot.get("spawned_total_this_wave", -1)), final_snapshot)
+	_record_check(result, "split_child_not_duplicate_resolved", _resolved_count(after_child_retry) == final_resolved and int(after_child_retry.get("spawned_extra_this_wave", 0)) == expected_children, {"before": final_snapshot, "after_retry": after_child_retry})
+	_record_check(result, "split_child_kill_credits_tower", int(tower.get("kills", 0)) >= 2, tower)
+	_record_check(result, "split_child_damage_mastery_recorded", float(tower.get("total_damage", 0.0)) > tower_damage_before and float(tower.get("mastery_xp", 0.0)) > tower_mastery_before, tower)
+	_record_check(result, "split_child_kill_invariants_clean", game.runtime_invariant_failures().is_empty(), game.runtime_invariant_failures())
+	_record_check(result, "split_extra_counter_resets_next_wave", game.advance_to_next_wave() and int(game.snapshot().get("spawned_extra_this_wave", -1)) == 0, game.snapshot())
+
+
+func _check_split_child_leak_path(game: Node, result: Dictionary, split_wave: int) -> void:
+	var setup: Dictionary = _prepare_controlled_split_wave(game, split_wave)
+	if not bool(setup.get("ok", false)):
+		_record_check(result, "split_leak_setup", false, setup)
+		return
+	var target: Dictionary = setup["target"]
+	var expected_children := int(target.get("death_spawns", 0))
+	if expected_children <= 0:
+		_record_check(result, "split_leak_target_has_death_spawns", false, target)
+		return
+	var tower: Dictionary = _test_tower_near(target)
+	game.towers = [tower]
+	_kill_enemy_with_projectile(game, target, tower)
+	game.process_step(0.01)
+	var after_parent: Dictionary = game.snapshot()
+	_record_check(result, "split_leak_child_created", game.enemies.size() == expected_children and int(after_parent.get("spawned_extra_this_wave", 0)) == expected_children, {"enemies": game.enemies, "snapshot": after_parent})
+	if game.enemies.is_empty():
+		return
+	var before_lives := int(game.snapshot().get("lives", 0))
+	var before_tower_kills := int(tower.get("kills", 0))
+	for child in game.enemies:
+		child["target_index"] = 999
+	game.process_step(0.01)
+	game.process_step(0.01)
+	var final_snapshot: Dictionary = game.snapshot()
+	_record_check(result, "split_child_leak_completes_wave", bool(final_snapshot.get("wave_complete", false)) and not bool(final_snapshot.get("game_over", false)), final_snapshot)
+	_record_check(result, "split_child_leak_exact_life_loss", before_lives - int(final_snapshot.get("lives", 0)) == expected_children, {"before_lives": before_lives, "snapshot": final_snapshot})
+	_record_check(result, "split_child_leak_no_tower_kill_credit", int(tower.get("kills", 0)) == before_tower_kills, tower)
+	_record_check(result, "split_child_leak_total_resolution", _resolved_count(final_snapshot) == int(final_snapshot.get("spawned_total_this_wave", -1)), final_snapshot)
+	_record_check(result, "split_child_leak_no_over_resolution", _resolved_count(final_snapshot) <= int(final_snapshot.get("spawned_total_this_wave", -1)), final_snapshot)
+	_record_check(result, "split_child_leak_invariants_clean", game.runtime_invariant_failures().is_empty(), game.runtime_invariant_failures())
+
+
+func _prepare_controlled_split_wave(game: Node, split_wave: int) -> Dictionary:
+	var wave_info: Dictionary = game.spawn_regular_wave_for_test(split_wave)
+	game.wave_active = true
+	game.lives = max(game.lives, 200)
+	if game.enemies.is_empty():
+		return {"ok": false, "reason": "no enemies", "wave_info": wave_info}
+	var target_index := -1
+	for index in range(game.enemies.size()):
+		if int(game.enemies[index].get("death_spawns", 0)) > 0:
+			target_index = index
+			break
+	if target_index < 0:
+		return {"ok": false, "reason": "no split enemy", "wave_info": wave_info, "enemies": game.enemies}
+	var target: Dictionary = game.enemies[target_index]
+	for index in range(game.enemies.size()):
+		if index == target_index:
+			continue
+		game.enemies[index]["target_index"] = 999
+	game.process_step(0.01)
+	return {
+		"ok": game.enemies.size() == 1 and game.enemies[0] == target,
+		"target": target,
+		"wave_info": wave_info,
+		"snapshot": game.snapshot(),
+	}
+
+
+func _test_tower_near(enemy: Dictionary) -> Dictionary:
+	var tower := {
+		"type": "archer",
+		"position": enemy.get("position", Vector2.ZERO),
+		"level": 2,
+		"range": 250.0,
+		"damage": max(1.0, float(enemy.get("max_hp", 1.0)) * 2.0),
+		"fire_rate": 0.5,
+		"cooldown": 999.0,
+		"target_mode": "first",
+		"kills": 0,
+		"money_spent": 0,
+		"mutations": [],
+		"selected_branch": "",
+		"is_paragon": false,
+		"total_damage": 0.0,
+		"mastery_xp": 0.0,
+	}
+	return tower
+
+
+func _kill_enemy_with_projectile(game: Node, enemy: Dictionary, tower: Dictionary) -> void:
+	tower["position"] = enemy.get("position", Vector2.ZERO)
+	tower["damage"] = max(1.0, float(enemy.get("max_hp", 1.0)) * 2.0)
+	var projectile: Dictionary = game.make_test_projectile(tower, enemy, enemy.get("position", Vector2.ZERO))
+	game.update_projectile_for_test(projectile, 0.01)
+
+
+func _resolved_count(snapshot: Dictionary) -> int:
+	return int(snapshot.get("kills", 0)) + int(snapshot.get("leaks", 0))
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:

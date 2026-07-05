@@ -54,6 +54,8 @@ func _check_shop_flow(game: Node, result: Dictionary) -> void:
 		_record_check(result, "%s_cost_matches_game_data" % tower_type, int(button.get("cost", -1)) == expected_cost, button)
 		_record_check(result, "%s_has_clean_shop_label" % tower_type, str(button.get("short_label", "")) == _expected_shop_label(tower_type), button)
 		_record_check(result, "%s_enabled_state" % tower_type, bool(button.get("enabled", false)) == supported.has(tower_type), button)
+		var expected_visual_state := "affordable" if supported.has(tower_type) else "unavailable"
+		_record_check(result, "%s_visual_state" % tower_type, str(button.get("visual_state", "")) == expected_visual_state, button)
 
 	for tower_type in supported:
 		_check_supported_tower_flow(game, result, tower_type)
@@ -145,11 +147,15 @@ func _check_supported_tower_flow(game: Node, result: Dictionary, tower_type: Str
 
 	game.reset_slice()
 	game.money = expected_cost - 1
+	var unaffordable_button: Dictionary = _button_by_type(game.shop_snapshot()["buttons"], tower_type)
+	_record_check(result, "%s_unaffordable_visual_state" % tower_type, str(unaffordable_button.get("visual_state", "")) == "unaffordable", unaffordable_button)
 	var selected: bool = _click_shop_button(game, tower_type)
+	var selected_button: Dictionary = _button_by_type(game.shop_snapshot()["buttons"], tower_type)
 	var unaffordable_preview: Dictionary = game.placement_preview_snapshot(game.RECOMMENDED_BUILD_SITE)
 	var blocked: bool = game.handle_map_click(game.RECOMMENDED_BUILD_SITE)
 	var after_blocked: Dictionary = game.snapshot()
 	_record_check(result, "%s_can_select_when_unaffordable" % tower_type, selected and after_blocked["selected_build_type"] == tower_type, after_blocked)
+	_record_check(result, "%s_selected_visual_state" % tower_type, str(selected_button.get("visual_state", "")) == "selected", selected_button)
 	_record_check(result, "%s_unaffordable_preview_has_reason" % tower_type, bool(unaffordable_preview.get("can_place", true)) == false and str(unaffordable_preview.get("disabled_reason", "")).contains("$"), unaffordable_preview)
 	_record_check(result, "%s_blocks_unaffordable_placement" % tower_type, blocked == false and after_blocked["tower_count"] == 0 and after_blocked["money"] == expected_cost - 1, after_blocked)
 
