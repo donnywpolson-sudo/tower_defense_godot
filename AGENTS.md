@@ -85,6 +85,7 @@ C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/go
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_wave_schedule.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_wave_schedule_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_speed_wave_stress.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_speed_wave_stress_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_independence.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_independence_validation.gd
+C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_export_platform.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_export_platform_validation.gd
 ```
 
 * Run a Godot validation script when changing GDScript, scenes, project settings, assets, audio, or data-loading behavior.

@@ -49,6 +49,7 @@
     { "name": "ai_scenario_probe_validation", "script": "res://scripts/tools/run_ai_scenario_probe_validation.gd", "log": "logs/godot/godot_ai_scenario_probe_validation.log", "expected": "AI_SCENARIO_PROBE_VALIDATION_OK", "headless": true },
     { "name": "ai_audit_recommendation_validation", "script": "res://scripts/tools/run_ai_audit_recommendation_validation.gd", "log": "logs/godot/godot_ai_audit_recommendation_validation.log", "expected": "AI_AUDIT_RECOMMENDATION_VALIDATION_OK", "headless": true },
     { "name": "performance_budget_validation", "script": "res://scripts/tools/run_performance_budget_validation.gd", "log": "logs/godot/godot_performance_budget.log", "expected": "PERFORMANCE_BUDGET_VALIDATION_OK", "headless": true },
+    { "name": "export_platform_validation", "script": "res://scripts/tools/run_export_platform_validation.gd", "log": "logs/godot/godot_export_platform.log", "expected": "EXPORT_PLATFORM_VALIDATION_OK", "headless": true },
     { "name": "playable_surface_validation", "script": "res://scripts/tools/run_playable_surface_validation.gd", "log": "logs/godot/godot_playable_surface.log", "expected": "PLAYABLE_SURFACE_VALIDATION_OK", "headless": false }
   ]
 }

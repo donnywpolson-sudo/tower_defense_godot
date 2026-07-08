@@ -99,6 +99,23 @@ function Test-ValidationPassed {
     return $false
 }
 
+function Test-ValidationLogContains {
+    param(
+        [Parameter(Mandatory)][string] $Name,
+        [Parameter(Mandatory)][string] $Pattern
+    )
+    foreach ($validation in $config.validations) {
+        if ([string]$validation.name -eq $Name) {
+            $logPath = Join-Path $repoRoot ([string]$validation.log)
+            if (-not (Test-Path -LiteralPath $logPath)) {
+                return $false
+            }
+            return ((Get-Content -Raw -LiteralPath $logPath) -match $Pattern)
+        }
+    }
+    return $false
+}
+
 function Add-ReportDerivedFindings {
     param([string] $ReportText)
     if ($ReportText.Trim().Length -eq 0) {
@@ -108,15 +125,6 @@ function Add-ReportDerivedFindings {
 
     if (($ReportText -match 'Prompt metadata validator fails' -or $ReportText -match 'AI_PROMPT_METADATA_VALIDATION_FAILED') -and -not (Test-ValidationPassed -Name 'ai_prompt_metadata_validation')) {
         Add-Finding -Id 'report-prompt-metadata-validator' -Area 'Audit validation' -Score 55 -Title 'Prompt metadata validator/report contract mismatch is recorded in the current audit report' -Classification 'partially proven' -Evidence "$($config.auditReport) records AI_PROMPT_METADATA_VALIDATION_FAILED / prompt metadata label drift." -Action 'Inspect the prompt metadata validator and generated report strings, then fix only the verified contract mismatch.' -EvidenceBacked $true -EligibleForFix $true
-    }
-    if ($ReportText -match 'shutdown cleanup warnings' -or $ReportText -match 'ObjectDB instances were leaked') {
-        Add-Finding -Id 'review-playable-surface-cleanup-warning' -Area 'Scene/resource cleanup' -Score 70 -Title 'Playable-surface validation reported shutdown cleanup warnings' -Classification 'partially proven' -Evidence "$($config.auditReport) records playable-surface shutdown cleanup warnings." -Action 'Reproduce the cleanup warning in a narrow validation before changing resource lifecycle code.' -EvidenceBacked $false -EligibleForFix $false
-    }
-    if ($ReportText -match 'manual playtesting is not covered' -or $ReportText -match 'Manual playtesting') {
-        Add-Gap -Area 'Manual playtesting' -Detail 'Manual play feel, comprehension, and subjective balance remain outside this automated workflow.' -RecommendedEvidence 'Run a bounded manual playtest pass.'
-    }
-    if ($ReportText -match 'Audio timing' -or $ReportText -match 'Audio timing, mix quality') {
-        Add-Gap -Area 'Audio' -Detail 'Audio timing, mix quality, and cue usefulness are not proven by the current report.' -RecommendedEvidence 'Run a bounded audio review pass.'
     }
 }
 
@@ -140,6 +148,22 @@ function Add-SimulationDerivedFindings {
     $highSeverity = [int](Get-ObjectProperty -Object $severityCounts -Name 'high' -Default 0)
     if ($bugCount -gt 0 -or $validationCount -gt 0 -or $highSeverity -gt 0) {
         Add-Finding -Id 'simulation-runtime-or-validation-issues' -Area 'Runtime / validation' -Score 45 -Title 'Latest AI simulation packet reports implementation-relevant issue counts' -Classification 'partially proven' -Evidence "Packet $($Packet.json.FullName) has bug=$bugCount, validation=$validationCount, high severity=$highSeverity." -Action 'Inspect exact issue rows in the latest packet and fix only the smallest verified runtime or validation defect.' -EvidenceBacked $true -EligibleForFix $true
+    }
+}
+
+function Add-CurrentCoverageGaps {
+    param($VisualEvidence)
+    if (-not (Test-ValidationPassed -Name 'playable_surface_validation') -or [int](Get-ObjectProperty -Object $VisualEvidence -Name 'count' -Default 0) -eq 0) {
+        Add-Gap -Area 'Manual play proxy' -Detail 'Scene/input and screenshot evidence were not produced in this workflow state.' -RecommendedEvidence 'Run playable-surface validation in a rendering-capable Godot session.'
+    }
+    if (-not (Test-ValidationPassed -Name 'asset_audio_validation')) {
+        Add-Gap -Area 'Audio' -Detail 'Asset/audio load and fallback behavior were not proven by the current validation matrix.' -RecommendedEvidence 'Run asset/audio validation.'
+    }
+    if (-not (Test-ValidationPassed -Name 'export_platform_validation')) {
+        Add-Gap -Area 'Export/platform readiness' -Detail 'Project export/platform readiness settings were not proven by the current validation matrix.' -RecommendedEvidence 'Run export/platform validation.'
+    }
+    if ((Test-ValidationPassed -Name 'playable_surface_validation') -and (Test-ValidationLogContains -Name 'playable_surface_validation' -Pattern 'ObjectDB instances were leaked|resources still in use')) {
+        Add-Finding -Id 'review-playable-surface-cleanup-warning' -Area 'Scene/resource cleanup' -Score 70 -Title 'Playable-surface validation reported shutdown cleanup warnings' -Classification 'partially proven' -Evidence 'Current playable-surface validation log records shutdown cleanup warnings.' -Action 'Reproduce the cleanup warning in a narrow validation before changing resource lifecycle code.' -EvidenceBacked $false -EligibleForFix $false
     }
 }
 
@@ -313,7 +337,7 @@ try {
     if ([int]$visualEvidence.count -eq 0) {
         Add-Gap -Area 'Visual review' -Detail 'No rendered screenshot evidence was produced or found for this workflow state.' -RecommendedEvidence 'Run playable-surface validation in a rendering-capable Godot session.'
     }
-    Add-Gap -Area 'Export/platform parity' -Detail 'Export and non-Windows platform behavior are not proven by this workflow.' -RecommendedEvidence 'Run export/platform smoke when release confidence matters.'
+    Add-CurrentCoverageGaps -VisualEvidence $visualEvidence
 
     if ($gaps.Count -gt 0 -or $findings.Count -gt 0) {
         $finalStatus = 'pass with gaps'
