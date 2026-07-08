@@ -2,6 +2,7 @@ extends SceneTree
 
 const RUNNER_SCRIPT := "res://scripts/tools/run_ai_simulation_batch.gd"
 const OUTPUT_BASE := "res://.godot/ai_scenario_probe_validation"
+const CHILD_LOG_DIR := "res://logs/godot"
 
 var _errors: Array = []
 var _run_id := ""
@@ -27,6 +28,7 @@ func _run_validation() -> void:
 	_expect_probe_ids(smoke, "enemy_kind_probes", ["normal", "fast", "tank", "flying"], "smoke enemy probes")
 	_expect_probe_waves(smoke, "scheduled_wave_probes", [5, 8], "smoke scheduled waves")
 	_expect_branch_subset(smoke, ["archer", "cannon", "tesla"], "smoke branches")
+	_expect_flying_probe_uses_unlocked_anti_air(smoke, "smoke")
 
 	var full := _run_fixture("full", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_full", "--compare-previous=false", "--scenario-probes=full"])
 	_expect_json_value(full, ["schema_version"], 6, "schema version")
@@ -37,13 +39,14 @@ func _run_validation() -> void:
 	_expect_all_enabled_branches(full)
 	_expect_branch_exercise(full)
 	_expect_special_wave_diagnostics(full)
+	_expect_flying_probe_uses_unlocked_anti_air(full, "full")
 	_expect_contains(full.get("markdown", ""), "## Scenario probes", "markdown scenario section")
 	_expect_contains(full.get("prompt", ""), "## Scenario Probes", "prompt scenario section")
 
 
 func _run_fixture(name: String, user_args: Array) -> Dictionary:
 	var output_dir := "%s/%s/%s" % [OUTPUT_BASE, _run_id, name]
-	var args := ["--headless", "--no-header", "--path", ProjectSettings.globalize_path("res://"), "--script", RUNNER_SCRIPT, "--"]
+	var args := ["--headless", "--no-header", "--log-file", _child_log_path(name), "--path", ProjectSettings.globalize_path("res://"), "--script", RUNNER_SCRIPT, "--"]
 	for arg in user_args:
 		args.append(str(arg))
 	args.append("--output-dir=%s" % output_dir)
@@ -67,6 +70,12 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 		"markdown": FileAccess.get_file_as_string(markdown_path),
 		"prompt": FileAccess.get_file_as_string(prompt_path),
 	}
+
+
+func _child_log_path(name: String) -> String:
+	var log_dir := ProjectSettings.globalize_path(CHILD_LOG_DIR)
+	DirAccess.make_dir_recursive_absolute(log_dir)
+	return "%s/ai_scenario_probe_%s_%s.log" % [log_dir, _run_id, name]
 
 
 func _latest_file(output_dir: String, prefix: String, suffix: String) -> String:
@@ -155,6 +164,31 @@ func _expect_special_wave_diagnostics(fixture: Dictionary) -> void:
 				diagnostic_count += 1
 	if diagnostic_count == 0:
 		_errors.append("expected at least one scheduled special known-gap diagnostic.")
+
+
+func _expect_flying_probe_uses_unlocked_anti_air(fixture: Dictionary, label: String) -> void:
+	var probe := _probe_by_id(fixture, "enemy_kind_probes", "flying")
+	if probe.is_empty():
+		_errors.append("%s flying enemy probe missing." % label)
+		return
+	var setup: Dictionary = probe.get("anti_air_setup", {})
+	if int(setup.get("tesla_level", 0)) < 4:
+		_errors.append("%s flying probe expected Tesla level >= 4, got %s." % [label, str(setup)])
+	if int(setup.get("sniper_level", 0)) < 3:
+		_errors.append("%s flying probe expected Sniper level >= 3, got %s." % [label, str(setup)])
+	if float(probe.get("damage_delta", 0.0)) <= 0.0:
+		_errors.append("%s flying probe expected anti-air damage, got %s." % [label, str(probe)])
+	for failure in probe.get("failures", []):
+		if str(failure.get("label", "")) == "scenario_spend_efficiency_out_of_range":
+			_errors.append("%s flying probe should not report zero-efficiency anti-air setup: %s." % [label, str(probe)])
+
+
+func _probe_by_id(fixture: Dictionary, group: String, id: String) -> Dictionary:
+	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get(group, [])
+	for probe in probes:
+		if str(probe.get("id", "")) == id:
+			return probe
+	return {}
 
 
 func _expect_contains(text: String, needle: String, label: String) -> void:

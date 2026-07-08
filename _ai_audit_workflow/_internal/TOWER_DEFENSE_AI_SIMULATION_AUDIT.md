@@ -31,7 +31,7 @@ For a broad current audit, collect or explicitly mark missing each item below. M
 
 ```powershell
 git status --short
-.\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto
+.\_ai_audit_workflow\_internal\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_ai_prompt_metadata_validation.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_ai_prompt_metadata_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_ai_scenario_probe_validation.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_ai_scenario_probe_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_performance_budget.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_performance_budget_validation.gd

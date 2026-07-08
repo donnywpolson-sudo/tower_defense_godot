@@ -16,7 +16,7 @@ baseline:
  M .gitignore
  M AGENTS.md
  M README.md
- D data/python_baseline_data.json
+ D retired external baseline data mirror
  M docs/CUTOVER_READINESS.md
  M docs/GODOT_MIGRATION_NOTES.md
  M project.godot
@@ -24,15 +24,15 @@ baseline:
  M scripts/autoload/game_data.gd
  M scripts/autoload/parity_harness.gd
  M scripts/game/vertical_slice_game.gd
- D scripts/launch_python_baseline.ps1
- D scripts/tools/export_python_baseline.py
+ D retired external baseline launcher
+ D retired external baseline exporter
  M scripts/tools/run_data_validation.gd
  M scripts/tools/run_enemy_kind_validation.gd
  M scripts/tools/run_persistence_validation.gd
  M scripts/tools/run_shop_validation.gd
  M scripts/tools/run_upgrade_panel_validation.gd
  M scripts/tools/run_vertical_slice_smoke.gd
- D scripts/tools/validate_python_baseline_export.py
+ D retired external baseline export validator
  M scripts/ui/debug_hud.gd
 ?? CODEX_HANDOFF.md
 ?? TOWER_DEFENSE_AI_SIMULATION.bat
@@ -53,7 +53,7 @@ baseline:
 
 - Git/status state shows broad active work across Godot project settings, docs, autoloads, main gameplay, UI HUD, and validation scripts.
 - Runtime/data ownership appears centered on `data/game_data.json`, but that file is untracked and must not be called committed baseline yet.
-- Retired Python-baseline files are deleted in the working tree; treat those deletions as active work until reviewed or committed.
+- Retired external baseline files are deleted in the working tree; treat those deletions as active work until reviewed or committed.
 - Several new validation and simulation helper scripts are untracked; treat their results as dirty-worktree evidence.
 - `logs/` and generated/latest AI simulation prompts exist locally; they are useful clues but not committed project state.
 - Durable roadmap context belongs in `docs/GODOT_MIGRATION_NOTES.md` and `docs/CUTOVER_READINESS.md`, not in this handoff.

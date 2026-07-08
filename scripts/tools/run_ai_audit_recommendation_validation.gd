@@ -50,17 +50,20 @@ func _run_validation() -> void:
 	var non_sim_args := _recommended_args(non_sim)
 	if non_sim_args.begins_with("deep") or non_sim_args.begins_with("overnight"):
 		_errors.append("non-simulation must not recommend deep or overnight args: %s" % non_sim_args)
+	_expect_structured_output(non_sim, "non-simulation")
 	_expect_contains(non_sim, "Non-simulation gaps", "non-simulation gap label")
 	_validate_supported_args(non_sim, "non-simulation")
 
 	var malformed := RECOMMENDER.recommend_from_text("# malformed")
 	_expect_contains(malformed, FALLBACK_ARGS, "malformed fallback args")
 	_expect_contains(malformed, "Confidence: low", "malformed low confidence")
+	_expect_structured_output(malformed, "malformed")
 	_validate_supported_args(malformed, "malformed")
 
 	var missing := RECOMMENDER.recommend_from_report_path("res://.godot/missing_audit_report_fixture.md")
 	_expect_contains(missing, FALLBACK_ARGS, "missing report fallback args")
 	_expect_contains(missing, "Confidence: low", "missing low confidence")
+	_expect_structured_output(missing, "missing")
 	_validate_supported_args(missing, "missing")
 
 	_expect_batch_menu_contract()
@@ -68,16 +71,19 @@ func _run_validation() -> void:
 
 func _expect_recommendation(label: String, report_text: String, expected_args: String) -> void:
 	var output := RECOMMENDER.recommend_from_text(report_text)
-	_expect_contains(output, expected_args, "%s args" % label)
+	var args := RECOMMENDER.recommend_args_from_text(report_text)
+	if args != expected_args:
+		_errors.append("%s args mismatch: expected %s, got %s" % [label, expected_args, args])
+	_expect_structured_output(output, label)
 	_validate_supported_args(output, label)
 
 
 func _report_text(bundle_kind: String, scorecard: String, findings: String, next_action: String) -> String:
 	var bundle := "| Item | Status | Result |\n| --- | --- | --- |\n"
 	if bundle_kind == "failed":
-		bundle += "| `.\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | failed | Noninteractive form reached 240/420 runs; no new packet was produced. |\n"
+		bundle += "| `.\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | failed | Noninteractive form reached 240/420 runs; no new packet was produced. |\n"
 	else:
-		bundle += "| `.\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | fresh | Completed. |\n"
+		bundle += "| `.\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | fresh | Completed. |\n"
 	return "\n".join([
 		"# AI Simulation Audit Report",
 		"## Minimum Coverage Evidence Bundle",
@@ -118,20 +124,58 @@ func _validate_supported_args(output: String, label: String) -> void:
 
 
 func _recommended_args(output: String) -> String:
+	var collecting := false
+	var parts: Array = []
 	for line in output.split("\n"):
 		var text := str(line).strip_edges()
-		if text.begins_with("Recommended command args:"):
-			return text.trim_prefix("Recommended command args:").strip_edges()
-	return ""
+		if text == "Command args:":
+			collecting = true
+			continue
+		if text.begins_with("Command args:"):
+			return text.trim_prefix("Command args:").strip_edges()
+		if collecting:
+			if text.is_empty() or text == "Why":
+				break
+			parts.append(text)
+	return " ".join(parts)
+
+
+func _expect_structured_output(output: String, label: String) -> void:
+	for heading in [
+		"Audit recommendation",
+		"Current evidence",
+		"Recommended next run",
+		"Why",
+		"Non-simulation gaps",
+		"Limitations",
+	]:
+		_expect_contains(output, heading, "%s heading %s" % [label, heading])
+	_expect_contains(output, "Action:", "%s action label" % label)
+	_expect_contains(output, "Command args:", "%s command args supporting detail" % label)
+	if output.begins_with(FALLBACK_ARGS) or output.begins_with(FAILED_MEDIUM_ARGS) or output.begins_with(WAVE_MISMATCH_ARGS):
+		_errors.append("%s output led with raw command args." % label)
 
 
 func _expect_batch_menu_contract() -> void:
-	var batch := FileAccess.get_file_as_string("res://TOWER_DEFENSE_AI_SIMULATION.bat")
-	_expect_contains(batch, "echo   1  Strategy Smoke   5 sec          14     2 waves    1       quick bot check", "menu smoke")
-	_expect_contains(batch, "echo   2  Medium           5 min          420    6 waves    5       normal research", "menu medium")
-	_expect_contains(batch, "echo   3  Deep             2 hr           2,500  20 waves   8       deeper evidence", "menu deep")
-	_expect_contains(batch, "echo   4  Overnight        8+ hr          6,000  50 waves   12      full research", "menu overnight")
-	_expect_contains(batch, "echo   5  Cancel", "menu cancel")
+	var batch := FileAccess.get_file_as_string("res://_ai_audit_workflow/_internal/TOWER_DEFENSE_AI_SIMULATION.bat")
+	_expect_contains(batch, "echo   #  Tier              Est. Runtime  Runs   Waves  Seeds  Purpose", "menu table header")
+	_expect_contains(batch, "echo   0  Recommended       varies        rec.   rec.   rec.   audit recommendation", "menu recommended")
+	_expect_contains(batch, "echo   1  Strategy Smoke    5 sec         14     2      1      quick sanity check", "menu smoke")
+	_expect_contains(batch, "echo   2  Medium            5 min         420    6      5      normal research", "menu medium")
+	_expect_contains(batch, "echo   3  Deep              2 hr          2,500  20     8      deeper evidence", "menu deep")
+	_expect_contains(batch, "echo   4  Overnight         8+ hr         6,000  50     12     full research", "menu overnight")
+	_expect_contains(batch, "echo   5  Cancel            -             -      -      -      exit launcher", "menu cancel")
+	_expect_contains(batch, "EST_RUNTIME_LABEL", "runtime label state")
+	_expect_contains(batch, "Estimated runtime:", "estimated runtime summary")
+	_expect_not_contains(batch, "Timeout:", "timeout summary removed")
+	_expect_contains(batch, "set /p \"PROFILE_CHOICE=Choose a tier [0]: \"", "menu prompt")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"\" set \"PROFILE_CHOICE=0\"", "menu default")
+	_expect_not_contains(batch, "Enter 0, 1, 2, 3, 4, or 5, then press Enter:", "old menu prompt")
+	_expect_contains(batch, "set \"RECOMMENDATION_ARGS_FILE=%LOG_DIR%\\godot_ai_audit_recommendation_args.txt\"", "recommendation args file")
+	_expect_contains(batch, "> \"%RECOMMENDATION_ARGS_FILE%\" 2>nul", "recommendation args capture")
+	_expect_contains(batch, "--report-path=%AUDIT_REPORT_RES%", "recommendation report path")
+	_expect_contains(batch, "for /f \"usebackq delims=\" %%A in (\"%RECOMMENDATION_ARGS_FILE%\") do", "recommendation args readback")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"0\" (\n    set \"USER_ARGS= !RECOMMENDED_ARGS!\"", "choice 0 mapping")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"1\" (\n    set \"USER_ARGS= --runs=14 --max-waves=2 --report-label=strategy_smoke\"", "choice 1 mapping")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"2\" (\n    set \"USER_ARGS= medium\"", "choice 2 mapping")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"3\" (\n    set \"USER_ARGS= deep\"", "choice 3 mapping")

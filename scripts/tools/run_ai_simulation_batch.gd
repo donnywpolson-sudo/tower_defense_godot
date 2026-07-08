@@ -426,6 +426,21 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"expected_by_action": {},
 		"avoidable_by_action": {},
 	}
+	var economy_metrics := {}
+	if fixture == "medium":
+		economy_metrics = {
+			"by_wave": {
+				"1": {
+					"runs": int(options["runs"]),
+					"avg_money_delta": 12.0,
+					"avg_spend_delta": 18.0,
+					"avg_lives_delta": 0.0,
+					"avg_tech_delta": 0.0,
+					"avg_tower_delta": 1.0,
+				},
+			},
+			"by_strategy": {},
+		}
 	var report := {
 		"schema_version": 4 if fixture == "schema4_previous" else SCHEMA_VERSION,
 		"config": _public_config(options),
@@ -440,7 +455,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"tower_metrics": {},
 		"blocked_action_metrics": blocked_action_metrics,
 		"seed_metrics": {},
-		"economy_metrics": {},
+		"economy_metrics": economy_metrics,
 		"damage_metrics": {},
 		"enemy_kind_metrics": {},
 		"boss_commander_metrics": {},
@@ -2894,7 +2909,13 @@ func _run_enemy_kind_probes(mode: String) -> Array:
 		game.set_wave_for_test(1)
 		_scenario_place_mixed_defense(game, SCENARIO_MIXED_DEFENSE)
 		if str(enemy_kind) == "flying":
+			_scenario_upgrade_first_tower_to_level(game, "tesla", 4, probe)
+			_scenario_upgrade_first_tower_to_level(game, "sniper", 3, probe)
 			_scenario_set_target_mode_for_tower(game, "tesla", "flying")
+			probe["anti_air_setup"] = {
+				"tesla_level": _scenario_first_tower_level(game, "tesla"),
+				"sniper_level": _scenario_first_tower_level(game, "sniper"),
+			}
 		var result := _run_direct_enemy_probe(game, str(enemy_kind), 12)
 		_merge_probe_result(probe, result)
 		_apply_probe_expectations(probe, 0.35, 0.15)
@@ -2995,6 +3016,34 @@ func _scenario_set_target_mode_for_tower(game: Node, tower_type: String, target_
 	for index in range(towers.size()):
 		if str(towers[index].get("type", "")) == tower_type:
 			game.set_tower_target_mode(index, target_mode)
+
+
+func _scenario_upgrade_first_tower_to_level(game: Node, tower_type: String, target_level: int, probe: Dictionary) -> void:
+	for _attempt in range(max(0, target_level - 1)):
+		var tower_index := _scenario_first_tower_index(game, tower_type)
+		if tower_index < 0:
+			return
+		var tower: Dictionary = _tower_record_at(game, tower_index)
+		if int(tower.get("level", 1)) >= target_level:
+			return
+		game.selected_tower_index = tower_index
+		if not _upgrade_selected_with_branch_if_needed(game, probe, {}, false):
+			return
+
+
+func _scenario_first_tower_index(game: Node, tower_type: String) -> int:
+	var towers: Array = game.serialize_run_state().get("towers", [])
+	for index in range(towers.size()):
+		if str(towers[index].get("type", "")) == tower_type:
+			return index
+	return -1
+
+
+func _scenario_first_tower_level(game: Node, tower_type: String) -> int:
+	var index := _scenario_first_tower_index(game, tower_type)
+	if index < 0:
+		return 0
+	return int(_tower_record_at(game, index).get("level", 0))
 
 
 func _scenario_next_build_site(game: Node, tower_type: String) -> Vector2:
@@ -4000,7 +4049,7 @@ func _append_economy_metrics(lines: Array, metrics: Dictionary) -> void:
 	if by_wave.is_empty():
 		lines.append("- None recorded.")
 		return
-	lines.append("| Wave | Runs | Avg money | Avg spend | Avg lives | Avg tech | Avg towers |")
+	lines.append("| Wave | Runs | Avg money delta | Avg spend delta | Avg lives delta | Avg tech delta | Avg tower delta |")
 	lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
 	for wave_key in _sorted_numeric_string_keys(by_wave):
 		var row: Dictionary = by_wave[wave_key]

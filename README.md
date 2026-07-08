@@ -48,9 +48,9 @@ For bigger ideas, ask Codex to make a short plan first.
 
 To create a Codex-ready balance report:
 
-1. Double-click `TOWER_DEFENSE_AI_SIMULATION.bat`.
-2. Wait for Notepad to open.
-3. Copy the contents into Codex.
+1. Run `_ai_audit_workflow\RUN_AUDIT.ps1`.
+2. Choose `Light audit` for a short evidence refresh, or `Deep audit` for an overnight run.
+3. Review `_ai_audit_workflow\_internal\current\status.json`, `findings.json`, and `improvement_queue.json`.
 
 The generated AI simulation files are saved under `.godot\ai_simulation` with a
 `YYYY_MM_DD_HHMM` timestamp, for example:
