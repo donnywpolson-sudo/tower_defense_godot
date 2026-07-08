@@ -5,7 +5,7 @@
   "auditReport": "_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md",
   "currentDir": "_ai_audit_workflow\\_internal\\current",
   "simulationDir": ".godot\\ai_simulation",
-  "visualReviewDir": "logs\\godot\\visual_review",
+  "visualReviewDir": "logs\\godot\\visual_review\\generated",
   "playtestLog": "logs\\godot\\godot_ai_simulation.log",
   "scoreThresholdForQueue": 80,
   "tiers": {
