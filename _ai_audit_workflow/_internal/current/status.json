@@ -1,0 +1,17 @@
+﻿{
+    "generatedAt":  "2026-07-10T21:18:28",
+    "runId":  "2026_07_10_211827",
+    "status":  "pass with gaps",
+    "tier":  "Light",
+    "failure":  "",
+    "evidenceBaseline":  {
+                             "classification":  "dirty-worktree evidence",
+                             "dirtyInitial":  true,
+                             "dirtyFinal":  true,
+                             "initialStatusCount":  10,
+                             "finalStatusCount":  10,
+                             "applyTrust":  "Do not treat this audit as committed-baseline project health. Apply-now remains gated by current git status and queued evidence."
+                         },
+    "report":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md",
+    "findings":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\_ai_audit_workflow\\_internal\\current\\findings.json"
+}

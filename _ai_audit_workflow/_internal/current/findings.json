@@ -1,0 +1,104 @@
+﻿{
+    "generatedAt":  "2026-07-10T21:18:28",
+    "runId":  "2026_07_10_211827",
+    "tier":  "Light",
+    "status":  "pass with gaps",
+    "failure":  "",
+    "repoRoot":  "C:\\Users\\donny\\Desktop\\tower_defense_godot",
+    "canonicalFiles":  {
+                           "launcher":  "_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat",
+                           "auditSpec":  "_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION_AUDIT.md",
+                           "auditReport":  "_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md"
+                       },
+    "initialGitStatus":  [
+                             " M AGENTS.md",
+                             " M README.md",
+                             " M _ai_audit_workflow/RUN_AUDIT.ps1",
+                             " M _ai_audit_workflow/_internal/README.md",
+                             " M _ai_audit_workflow/_internal/build_improvement_queue.ps1",
+                             " M _ai_audit_workflow/_internal/run_cycle.ps1",
+                             " M _ai_audit_workflow/_internal/run_improvement_pass.ps1",
+                             " M scripts/game/vertical_slice_game.gd",
+                             " M scripts/tools/run_projectile_validation.gd",
+                             " M scripts/tools/run_shop_validation.gd"
+                         ],
+    "finalGitStatus":  [
+                           " M AGENTS.md",
+                           " M README.md",
+                           " M _ai_audit_workflow/RUN_AUDIT.ps1",
+                           " M _ai_audit_workflow/_internal/README.md",
+                           " M _ai_audit_workflow/_internal/build_improvement_queue.ps1",
+                           " M _ai_audit_workflow/_internal/run_cycle.ps1",
+                           " M _ai_audit_workflow/_internal/run_improvement_pass.ps1",
+                           " M scripts/game/vertical_slice_game.gd",
+                           " M scripts/tools/run_projectile_validation.gd",
+                           " M scripts/tools/run_shop_validation.gd"
+                       ],
+    "evidenceBaseline":  {
+                             "classification":  "dirty-worktree evidence",
+                             "dirtyInitial":  true,
+                             "dirtyFinal":  true,
+                             "initialStatusCount":  10,
+                             "finalStatusCount":  10,
+                             "applyTrust":  "Do not treat this audit as committed-baseline project health. Apply-now remains gated by current git status and queued evidence."
+                         },
+    "checks":  [
+                   {
+                       "name":  "repo_status_initial",
+                       "status":  "dirty",
+                       "detail":  "10 status rows"
+                   },
+                   {
+                       "name":  "simulation",
+                       "status":  "skipped",
+                       "detail":  "Skipped by parameter."
+                   },
+                   {
+                       "name":  "focused_validation_matrix",
+                       "status":  "skipped",
+                       "detail":  "Skipped by parameter."
+                   },
+                   {
+                       "name":  "diff_hygiene",
+                       "status":  "passed",
+                       "detail":  "git diff --check exited 0"
+                   },
+                   {
+                       "name":  "post_audit_godot_process_cleanup",
+                       "status":  "passed",
+                       "detail":  "Stopped any Godot process started by this audit that remained after validations."
+                   }
+               ],
+    "findings":  [
+
+                 ],
+    "gaps":  [
+                 {
+                     "area":  "Dirty worktree baseline",
+                     "detail":  "Audit evidence was generated from a dirty working tree with 10 initial git status row(s).",
+                     "recommendedEvidence":  "Review or preserve current worktree changes before treating results as committed-baseline project health."
+                 }
+             ],
+    "validationResults":  [
+
+                          ],
+    "artifacts":  {
+                      "auditReport":  "_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md",
+                      "simulationPacket":  {
+                                               "complete":  true,
+                                               "json":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\.godot\\ai_simulation\\ai_simulation_data_2026_07_08_2104.json",
+                                               "report":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\.godot\\ai_simulation\\ai_simulation_report_2026_07_08_2104.md",
+                                               "prompt":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\.godot\\ai_simulation\\ai_simulation_codex_prompt_2026_07_08_2104.md"
+                                           },
+                      "visualReview":  {
+                                           "folder":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\logs\\godot\\visual_review\\generated",
+                                           "count":  2,
+                                           "newest":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\logs\\godot\\visual_review\\generated\\playable_surface_bottom_dock_1180x820.png",
+                                           "files":  [
+                                                         "C:\\Users\\donny\\Desktop\\tower_defense_godot\\logs\\godot\\visual_review\\generated\\playable_surface_bottom_dock_1180x820.png",
+                                                         "C:\\Users\\donny\\Desktop\\tower_defense_godot\\logs\\godot\\visual_review\\generated\\playable_surface_pinned_1180x600.png"
+                                                     ]
+                                       },
+                      "artifactFreshAfter":  "2026-07-10T21:18:27"
+                  }
+}

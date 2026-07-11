@@ -1,0 +1,17 @@
+﻿{
+    "generatedAt":  "2026-07-10T21:18:28",
+    "sourceFindings":  "C:\\Users\\donny\\Desktop\\tower_defense_godot\\_ai_audit_workflow\\_internal\\current\\findings.json",
+    "sourceRunId":  "2026_07_10_211827",
+    "sourceStatus":  "pass with gaps",
+    "sourceDirtyBaseline":  true,
+    "dirtyQueueBlocked":  true,
+    "blockedDirtyQueueCount":  2,
+    "allowDirtyQueue":  false,
+    "count":  0,
+    "evidenceBackedCount":  0,
+    "reviewBackedCount":  0,
+    "policy":  "Dirty-baseline audit output is current-worktree evidence only. Apply-ready queue generation is blocked by default; rerun from a clean worktree or pass -AllowDirtyQueue intentionally.",
+    "items":  [
+
+              ]
+}
