@@ -112,7 +112,9 @@ Run a manual evidence pass for residual gaps, or run a fresh bounded audit after
 
 $lane = if ($null -ne $item.PSObject.Properties['lane']) { [string]$item.lane } else { 'evidence-backed code fix' }
 $isReviewBacked = $lane -eq 'review-backed polish fix'
-$selectionLabel = if ($isReviewBacked) { 'review-backed polish prompt' } else { 'evidence-backed fix' }
+$isGameplayExpansion = $lane -eq 'review-backed gameplay expansion'
+$isReviewBacked = $isReviewBacked -or $isGameplayExpansion
+$selectionLabel = if ($isGameplayExpansion) { 'review-backed gameplay expansion' } elseif ($isReviewBacked) { 'review-backed polish prompt' } else { 'evidence-backed fix' }
 $sourceRunId = if ($null -ne $queue.PSObject.Properties['sourceRunId']) { [string]$queue.sourceRunId } else { '' }
 $sourceStatus = if ($null -ne $queue.PSObject.Properties['sourceStatus']) { [string]$queue.sourceStatus } else { '' }
 $sourceDirtyBaseline = if ($null -ne $queue.PSObject.Properties['sourceDirtyBaseline']) { [bool]$queue.sourceDirtyBaseline } else { $false }
@@ -160,6 +162,8 @@ Rules:
 - Preserve unrelated dirty files.
 - Treat dirty-baseline audit evidence as current-worktree evidence only, not committed-baseline project health.
 - Do not implement from weak or missing evidence.
+- Treat simulation findings as investigation prompts until the exact current-code or current-data defect is verified.
+- If verification does not confirm a concrete defect, do not edit; report the no-code-change outcome.
 $reviewRules
 - Keep the fix scoped to this finding.
 - Use existing Godot nodes, autoloads, canonical data, and validation scripts.

@@ -5,7 +5,7 @@ signal status_changed(status: Dictionary)
 const ARCHER_ID := "archer"
 const ENEMY_KIND := "normal"
 const CANONICAL_ENEMY_KINDS := ["normal", "fast", "tank", "swarm", "shield", "flying", "armored", "commander"]
-const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "sniper", "tesla"]
+const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
 const SLICE_SPAWN_LIMIT := 3
 const PROJECTILE_HIT_DISTANCE := 8.0
 const RECOMMENDED_BUILD_SITE := Vector2(300, 243)
@@ -942,6 +942,8 @@ func _basic_slice_tower_range(tower_type: String, level: int = 1) -> float:
 	var base_range: float = float(config.get("base_tower_range", 145)) + 18.0
 	if tower_type == "sniper":
 		base_range += 90.0
+	if tower_type == "frost":
+		base_range += 22.0
 	if tower_type == "machine_gun":
 		base_range -= 10.0
 	if tower_type == "tesla":
@@ -959,6 +961,8 @@ func _basic_slice_tower_damage(tower_type: String, level: int = 1) -> float:
 		damage = 22.0
 	elif tower_type == "cannon":
 		damage = 46.0
+	elif tower_type == "frost":
+		damage = 27.0
 	elif tower_type == "tesla":
 		damage = 34.0
 	if level <= 1:
@@ -974,6 +978,8 @@ func _basic_slice_tower_fire_rate(tower_type: String, level: int = 1) -> float:
 		fire_rate = 0.28
 	elif tower_type == "cannon":
 		fire_rate = 0.72
+	elif tower_type == "frost":
+		fire_rate = 0.68
 	elif tower_type == "tesla":
 		fire_rate = 0.45
 	if level <= 1:
@@ -1296,6 +1302,8 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 		"commander": bool(modifier.get("commander", false)),
 		"damage_taken_multiplier": 1.0,
 		"regen_scale": 0.0,
+		"slow_timer": 0.0,
+		"slow_multiplier": 1.0,
 		"death_spawns": 0,
 		"death_burst_damage_fraction": 0.0,
 		"death_burst_radius": 0.0,
@@ -1535,6 +1543,8 @@ func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
 	child["death_burst_damage_fraction"] = 0.0
 	child["death_burst_radius"] = 0.0
 	child["damage_taken_multiplier"] = 1.0
+	child["slow_timer"] = 0.0
+	child["slow_multiplier"] = 1.0
 	child["speed"] = float(parent.get("speed", 0.0)) * 1.08
 	child["progress"] = _enemy_progress(child)
 	return child
@@ -1552,7 +1562,13 @@ func _update_enemy(enemy: Dictionary, delta: float) -> void:
 	if distance < 2.0:
 		enemy["target_index"] = target_index + 1
 		return
-	var movement: float = float(enemy["speed"]) * delta
+	var slow_timer: float = max(0.0, float(enemy.get("slow_timer", 0.0)) - delta)
+	enemy["slow_timer"] = slow_timer
+	var slow_multiplier := 1.0
+	if slow_timer > 0.0:
+		slow_multiplier = clamp(float(enemy.get("slow_multiplier", 1.0)), 0.25, 1.0)
+	enemy["slow_multiplier"] = slow_multiplier
+	var movement: float = float(enemy["speed"]) * slow_multiplier * delta
 	enemy["position"] = position + offset.normalized() * min(movement, distance)
 	enemy["progress"] = _enemy_progress(enemy)
 	var regen_scale: float = float(enemy.get("regen_scale", 0.0))
@@ -1734,7 +1750,14 @@ func make_test_enemy(id: String, position: Vector2, progress: float, hp: float =
 		"max_shield_hits": 0,
 		"tags": [],
 		"commander": false,
+		"slow_timer": 0.0,
+		"slow_multiplier": 1.0,
 	}
+
+
+func update_enemy_for_test(enemy: Dictionary, delta: float) -> Dictionary:
+	_update_enemy(enemy, delta)
+	return enemy
 
 
 func make_game_data_enemy_for_test(kind: String, wave_number: int = 1) -> Dictionary:
@@ -1833,15 +1856,34 @@ func _hit_projectile_target(projectile: Dictionary) -> float:
 	damage *= float(target.get("damage_taken_multiplier", 1.0))
 	target["hp"] = float(target.get("hp", 0.0)) - damage
 	var tower: Dictionary = projectile.get("tower", {})
+	if str(projectile.get("tower_type", tower.get("type", ""))) == "frost":
+		_apply_frost_slow(target, int(projectile.get("tower_level", tower.get("level", 1))))
 	tower["total_damage"] = float(tower.get("total_damage", 0.0)) + damage
 	tower["mastery_xp"] = float(tower.get("mastery_xp", 0.0)) + damage * 0.02
 	return damage
+
+
+func _apply_frost_slow(target: Dictionary, level: int) -> void:
+	var current_timer: float = float(target.get("slow_timer", 0.0))
+	target["slow_timer"] = max(current_timer, _frost_slow_duration(level))
+	var current_multiplier: float = clamp(float(target.get("slow_multiplier", 1.0)), 0.25, 1.0) if current_timer > 0.0 else 1.0
+	target["slow_multiplier"] = min(current_multiplier, _frost_slow_multiplier(level))
+
+
+func _frost_slow_duration(level: int) -> float:
+	return 1.35 + float(max(0, level - 1)) * 0.20
+
+
+func _frost_slow_multiplier(level: int) -> float:
+	return max(0.58, 0.76 - float(max(0, level - 1)) * 0.04)
 
 
 func _projectile_speed_for_tower(tower: Dictionary) -> float:
 	var tower_type: String = str(tower.get("type", ""))
 	if tower_type == "mortar":
 		return 300.0
+	if tower_type == "frost":
+		return 360.0
 	if tower_type in ["sniper", "machine_gun", "tesla"]:
 		return 760.0
 	return 420.0
@@ -2341,6 +2383,8 @@ func _serialize_enemies() -> Array:
 			"commander": bool(enemy.get("commander", false)),
 			"damage_taken_multiplier": float(enemy.get("damage_taken_multiplier", 1.0)),
 			"regen_scale": float(enemy.get("regen_scale", 0.0)),
+			"slow_timer": float(enemy.get("slow_timer", 0.0)),
+			"slow_multiplier": float(enemy.get("slow_multiplier", 1.0)),
 			"death_spawns": int(enemy.get("death_spawns", 0)),
 			"death_burst_damage_fraction": float(enemy.get("death_burst_damage_fraction", 0.0)),
 			"death_burst_radius": float(enemy.get("death_burst_radius", 0.0)),
@@ -2376,6 +2420,8 @@ func _enemy_from_state(record: Dictionary) -> Dictionary:
 		"commander": bool(record.get("commander", false)),
 		"damage_taken_multiplier": float(record.get("damage_taken_multiplier", 1.0)),
 		"regen_scale": float(record.get("regen_scale", 0.0)),
+		"slow_timer": float(record.get("slow_timer", 0.0)),
+		"slow_multiplier": float(record.get("slow_multiplier", 1.0)),
 		"death_spawns": int(record.get("death_spawns", 0)),
 		"death_burst_damage_fraction": float(record.get("death_burst_damage_fraction", 0.0)),
 		"death_burst_radius": float(record.get("death_burst_radius", 0.0)),
@@ -2855,7 +2901,7 @@ func _draw_upgrade_panel() -> void:
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(14, 26), "Selected Tower", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, Color(0.82, 0.86, 0.78))
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(14, 48), str(snapshot["tower_name"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 16, Color(0.96, 0.96, 0.92))
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(14, 72), str(snapshot["stats"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, Color(0.82, 0.82, 0.74))
-	_draw_tower_stat_rows(panel.position + Vector2(96, 56), snapshot.get("stat_detail", {}))
+	_draw_tower_stat_rows(panel.position + Vector2(94, 56), panel.size.x - 108.0, snapshot.get("stat_detail", {}))
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(14, 108), str(snapshot["details"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, Color(0.90, 0.86, 0.60))
 
 	if bool(snapshot.get("needs_branch_choice", false)):
@@ -2944,27 +2990,34 @@ func _truncate_text(text: String, max_chars: int) -> String:
 	return "%s..." % text.substr(0, max_chars - 3)
 
 
-func _draw_tower_stat_rows(pos: Vector2, stats: Dictionary) -> void:
+func _draw_tower_stat_rows(pos: Vector2, width: float, stats: Dictionary) -> void:
 	if stats.is_empty():
 		return
-	_draw_stat_bar_row(pos, "Damage", str(int(stats.get("damage", 0))), stats.get("damage_rating", {}))
-	_draw_stat_bar_row(pos + Vector2(0, 20), "Range", str(int(stats.get("range", 0))), stats.get("range_rating", {}))
-	_draw_stat_bar_row(pos + Vector2(0, 40), "Fire", str(stats.get("shooting_speed_label", "0.0/s")), stats.get("shooting_speed_rating", {}))
+	_draw_stat_bar_row(pos, width, "Dmg", str(int(stats.get("damage", 0))), stats.get("damage_rating", {}))
+	_draw_stat_bar_row(pos + Vector2(0, 20), width, "Rng", str(int(stats.get("range", 0))), stats.get("range_rating", {}))
+	_draw_stat_bar_row(pos + Vector2(0, 40), width, "Fire", str(stats.get("shooting_speed_label", "0.0/s")), stats.get("shooting_speed_rating", {}))
 
 
-func _draw_stat_bar_row(pos: Vector2, label_text: String, value_text: String, rating: Dictionary) -> void:
+func _draw_stat_bar_row(pos: Vector2, width: float, label_text: String, value_text: String, rating: Dictionary) -> void:
 	var ratio: float = float(rating.get("ratio", 0.5))
 	var rating_label: String = str(rating.get("label", "Med"))
-	draw_string(ThemeDB.fallback_font, pos, "%s %s" % [label_text, value_text], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, Color(0.77, 0.80, 0.72))
-	var bar := Rect2(pos + Vector2(78, -9), Vector2(58, 7))
+	var label_width: float = min(56.0, max(42.0, width * 0.34))
+	var rating_width := 28.0
+	var gap := 6.0
+	var bar_width: float = max(34.0, width - label_width - rating_width - gap * 2.0)
+	var bar_x := label_width + gap
+	var rating_x := bar_x + bar_width + gap
+	draw_string(ThemeDB.fallback_font, pos, "%s %s" % [label_text, value_text], HORIZONTAL_ALIGNMENT_LEFT, label_width, 10, Color(0.77, 0.80, 0.72))
+	var bar := Rect2(pos + Vector2(bar_x, -9), Vector2(bar_width, 7))
 	draw_rect(bar, Color(0.13, 0.15, 0.13))
 	draw_rect(Rect2(bar.position, Vector2(bar.size.x * ratio, bar.size.y)), _stat_rating_color(ratio))
 	draw_rect(bar, Color(0.31, 0.36, 0.31), false, 1.0)
-	draw_string(ThemeDB.fallback_font, pos + Vector2(142, 0), rating_label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, Color(0.72, 0.76, 0.68))
+	draw_string(ThemeDB.fallback_font, pos + Vector2(rating_x, 0), rating_label, HORIZONTAL_ALIGNMENT_RIGHT, rating_width, 10, Color(0.72, 0.76, 0.68))
 
 
 func _draw_compact_tower_stat_meters(pos: Vector2, width: float, stats: Dictionary) -> void:
 	var labels := ["Damage", "Range", "Fire"]
+	var compact_labels := ["Dmg", "Rng", "Fire"]
 	var ratings := [
 		stats.get("damage_rating", {}),
 		stats.get("range_rating", {}),
@@ -2973,14 +3026,15 @@ func _draw_compact_tower_stat_meters(pos: Vector2, width: float, stats: Dictiona
 	if width < 250.0:
 		var text_parts: Array = []
 		for index in range(labels.size()):
-			text_parts.append("%s %s" % [labels[index], str(ratings[index].get("label", "Med"))])
+			text_parts.append("%s %s" % [compact_labels[index], str(ratings[index].get("label", "Med"))])
 		draw_string(ThemeDB.fallback_font, pos + Vector2(0, 10), "   ".join(text_parts), HORIZONTAL_ALIGNMENT_LEFT, width, 10, Color(0.76, 0.82, 0.72))
 		return
 	var gap := 8.0
 	var meter_width: float = (width - gap * 2.0) / 3.0
 	for index in range(labels.size()):
 		var meter_pos := pos + Vector2(float(index) * (meter_width + gap), 0.0)
-		_draw_compact_stat_meter(meter_pos, meter_width, labels[index], ratings[index])
+		var display_label: String = labels[index] if meter_width >= 96.0 else compact_labels[index]
+		_draw_compact_stat_meter(meter_pos, meter_width, display_label, ratings[index])
 
 
 func _draw_compact_stat_meter(pos: Vector2, width: float, label_text: String, rating: Dictionary) -> void:
@@ -3204,6 +3258,8 @@ func _check_enemy_invariants(failures: Array) -> void:
 			failures.append("enemy %s shield_hits exceeds max_shield_hits" % index)
 		_require_nonnegative_float(failures, "enemy %s damage_taken_multiplier" % index, float(enemy.get("damage_taken_multiplier", 1.0)))
 		_require_nonnegative_float(failures, "enemy %s regen_scale" % index, float(enemy.get("regen_scale", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s slow_timer" % index, float(enemy.get("slow_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s slow_multiplier" % index, float(enemy.get("slow_multiplier", 1.0)))
 		_require_nonnegative_int(failures, "enemy %s death_spawns" % index, int(enemy.get("death_spawns", 0)))
 		_require_nonnegative_float(failures, "enemy %s death_burst_damage_fraction" % index, float(enemy.get("death_burst_damage_fraction", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s death_burst_radius" % index, float(enemy.get("death_burst_radius", 0.0)))

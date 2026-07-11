@@ -1,7 +1,8 @@
 param(
     [ValidateSet('Light', 'Deep')]
     [string] $Tier = 'Light',
-    [switch] $SkipAudit
+    [switch] $SkipAudit,
+    [switch] $AllowDirtyQueue
 )
 
 . (Join-Path $PSScriptRoot 'common.ps1')
@@ -26,7 +27,7 @@ if ($SkipAudit) {
     }
 }
 
-& (Join-Path $PSScriptRoot 'build_improvement_queue.ps1')
+& (Join-Path $PSScriptRoot 'build_improvement_queue.ps1') -AllowDirtyQueue:$AllowDirtyQueue
 $exitCode = Get-SafeLastExitCode
 if ($exitCode -ne 0) {
     Write-Host 'fail'

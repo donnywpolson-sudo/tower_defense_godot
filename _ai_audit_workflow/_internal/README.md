@@ -9,11 +9,30 @@ Run one visible file:
 The menu offers:
 
 ```text
-1. Light audit (~5 minutes)
-2. Deep audit (~10 hours / overnight)
-3. Next fix/review prompt
-4. Cancel
+1. Light audit + apply next safe improvement (~5 minutes + fix)
+2. Light audit only (~5 minutes)
+3. Deep audit + apply next safe improvement (~10 hours + fix)
+4. Deep audit only (~10 hours / overnight)
+5. Apply next queued fix/review
+6. Cancel
 ```
+
+Press Enter to choose option 1. The default path audits the game, queues the
+highest-priority evidence-backed bug or review-backed gameplay/polish item, and
+runs one bounded Codex improvement pass. The pass must produce its exact result
+summary and pass `git diff --check`; otherwise the queue item remains available
+for review.
+
+For a non-interactive automatic pass:
+
+```powershell
+.\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -AutoImprove
+```
+
+Use `-MaxFixes 2` through `-MaxFixes 5` only when you intentionally want more
+than one queued item handled in the same run and accept the separate dirty-apply
+gate after the first change. Re-run the audit afterward so the simulation and
+validation evidence reflects the applied changes.
 
 This workflow owns the tower defense audit files in this internal folder:
 
@@ -51,6 +70,18 @@ For plumbing checks without a broad Godot run:
 .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -SkipAudit
 ```
 
+Dirty working-tree audit output is evidence only by default. If the audit starts
+or ends with `git status --short` rows, the workflow writes state files but does
+not create apply-ready queue items. To intentionally queue from that dirty
+baseline, pass:
+
+```powershell
+.\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -AllowDirtyQueue
+```
+
+`-AllowDirtyQueue` only affects queue generation. The apply-now path is still
+guarded separately and refuses a dirty repo unless `-AllowDirtyApply` is passed.
+
 Generated workflow state is written under `_internal/current/`:
 
 - `status.json`
@@ -71,4 +102,6 @@ non-actionable no-queued-item message so stale apply prompts are not reused.
 The apply-now path is guarded. It refuses a dirty repo unless
 `-AllowDirtyApply` is passed, handles one queued item, runs `codex exec`, checks
 for exact `Files changed:` and `Validation run:` result lines, and runs
-`git diff --check` before marking the queue item handled.
+`git diff --check` before marking the queue item handled. Simulation findings
+are investigation prompts until the exact current-code or current-data defect is
+verified; if verification fails, the correct result is no code change.

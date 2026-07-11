@@ -2,7 +2,11 @@ param(
     [ValidateSet('Light', 'Deep')]
     [string] $Tier = 'Light',
     [switch] $NextFix,
+    [switch] $AutoImprove,
+    [ValidateRange(1, 5)]
+    [int] $MaxFixes = 1,
     [switch] $SkipAudit,
+    [switch] $AllowDirtyQueue,
     [switch] $AllowDirtyApply,
     [switch] $PauseOnExit
 )
@@ -33,16 +37,26 @@ function Initialize-RunLog {
     }
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-    $script:transcriptPath = Join-Path $stateDir 'latest_run.log'
     $script:transcriptArchivePath = Join-Path $archiveDir "run_$timestamp.log"
+    $latestRunPath = Join-Path $stateDir 'latest_run.log'
 
-    "Tower Defense AI Audit Workflow log started $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Set-Content -LiteralPath $script:transcriptPath -Encoding UTF8
-    "Archive copy: $script:transcriptArchivePath" | Add-Content -LiteralPath $script:transcriptPath -Encoding UTF8
+    try {
+        $script:transcriptPath = $latestRunPath
+        "Tower Defense AI Audit Workflow log started $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Set-Content -LiteralPath $script:transcriptPath -Encoding UTF8
+        "Archive copy: $script:transcriptArchivePath" | Add-Content -LiteralPath $script:transcriptPath -Encoding UTF8
+    } catch {
+        $script:transcriptPath = $script:transcriptArchivePath
+        $script:transcriptArchivePath = $null
+        "Tower Defense AI Audit Workflow log started $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Set-Content -LiteralPath $script:transcriptPath -Encoding UTF8
+        "latest_run.log was locked, so this run is using the archive log path directly." | Add-Content -LiteralPath $script:transcriptPath -Encoding UTF8
+    }
 
     Start-Transcript -Path $script:transcriptPath -Append | Out-Null
     $script:transcriptStarted = $true
     Write-Host "Full run log: $script:transcriptPath"
-    Write-Host "Archived run log: $script:transcriptArchivePath"
+    if ($script:transcriptArchivePath) {
+        Write-Host "Archived run log: $script:transcriptArchivePath"
+    }
 }
 
 function Stop-RunLog {
@@ -77,15 +91,17 @@ function Show-Menu {
     Write-Host ''
     Write-Host 'Tower Defense AI Audit Workflow'
     Write-Host ''
-    Write-Host '1. Light audit (~5 minutes)'
-    Write-Host '2. Deep audit (~10 hours / overnight)'
-    Write-Host '3. Next fix/review prompt'
-    Write-Host '4. Cancel'
+    Write-Host '1. Light audit + apply next safe improvement (~5 minutes + fix)'
+    Write-Host '2. Light audit only (~5 minutes)'
+    Write-Host '3. Deep audit + apply next safe improvement (~10 hours + fix)'
+    Write-Host '4. Deep audit only (~10 hours / overnight)'
+    Write-Host '5. Apply next queued fix/review'
+    Write-Host '6. Cancel'
     Write-Host ''
     if ([Console]::IsInputRedirected) {
         return '__NO_INTERACTIVE_INPUT__'
     }
-    return (Read-Host 'Choose 1-4 then press Enter (Enter = 1)')
+    return (Read-Host 'Choose 1-6 then press Enter (Enter = 1)')
 }
 
 function Show-NoInteractiveInputMessage {
@@ -95,6 +111,7 @@ function Show-NoInteractiveInputMessage {
     Write-Host ''
     Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light'
     Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Deep'
+    Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -AutoImprove'
     Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -NextFix'
     Write-Host ''
 }
@@ -302,7 +319,7 @@ function Invoke-PostAuditFixMenu {
 
     Write-Host ''
     $codeCount = @($items | Where-Object { $_.lane -eq 'evidence-backed code fix' }).Count
-    $reviewCount = @($items | Where-Object { $_.lane -eq 'review-backed polish fix' }).Count
+    $reviewCount = @($items | Where-Object { $_.reviewBacked -eq $true }).Count
     Write-Host "Queued fixes/prompts found: $($items.Count) ($codeCount evidence-backed, $reviewCount review-backed)"
     foreach ($item in @($items | Select-Object -First 5)) {
         $lane = if ($null -ne $item.PSObject.Properties['lane']) { $item.lane } else { 'evidence-backed code fix' }
@@ -339,6 +356,69 @@ function Invoke-PostAuditFixMenu {
     }
 }
 
+function Invoke-AutoImprovementLoop {
+    param(
+        [Parameter(Mandatory)][int] $MaxPasses,
+        [bool] $AllowDirtyApply = $false
+    )
+
+    Write-Host ''
+    Write-Host "Automatic improvement mode: up to $MaxPasses queued item(s)."
+    Write-Host 'Each item must pass the Codex result contract and git diff --check.'
+
+    $applied = 0
+    for ($pass = 1; $pass -le $MaxPasses; $pass++) {
+        $repoRoot = Get-RepoRootOrNull
+        $config = Read-ConfigOrNull
+        if ($null -eq $repoRoot -or $null -eq $config) {
+            Write-RootStepSummary -Step 'automatic improvement loop' -Status 'failed' -Detail 'Could not read repo/config before checking the improvement queue.'
+            return 1
+        }
+        $queuePath = Join-Path (Join-Path $repoRoot $config.currentDir) 'improvement_queue.json'
+        if (-not (Test-Path -LiteralPath $queuePath)) {
+            Write-RootStepSummary -Step 'automatic improvement loop' -Status 'passed with gaps' -Detail 'No improvement queue was produced; review findings.json and the latest run log.'
+            return 0
+        }
+        $queue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
+        $queuedCount = @($queue.items | Where-Object { $_.status -eq 'queued' }).Count
+        if ($queuedCount -eq 0) {
+            Write-RootStepSummary -Step 'automatic improvement loop' -Status 'passed with gaps' -Detail 'No safe queued item is available; the audit remains diagnostic-only for this run.'
+            return 0
+        }
+
+        $queueCheck = Invoke-Preflight -NeedsGodot $false -NeedsCodex $true -NeedsAuditQueue $true -NeedsCleanApply $true -AllowDirtyApply $AllowDirtyApply
+        if (-not $queueCheck) {
+            if ($applied -gt 0) {
+                Write-RootStepSummary -Step 'automatic improvement loop' -Status 'passed with gaps' -Detail "$applied item(s) applied before the next item was blocked."
+                return 0
+            }
+            Write-RootStepSummary -Step 'automatic improvement loop' -Status 'blocked' -Detail 'No safe queued item could be applied.'
+            return 1
+        }
+
+        Write-Host "Applying queued improvement $pass of $MaxPasses..."
+        & (Join-Path $internal 'run_improvement_pass.ps1') -PrintPrompt -RunCodex -AllowDirtyApply:$AllowDirtyApply
+        $exitCode = Get-SafeLastExitCode
+        if ($exitCode -ne 0) {
+            Write-RootStepSummary -Step 'automatic improvement loop' -Status 'failed' -Detail "Improvement pass $pass failed with exit code $exitCode."
+            return $exitCode
+        }
+        $applied++
+
+        if (-not (Test-Path -LiteralPath $queuePath)) {
+            break
+        }
+        $queue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
+        $remaining = @($queue.items | Where-Object { $_.status -eq 'queued' }).Count
+        if ($remaining -eq 0) {
+            break
+        }
+    }
+
+    Write-RootStepSummary -Step 'automatic improvement loop' -Status 'passed' -Detail "$applied queued item(s) applied. Re-run the audit to refresh evidence after these changes."
+    return 0
+}
+
 $interactive = $PSBoundParameters.Count -eq 0
 $pauseOnExitRequested = $interactive -or $PauseOnExit
 Initialize-RunLog
@@ -352,11 +432,13 @@ if ($interactive) {
             Stop-RunLog
             exit 1
         }
-        '' { $Tier = 'Light' }
-        '1' { $Tier = 'Light' }
-        '2' { $Tier = 'Deep' }
-        '3' { $NextFix = $true }
-        '4' {
+        '' { $Tier = 'Light'; $AutoImprove = $true }
+        '1' { $Tier = 'Light'; $AutoImprove = $true }
+        '2' { $Tier = 'Light' }
+        '3' { $Tier = 'Deep'; $AutoImprove = $true }
+        '4' { $Tier = 'Deep' }
+        '5' { $NextFix = $true }
+        '6' {
             Write-Host 'Cancelled.'
             Pause-IfInteractive -Interactive $pauseOnExitRequested
             Stop-RunLog
@@ -372,6 +454,8 @@ if ($interactive) {
     }
     if ($NextFix) {
         Write-Host 'Starting next fix/review prompt flow...'
+    } elseif ($AutoImprove) {
+        Write-Host "Starting $Tier audit with automatic improvement..."
     } else {
         Write-Host "Starting $Tier audit..."
     }
@@ -401,12 +485,19 @@ try {
         Pause-IfInteractive -Interactive $pauseOnExitRequested
         exit 1
     }
-    & (Join-Path $internal 'run_cycle.ps1') -Tier $Tier -SkipAudit:$SkipAudit
+    & (Join-Path $internal 'run_cycle.ps1') -Tier $Tier -SkipAudit:$SkipAudit -AllowDirtyQueue:$AllowDirtyQueue
     $exitCode = Get-SafeLastExitCode
-    if ($exitCode -eq 0 -and -not $SkipAudit) {
-        $postAuditExitCode = Invoke-PostAuditFixMenu -Interactive $interactive
-        if ($postAuditExitCode -ne 0) {
-            $exitCode = $postAuditExitCode
+    if ($exitCode -eq 0) {
+        if ($AutoImprove) {
+            $autoImproveExitCode = Invoke-AutoImprovementLoop -MaxPasses $MaxFixes -AllowDirtyApply $AllowDirtyApply
+            if ($autoImproveExitCode -ne 0) {
+                $exitCode = $autoImproveExitCode
+            }
+        } elseif ($interactive -and -not $SkipAudit) {
+            $postAuditExitCode = Invoke-PostAuditFixMenu -Interactive $interactive
+            if ($postAuditExitCode -ne 0) {
+                $exitCode = $postAuditExitCode
+            }
         }
     }
     if ($exitCode -ne 0) {
