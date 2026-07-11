@@ -6,6 +6,7 @@ codex_prompts/ai_simulation_latest.md
 *.log
 logs/godot/godot_ai_audit_recommendation_args.txt
 logs/godot/visual_review/generated/
+logs/godot/ai_simulation/
 *.bak
 *.old
 __pycache__/

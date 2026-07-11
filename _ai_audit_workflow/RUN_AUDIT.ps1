@@ -185,6 +185,15 @@ function Test-AuditQueue {
     try {
         $queue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
         $queuedItems = @($queue.items | Where-Object { $_.status -eq 'queued' })
+        $findingsPath = Join-Path (Join-Path $RepoRoot $Config.currentDir) 'findings.json'
+        $findings = if (Test-Path -LiteralPath $findingsPath) { Get-Content -Raw -LiteralPath $findingsPath | ConvertFrom-Json } else { $null }
+        $queueRunId = if ($null -ne $queue.PSObject.Properties['sourceRunId']) { [string]$queue.sourceRunId } else { '' }
+        $findingsRunId = if ($null -ne $findings -and $null -ne $findings.PSObject.Properties['runId']) { [string]$findings.runId } else { '' }
+        $findingsStatus = if ($null -ne $findings -and $null -ne $findings.PSObject.Properties['status']) { [string]$findings.status } else { '' }
+        if ($null -eq $findings -or $queueRunId.Length -eq 0 -or $findingsRunId.Length -eq 0 -or $findingsStatus -eq 'fail' -or $queueRunId -ne $findingsRunId) {
+            Add-PreflightIssue -Title 'Audit queue is stale or invalidated' -Problem 'The queue does not belong to the latest successful audit state, or the latest audit failed.' -Fix 'Run a fresh successful Light or Deep audit before applying any queued item.'
+            return
+        }
         if ($queuedItems.Count -eq 0) {
             Add-PreflightIssue -Title 'No queued fix or review prompt' -Problem 'The latest audit queue exists, but it does not contain a queued evidence-backed fix or review-backed polish prompt.' -Fix 'Run a fresh Light or Deep audit, or review the audit report for residual gaps that need manual evidence.'
         }

@@ -351,8 +351,18 @@ func _run_batch() -> Dictionary:
 
 func _run_aggregate(options: Dictionary) -> Dictionary:
 	var input_paths: Array = options.get("aggregate_inputs", [])
-	if input_paths.size() < 2:
-		return {"ok": false, "errors": ["Aggregation requires at least two input report JSON paths."]}
+	var aggregation_metadata: Dictionary = options.get("aggregate_metadata", {})
+	if input_paths.size() != 2:
+		return {"ok": false, "errors": ["Aggregation requires exactly two input report JSON paths."]}
+	var expected_chunk_runs: Array = [120, 120]
+	if int(aggregation_metadata.get("chunk_count", 2)) != 2:
+		return {"ok": false, "errors": ["Aggregation requires chunk_count=2."]}
+	var metadata_chunk_runs: Array = aggregation_metadata.get("chunk_runs", expected_chunk_runs)
+	if metadata_chunk_runs.size() != 2 or int(metadata_chunk_runs[0]) != 120 or int(metadata_chunk_runs[1]) != 120:
+		return {"ok": false, "errors": ["Aggregation requires chunk_runs=[120, 120]."]}
+	var metadata_source_reports: Array = aggregation_metadata.get("source_reports", input_paths)
+	if metadata_source_reports.size() != 2:
+		return {"ok": false, "errors": ["Aggregation metadata must contain exactly two source reports."]}
 
 	var source_reports: Array = []
 	for input_path in input_paths:
@@ -369,10 +379,23 @@ func _run_aggregate(options: Dictionary) -> Dictionary:
 		var source_report: Dictionary = source_reports[chunk_index]
 		var source_config: Dictionary = source_report.get("config", {})
 		var source_runs: Array = source_report.get("runs", [])
-		var configured_offset := int(source_config.get("run_offset", chunk_index * source_runs.size()))
+		var expected_offset: int = chunk_index * 120
+		if int(source_report.get("schema_version", 0)) != SCHEMA_VERSION:
+			return {"ok": false, "errors": ["Aggregation input %d is not schema %d." % [chunk_index + 1, SCHEMA_VERSION]]}
+		if source_runs.size() != 120 or int(source_config.get("runs", 0)) != 120:
+			return {"ok": false, "errors": ["Aggregation input %d must contain exactly 120 runs." % (chunk_index + 1)]}
+		if int(source_config.get("run_offset", -1)) != expected_offset:
+			return {"ok": false, "errors": ["Aggregation input %d must use run_offset=%d." % [chunk_index + 1, expected_offset]]}
+		if int(source_config.get("max_waves", 0)) != 6 or int(source_config.get("seed_count", 0)) != 5 or str(source_config.get("strategy_group", "")) != "standard_research":
+			return {"ok": false, "errors": ["Aggregation input %d does not match the six-wave, five-seed standard_research configuration." % (chunk_index + 1)]}
+		if str(source_config.get("scenario_probe_mode", "")) != "off":
+			return {"ok": false, "errors": ["Aggregation input %d must have scenario probes disabled." % (chunk_index + 1)]}
 		for local_index in range(source_runs.size()):
+			var expected_run_id: int = expected_offset + local_index + 1
+			if int(source_runs[local_index].get("run_id", 0)) != expected_run_id:
+				return {"ok": false, "errors": ["Aggregation input %d has a non-contiguous run ID at local index %d." % [chunk_index + 1, local_index]]}
 			var run: Dictionary = source_runs[local_index].duplicate(true)
-			run["run_id"] = configured_offset + local_index + 1
+			run["run_id"] = expected_run_id
 			all_runs.append(run)
 			total_runs += 1
 		for source_issue in source_report.get("issues", []):
@@ -380,13 +403,19 @@ func _run_aggregate(options: Dictionary) -> Dictionary:
 			var issue_run_id := int(issue.get("run_id", 0))
 			if issue_run_id > 0:
 				if issue_run_id <= source_runs.size():
-					issue["run_id"] = configured_offset + issue_run_id
+					issue["run_id"] = expected_offset + issue_run_id
 				retained_issues.append(issue)
 			elif chunk_index == 0 and str(issue.get("category", "")) == "validation":
 				retained_issues.append(issue)
 
-	if total_runs <= 0:
-		return {"ok": false, "errors": ["Aggregation inputs contained no simulation runs."]}
+	if total_runs != 240:
+		return {"ok": false, "errors": ["Aggregation must contain exactly 240 runs; got %d." % total_runs]}
+	var seen_run_ids := {}
+	for run in all_runs:
+		var run_id := int(run.get("run_id", 0))
+		if run_id < 1 or run_id > 240 or seen_run_ids.has(run_id):
+			return {"ok": false, "errors": ["Aggregated run IDs must be unique and cover 1-240."]}
+		seen_run_ids[run_id] = true
 
 	var aggregate_options := _aggregate_options_from_config(first_config, options, total_runs)
 	var game := _create_game()
@@ -400,8 +429,9 @@ func _run_aggregate(options: Dictionary) -> Dictionary:
 
 	var summary := _build_summary(all_runs, retained_issues)
 	var chunk_run_counts: Array = []
-	for source_report in source_reports:
-		chunk_run_counts.append(int(source_report.get("config", {}).get("runs", 0)))
+	for expected_runs in expected_chunk_runs:
+		chunk_run_counts.append(int(expected_runs))
+	var attempt_history: Array = aggregation_metadata.get("attempt_history", [])
 	var report := {
 		"schema_version": SCHEMA_VERSION,
 		"config": _public_config(aggregate_options),
@@ -427,10 +457,12 @@ func _run_aggregate(options: Dictionary) -> Dictionary:
 		"scenario_probes": scenario_probes,
 		"regression": {},
 		"aggregation": {
-			"mode": "chunked_fallback",
-			"chunk_count": source_reports.size(),
+			"mode": str(aggregation_metadata.get("mode", "chunked_fallback")),
+			"fallback_status": str(aggregation_metadata.get("fallback_status", "completed")),
+			"chunk_count": 2,
 			"chunk_runs": chunk_run_counts,
 			"source_reports": input_paths.duplicate(),
+			"attempt_history": attempt_history.duplicate(true),
 			"status": "completed",
 		},
 		"recommendations": _build_recommendations(summary, retained_issues),
@@ -702,6 +734,8 @@ func _parse_options() -> Dictionary:
 		"run_offset": 0,
 		"aggregate_inputs": [],
 		"aggregate_inputs_file": "",
+		"aggregate_metadata_file": "",
+		"aggregate_metadata": {},
 		"profile_explicit": false,
 		"raw_user_args": [],
 		"error": "",
@@ -723,7 +757,7 @@ func _parse_options() -> Dictionary:
 		elif normalized_arg == "overnight":
 			options["profile"] = "overnight"
 			options["profile_explicit"] = true
-		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes", "run-offset", "run_offset", "aggregate-inputs", "aggregate_inputs", "aggregate-inputs-file", "aggregate_inputs_file"]:
+		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes", "run-offset", "run_offset", "aggregate-inputs", "aggregate_inputs", "aggregate-inputs-file", "aggregate_inputs_file", "aggregate-metadata-file", "aggregate_metadata_file"]:
 			pending_key = normalized_arg
 		elif normalized_arg.begins_with("profile=") or normalized_arg.begins_with("ai-profile=") or normalized_arg.begins_with("ai_profile=") or normalized_arg.begins_with("mode=") or normalized_arg.begins_with("batch-profile=") or normalized_arg.begins_with("batch_profile="):
 			options["profile"] = _arg_value(normalized_arg)
@@ -758,6 +792,8 @@ func _parse_options() -> Dictionary:
 			options["run_offset"] = int(_arg_value(normalized_arg))
 		elif normalized_arg.begins_with("aggregate-inputs=") or normalized_arg.begins_with("aggregate_inputs="):
 			options["aggregate_inputs"] = _parse_csv(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("aggregate-metadata-file=") or normalized_arg.begins_with("aggregate_metadata_file="):
+			options["aggregate_metadata_file"] = _arg_value(normalized_arg)
 	if not pending_key.is_empty():
 		options["error"] = "Missing value for --%s." % pending_key
 		return options
@@ -782,6 +818,18 @@ func _parse_options() -> Dictionary:
 		if manifest_inputs.is_empty():
 			options["error"] = "Aggregation input manifest was empty: %s" % str(options["aggregate_inputs_file"])
 			return options
+	if not str(options["aggregate_metadata_file"]).is_empty():
+		var metadata_path := str(options["aggregate_metadata_file"])
+		var metadata := _read_json_report(metadata_path)
+		if metadata.is_empty():
+			options["error"] = "Aggregation metadata sidecar was not found or invalid: %s" % str(options["aggregate_metadata_file"])
+			return options
+		var metadata_sources: Array = metadata.get("source_reports", [])
+		if metadata_sources.size() != 2:
+			options["error"] = "Aggregation metadata sidecar must contain exactly two source reports."
+			return options
+		options["aggregate_metadata"] = metadata
+		options["aggregate_inputs"] = metadata_sources
 
 	var profile := str(options["profile"])
 	if not PROFILE_DEFAULTS.has(profile):
@@ -880,6 +928,8 @@ func _apply_option_value(options: Dictionary, key: String, value: String) -> voi
 		options["aggregate_inputs"] = _parse_csv(normalized_value)
 	elif key in ["aggregate-inputs-file", "aggregate_inputs_file"]:
 		options["aggregate_inputs_file"] = normalized_value
+	elif key in ["aggregate-metadata-file", "aggregate_metadata_file"]:
+		options["aggregate_metadata_file"] = normalized_value
 
 
 func _parse_csv(value: String) -> Array:
@@ -963,6 +1013,7 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"scenario_probe_mode": _resolve_scenario_probe_mode(options),
 		"run_offset": int(options.get("run_offset", 0)),
 		"aggregate_inputs_file": str(options.get("aggregate_inputs_file", "")),
+		"aggregate_metadata_file": str(options.get("aggregate_metadata_file", "")),
 		"coverage_scope": COVERAGE_SCOPE,
 		"profile_defaults": PROFILE_DEFAULTS.duplicate(true),
 		"strategy_groups": STRATEGY_GROUPS.duplicate(true),

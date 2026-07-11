@@ -2,25 +2,62 @@ param(
     [ValidateSet('Light', 'Deep')]
     [string] $Tier = 'Light',
     [switch] $SkipAudit,
-    [switch] $AllowDirtyQueue
+    [switch] $AllowDirtyQueue,
+    [string] $SimulationLauncherOverride = ''
 )
 
 . (Join-Path $PSScriptRoot 'common.ps1')
 
 $repoRoot = Assert-TowerDefenseRepo
 
+function Invalidate-ImprovementQueue {
+    param([Parameter(Mandatory)][string] $Reason)
+    $config = Read-WorkflowConfig
+    $stateDir = Ensure-WorkflowState -Config $config
+    $findingsPath = Join-Path $stateDir 'findings.json'
+    $findings = Read-JsonFileOrNull -Path $findingsPath
+    $queuePath = Join-Path $stateDir 'improvement_queue.json'
+    $queue = [pscustomobject]@{
+        generatedAt = (Get-Date).ToString('s')
+        sourceFindings = $findingsPath
+        sourceRunId = Get-ObjectProperty -Object $findings -Name 'runId' -Default ''
+        sourceStatus = Get-ObjectProperty -Object $findings -Name 'status' -Default 'fail'
+        invalidated = $true
+        invalidationReason = $Reason
+        count = 0
+        evidenceBackedCount = 0
+        reviewBackedCount = 0
+        items = @()
+    }
+    ConvertTo-JsonFile -Value $queue -Path $queuePath
+    $promptPath = Join-Path $stateDir 'next_improvement_prompt.md'
+    @"
+# No Queued Improvement Item
+
+The latest audit failed before producing applyable evidence.
+
+Source status: $($queue.sourceStatus)
+Reason: $Reason
+
+Run a fresh successful audit before applying any improvement.
+"@ | Set-Content -LiteralPath $promptPath -Encoding UTF8
+    Write-StepSummary -Step 'improvement queue invalidation' -Status 'blocked' -LogPath $queuePath -Detail $Reason
+}
+
 if ($SkipAudit) {
-    & (Join-Path $PSScriptRoot 'run_deep_audit.ps1') -Tier $Tier -SkipSimulation -SkipValidations -SkipPlayableSurface
+    & (Join-Path $PSScriptRoot 'run_deep_audit.ps1') -Tier $Tier -SkipSimulation -SkipValidations -SkipPlayableSurface -SimulationLauncherOverride $SimulationLauncherOverride
     $exitCode = Get-SafeLastExitCode
     if ($exitCode -ne 0) {
+        Invalidate-ImprovementQueue -Reason "Audit failed with exit code $exitCode."
         Write-Host 'fail'
         $global:LASTEXITCODE = $exitCode
         return
     }
 } else {
-    & (Join-Path $PSScriptRoot 'run_deep_audit.ps1') -Tier $Tier
+    & (Join-Path $PSScriptRoot 'run_deep_audit.ps1') -Tier $Tier -SimulationLauncherOverride $SimulationLauncherOverride
     $exitCode = Get-SafeLastExitCode
     if ($exitCode -ne 0) {
+        Invalidate-ImprovementQueue -Reason "Audit failed with exit code $exitCode."
         Write-Host 'fail'
         $global:LASTEXITCODE = $exitCode
         return

@@ -82,6 +82,7 @@ set "STDOUT_LOG=%LOG_DIR%\godot_ai_simulation_stdout.log"
 set "ENGINE_STDERR_LOG=%LOG_DIR%\godot_ai_simulation_engine_stderr.log"
 set "RECOMMENDATION_LOG=%LOG_DIR%\godot_ai_audit_recommendation.log"
 set "RECOMMENDATION_ARGS_FILE=%LOG_DIR%\godot_ai_audit_recommendation_args.txt"
+if defined TD_SIM_ENGINE_STDERR_PATH set "ENGINE_STDERR_LOG=%TD_SIM_ENGINE_STDERR_PATH%"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 

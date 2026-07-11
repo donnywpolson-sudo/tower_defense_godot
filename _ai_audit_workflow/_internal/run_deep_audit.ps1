@@ -3,7 +3,8 @@ param(
     [string] $Tier = 'Light',
     [switch] $SkipSimulation,
     [switch] $SkipValidations,
-    [switch] $SkipPlayableSurface
+    [switch] $SkipPlayableSurface,
+    [string] $SimulationLauncherOverride = ''
 )
 
 . (Join-Path $PSScriptRoot 'common.ps1')
@@ -217,13 +218,15 @@ function Invoke-SimulationAttempt {
     }
     $stdoutPath = Join-Path $attemptRoot ("{0}_stdout.log" -f $AttemptLabel)
     $stderrPath = Join-Path $attemptRoot ("{0}_stderr.log" -f $AttemptLabel)
+    $engineStderrPath = Join-Path $attemptRoot ("{0}_engine_stderr.log" -f $AttemptLabel)
+    [System.IO.File]::WriteAllText($engineStderrPath, '')
     $attemptArgs = New-Object System.Collections.Generic.List[string]
     foreach ($argument in $Arguments) {
         $attemptArgs.Add([string]$argument)
     }
     $startedAt = Get-Date
     try {
-        $result = Invoke-RepoProcess -Label "$Tier simulation $AttemptLabel" -FilePath $LauncherPath -ArgumentList @($attemptArgs.ToArray()) -WorkingDirectory $repoRoot -TimeoutSeconds $TimeoutSeconds -StdoutPath $stdoutPath -StderrPath $stderrPath -EnvironmentVariables @{ TD_SIM_LOG_DIR = $launcherLogDir } -MirrorRunProgress -ReturnResult
+        $result = Invoke-RepoProcess -Label "$Tier simulation $AttemptLabel" -FilePath $LauncherPath -ArgumentList @($attemptArgs.ToArray()) -WorkingDirectory $repoRoot -TimeoutSeconds $TimeoutSeconds -StdoutPath $stdoutPath -StderrPath $stderrPath -EnvironmentVariables @{ TD_SIM_LOG_DIR = $launcherLogDir; TD_SIM_ENGINE_STDERR_PATH = $engineStderrPath } -MirrorRunProgress -ReturnResult
     } catch {
         $result = [pscustomobject]@{
             succeeded = $false
@@ -254,10 +257,30 @@ function Invoke-SimulationAttempt {
         capturedAt = $result.capturedAt
         stdoutPath = $stdoutPath
         stderrPath = $stderrPath
+        engineStderrPath = $engineStderrPath
         launcherLogDir = $launcherLogDir
         startedAt = $startedAt.ToString('s')
         finishedAt = (Get-Date).ToString('s')
     }
+}
+
+function Update-AggregationAttemptHistory {
+    param(
+        [Parameter(Mandatory)] $Packet,
+        [Parameter(Mandatory)][object[]] $Attempts
+    )
+    if ($null -eq $Packet.json -or -not (Test-Path -LiteralPath $Packet.json.FullName)) {
+        throw 'Cannot update aggregate attempt history because the canonical JSON report is missing.'
+    }
+    $report = Read-JsonFileOrNull -Path $Packet.json.FullName
+    if ($null -eq $report) {
+        throw "Cannot update aggregate attempt history because the canonical JSON report could not be parsed: $($Packet.json.FullName)"
+    }
+    if ($null -eq $report.PSObject.Properties['aggregation']) {
+        $report | Add-Member -NotePropertyName aggregation -NotePropertyValue ([pscustomobject]@{})
+    }
+    $report.aggregation.attempt_history = @($Attempts)
+    ConvertTo-JsonFile -Value $report -Path $Packet.json.FullName
 }
 
 function Invoke-SimulationWithResilience {
@@ -292,6 +315,10 @@ function Invoke-SimulationWithResilience {
 
     $chunkCount = [int](Get-ObjectProperty -Object $fallback -Name 'chunkCount' -Default 2)
     $chunkRuns = [int](Get-ObjectProperty -Object $fallback -Name 'chunkRuns' -Default 120)
+    if ($chunkCount -ne 2 -or $chunkRuns -ne 120) {
+        $script:simulationMode = 'unrecoverable_failure'
+        throw "Light fallback configuration must be exactly two chunks of 120 runs; got chunkCount=$chunkCount, chunkRuns=$chunkRuns."
+    }
     $chunkArgsBase = @((Get-ObjectProperty -Object $fallback -Name 'args' -Default @()))
     $chunkJsonPaths = New-Object System.Collections.Generic.List[string]
     for ($chunkIndex = 0; $chunkIndex -lt $chunkCount; $chunkIndex++) {
@@ -315,8 +342,15 @@ function Invoke-SimulationWithResilience {
         $chunkJsonPaths.Add($chunkPacket.json.FullName)
     }
 
-    $aggregateInputsPath = Join-Path (Join-Path (Join-Path $repoRoot 'logs\godot\ai_simulation') $runId) 'aggregate_inputs.txt'
-    @($chunkJsonPaths.ToArray()) | Set-Content -LiteralPath $aggregateInputsPath -Encoding UTF8
+    $aggregateMetadataPath = Join-Path (Join-Path (Join-Path $repoRoot 'logs\godot\ai_simulation') $runId) 'aggregation_metadata.json'
+    ConvertTo-JsonFile -Value ([pscustomobject]@{
+        mode = 'chunked_fallback'
+        fallback_status = 'completed'
+        chunk_count = $chunkCount
+        chunk_runs = @($chunkRuns, $chunkRuns)
+        source_reports = @($chunkJsonPaths.ToArray())
+        attempt_history = @($script:simulationAttempts.ToArray())
+    }) -Path $aggregateMetadataPath
     $aggregateStartedAt = Get-Date
     $aggregateArgs = @(
         '--test',
@@ -327,12 +361,20 @@ function Invoke-SimulationWithResilience {
         '--strategy-group=standard_research',
         '--scenario-probes=auto',
         '--output-dir=res://.godot/ai_simulation',
-        '--aggregate-inputs-file',
-        $aggregateInputsPath,
+        '--aggregate-metadata-file',
+        $aggregateMetadataPath,
         "--report-label=light_chunked_fallback_$runId"
     )
     $aggregateResult = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments $aggregateArgs -AttemptLabel 'aggregate' -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
     $script:simulationAttempts.Add($aggregateResult)
+    ConvertTo-JsonFile -Value ([pscustomobject]@{
+        mode = 'chunked_fallback'
+        fallback_status = if ($aggregateResult.succeeded) { 'completed' } else { 'failed' }
+        chunk_count = $chunkCount
+        chunk_runs = @($chunkRuns, $chunkRuns)
+        source_reports = @($chunkJsonPaths.ToArray())
+        attempt_history = @($script:simulationAttempts.ToArray())
+    }) -Path $aggregateMetadataPath
     if (-not $aggregateResult.succeeded) {
         $script:simulationMode = 'unrecoverable_failure'
         throw "Light chunk aggregation failed with exit=$($aggregateResult.exitCode), timedOut=$($aggregateResult.timedOut)."
@@ -341,6 +383,7 @@ function Invoke-SimulationWithResilience {
     if (-not $aggregatePacket.complete) {
         throw 'Light chunk aggregation completed without a fresh canonical report packet.'
     }
+    Update-AggregationAttemptHistory -Packet $aggregatePacket -Attempts @($script:simulationAttempts.ToArray())
     return [pscustomobject]@{ mode = 'chunked_fallback'; packet = $aggregatePacket }
 }
 
@@ -444,7 +487,11 @@ try {
         $packet = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config
     } else {
         $simulationStartedAt = Get-Date
-        $launcherPath = Join-Path $repoRoot $config.launcher
+        $launcherPath = if ($SimulationLauncherOverride.Trim().Length -gt 0) {
+            (Resolve-Path -LiteralPath $SimulationLauncherOverride).Path
+        } else {
+            Join-Path $repoRoot $config.launcher
+        }
         if (-not (Test-Path -LiteralPath $launcherPath)) {
             throw "Simulation launcher is missing: $launcherPath"
         }
