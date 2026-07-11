@@ -138,6 +138,64 @@ function Stop-ProcessTree {
     }
 }
 
+function Get-ProcessDiagnostics {
+    param(
+        [Parameter(Mandatory)][int] $RootProcessId,
+        [int[]] $KnownProcessIds = @()
+    )
+    $ids = New-Object System.Collections.Generic.List[int]
+    $ids.Add($RootProcessId)
+    foreach ($id in $KnownProcessIds) {
+        if (-not $ids.Contains([int]$id)) {
+            $ids.Add([int]$id)
+        }
+    }
+    foreach ($childId in @(Get-ChildProcessIds -ParentProcessId $RootProcessId)) {
+        if (-not $ids.Contains([int]$childId)) {
+            $ids.Add([int]$childId)
+        }
+    }
+
+    $rows = New-Object System.Collections.Generic.List[object]
+    foreach ($id in $ids) {
+        $process = Get-Process -Id $id -ErrorAction SilentlyContinue
+        if ($null -eq $process) {
+            $rows.Add([pscustomobject]@{
+                pid = [int]$id
+                name = $null
+                alive = $false
+                exitCode = $null
+                workingSetBytes = $null
+                privateMemoryBytes = $null
+                cpuSeconds = $null
+            })
+            continue
+        }
+        $exitCode = $null
+        try {
+            if ($process.HasExited) {
+                $exitCode = $process.ExitCode
+            }
+        } catch {
+        }
+        $cpuSeconds = $null
+        try {
+            $cpuSeconds = [double]$process.TotalProcessorTime.TotalSeconds
+        } catch {
+        }
+        $rows.Add([pscustomobject]@{
+            pid = [int]$process.Id
+            name = [string]$process.ProcessName
+            alive = -not [bool]$process.HasExited
+            exitCode = $exitCode
+            workingSetBytes = [int64]$process.WorkingSet64
+            privateMemoryBytes = [int64]$process.PrivateMemorySize64
+            cpuSeconds = $cpuSeconds
+        })
+    }
+    return @($rows.ToArray())
+}
+
 function Invoke-RepoProcess {
     param(
         [Parameter(Mandatory)][string] $Label,
@@ -147,7 +205,9 @@ function Invoke-RepoProcess {
         [int] $TimeoutSeconds = 0,
         [string] $StdoutPath = '',
         [string] $StderrPath = '',
-        [switch] $MirrorRunProgress
+        [hashtable] $EnvironmentVariables = @{},
+        [switch] $MirrorRunProgress,
+        [switch] $ReturnResult
     )
     Write-Host "==> $Label"
     $workingDirectoryPath = ([string]$WorkingDirectory).Trim()
@@ -170,58 +230,77 @@ function Invoke-RepoProcess {
         }
     }
 
+    $knownProcessIds = New-Object System.Collections.Generic.List[int]
+    $maxWorkingSetBytes = [int64]0
+    $maxPrivateMemoryBytes = [int64]0
+    $maxCpuSeconds = [double]0
+    $lastDiagnostics = @()
+    $startedAt = Get-Date
+    $timedOut = $false
+    $launchError = $null
+    $process = $null
     $mirrorsProgressFromOutput = $false
-    if ($useRedirectedProcess) {
-        if ($StdoutPath.Trim().Length -gt 0) {
-            [System.IO.File]::WriteAllText($StdoutPath, '')
+    try {
+        if ($useRedirectedProcess) {
+            if ($StdoutPath.Trim().Length -gt 0) {
+                [System.IO.File]::WriteAllText($StdoutPath, '')
+            }
+            if ($StderrPath.Trim().Length -gt 0) {
+                [System.IO.File]::WriteAllText($StderrPath, '')
+            }
+            $redirectDir = $workingDirectoryPath
+            if ($StdoutPath.Trim().Length -gt 0) {
+                $redirectDir = Split-Path -Parent $StdoutPath
+            } elseif ($StderrPath.Trim().Length -gt 0) {
+                $redirectDir = Split-Path -Parent $StderrPath
+            }
+            $runnerName = 'process_runner_{0}_{1}.cmd' -f $PID, ([datetime]::UtcNow.Ticks)
+            $runnerPath = Join-Path $redirectDir $runnerName
+            $commandLine = '"' + $FilePath + '" ' + (Join-ProcessArguments -ArgumentList $ArgumentList)
+            if ($StdoutPath.Trim().Length -gt 0) {
+                $commandLine += ' 1> "' + $StdoutPath + '"'
+            }
+            if ($StderrPath.Trim().Length -gt 0) {
+                $commandLine += ' 2> "' + $StderrPath + '"'
+            }
+            $runnerLines = New-Object System.Collections.Generic.List[string]
+            $runnerLines.Add('@echo off')
+            foreach ($environmentKey in $EnvironmentVariables.Keys) {
+                $environmentValue = [string]$EnvironmentVariables[$environmentKey]
+                $runnerLines.Add(('set "{0}={1}"' -f $environmentKey, $environmentValue))
+            }
+            $runnerLines.Add('cd /d "' + $workingDirectoryPath + '"')
+            $runnerLines.Add($commandLine)
+            $runnerLines.Add('exit /b %ERRORLEVEL%')
+            $runnerLines | Set-Content -LiteralPath $runnerPath -Encoding ASCII
+            $startInfo = @{
+                FilePath = $env:ComSpec
+                ArgumentList = @('/d', '/c', $runnerPath)
+                WorkingDirectory = $workingDirectoryPath
+                Wait = $false
+                PassThru = $true
+                WindowStyle = 'Hidden'
+            }
+            $process = Start-Process @startInfo
+        } else {
+            $startInfo = @{
+                FilePath = $FilePath
+                ArgumentList = $ArgumentList
+                WorkingDirectory = $workingDirectoryPath
+                Wait = $false
+                PassThru = $true
+                WindowStyle = 'Hidden'
+            }
+            $process = Start-Process @startInfo
         }
-        if ($StderrPath.Trim().Length -gt 0) {
-            [System.IO.File]::WriteAllText($StderrPath, '')
+    } catch {
+        $launchError = $_.Exception.Message
+        if (-not $ReturnResult) {
+            throw
         }
-        $redirectDir = $workingDirectoryPath
-        if ($StdoutPath.Trim().Length -gt 0) {
-            $redirectDir = Split-Path -Parent $StdoutPath
-        } elseif ($StderrPath.Trim().Length -gt 0) {
-            $redirectDir = Split-Path -Parent $StderrPath
-        }
-        $runnerName = 'process_runner_{0}_{1}.cmd' -f $PID, ([datetime]::UtcNow.Ticks)
-        $runnerPath = Join-Path $redirectDir $runnerName
-        $commandLine = '"' + $FilePath + '" ' + (Join-ProcessArguments -ArgumentList $ArgumentList)
-        if ($StdoutPath.Trim().Length -gt 0) {
-            $commandLine += ' 1> "' + $StdoutPath + '"'
-        }
-        if ($StderrPath.Trim().Length -gt 0) {
-            $commandLine += ' 2> "' + $StderrPath + '"'
-        }
-        @(
-            '@echo off',
-            'cd /d "' + $workingDirectoryPath + '"',
-            $commandLine,
-            'exit /b %ERRORLEVEL%'
-        ) | Set-Content -LiteralPath $runnerPath -Encoding ASCII
-        $startInfo = @{
-            FilePath = $env:ComSpec
-            ArgumentList = @('/d', '/c', $runnerPath)
-            WorkingDirectory = $workingDirectoryPath
-            Wait = $false
-            PassThru = $true
-            WindowStyle = 'Hidden'
-        }
-        $process = Start-Process @startInfo
-    } else {
-        $startInfo = @{
-            FilePath = $FilePath
-            ArgumentList = $ArgumentList
-            WorkingDirectory = $workingDirectoryPath
-            Wait = $false
-            PassThru = $true
-            WindowStyle = 'Hidden'
-        }
-        $process = Start-Process @startInfo
     }
-    if ($TimeoutSeconds -gt 0) {
-        $startedAt = Get-Date
-        $timedOut = $false
+
+    if ($null -ne $process -and $TimeoutSeconds -gt 0) {
         $mirroredProgressLineCount = 0
         while (-not $process.HasExited) {
             $elapsedSeconds = [int]((Get-Date) - $startedAt).TotalSeconds
@@ -243,6 +322,22 @@ function Invoke-RepoProcess {
                 } catch {
                 }
             }
+            $sample = @(Get-ProcessDiagnostics -RootProcessId $process.Id -KnownProcessIds @($knownProcessIds.ToArray()))
+            foreach ($row in $sample) {
+                if (-not $knownProcessIds.Contains([int]$row.pid)) {
+                    $knownProcessIds.Add([int]$row.pid)
+                }
+                if ($null -ne $row.workingSetBytes) {
+                    $maxWorkingSetBytes = [math]::Max($maxWorkingSetBytes, [int64]$row.workingSetBytes)
+                }
+                if ($null -ne $row.privateMemoryBytes) {
+                    $maxPrivateMemoryBytes = [math]::Max($maxPrivateMemoryBytes, [int64]$row.privateMemoryBytes)
+                }
+                if ($null -ne $row.cpuSeconds) {
+                    $maxCpuSeconds = [math]::Max($maxCpuSeconds, [double]$row.cpuSeconds)
+                }
+            }
+            $lastDiagnostics = $sample
             Start-Sleep -Seconds 1
             $process.Refresh()
         }
@@ -267,23 +362,57 @@ function Invoke-RepoProcess {
                 } catch {
                 }
             }
-            throw "$Label timed out after $TimeoutSeconds second(s)."
+            if (-not $ReturnResult) {
+                throw "$Label timed out after $TimeoutSeconds second(s)."
+            }
         }
+    } elseif ($null -ne $process) {
+        $process.WaitForExit()
+    }
+    if ($null -ne $process -and $useRedirectedProcess) {
+        $process.WaitForExit()
+    }
+    if ($null -ne $process) {
+        $global:LASTEXITCODE = $process.ExitCode
+        $lastDiagnostics = @(Get-ProcessDiagnostics -RootProcessId $process.Id -KnownProcessIds @($knownProcessIds.ToArray()))
     } else {
-        $process.WaitForExit()
+        $global:LASTEXITCODE = -1
     }
-    if ($useRedirectedProcess) {
-        $process.WaitForExit()
-    }
-    $global:LASTEXITCODE = $process.ExitCode
+    $exitCode = if ($null -ne $process) { [int]$process.ExitCode } else { -1 }
+    $durationSeconds = [math]::Round(((Get-Date) - $startedAt).TotalSeconds, 3)
     if ($runnerPath.Trim().Length -gt 0 -and (Test-Path -LiteralPath $runnerPath)) {
         try {
             Remove-Item -LiteralPath $runnerPath -Force -ErrorAction SilentlyContinue
         } catch {
         }
     }
-    if ($process.ExitCode -ne 0) {
-        throw "$Label failed with exit code $($process.ExitCode)."
+    $result = [pscustomobject]@{
+        label = $Label
+        succeeded = ($null -ne $process -and $exitCode -eq 0 -and -not $timedOut -and $null -eq $launchError)
+        exitCode = $exitCode
+        timedOut = $timedOut
+        durationSeconds = $durationSeconds
+        processId = if ($null -ne $process) { [int]$process.Id } else { $null }
+        stdoutPath = $StdoutPath
+        stderrPath = $StderrPath
+        diagnostics = @($lastDiagnostics)
+        maxWorkingSetBytes = $maxWorkingSetBytes
+        maxPrivateMemoryBytes = $maxPrivateMemoryBytes
+        maxCpuSeconds = $maxCpuSeconds
+        launchError = $launchError
+        capturedAt = (Get-Date).ToString('s')
+    }
+    if (-not $ReturnResult -and -not $result.succeeded) {
+        if ($timedOut) {
+            throw "$Label timed out after $TimeoutSeconds second(s)."
+        }
+        if ($null -ne $launchError) {
+            throw "$Label could not start: $launchError"
+        }
+        throw "$Label failed with exit code $exitCode."
+    }
+    if ($ReturnResult) {
+        return $result
     }
 }
 

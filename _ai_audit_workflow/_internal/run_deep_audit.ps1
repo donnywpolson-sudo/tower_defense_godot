@@ -19,6 +19,9 @@ $checks = New-Object System.Collections.Generic.List[object]
 $findings = New-Object System.Collections.Generic.List[object]
 $gaps = New-Object System.Collections.Generic.List[object]
 $validationResults = New-Object System.Collections.Generic.List[object]
+$simulationAttempts = New-Object System.Collections.Generic.List[object]
+$simulationMode = 'not_run'
+$packet = $null
 $finalStatus = 'pass'
 $failureMessage = ''
 $preExistingGodotProcessIds = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -like '*Godot*' } | Select-Object -ExpandProperty Id)
@@ -199,6 +202,148 @@ function Invoke-Validation {
     $script:validationResults.Add([pscustomobject]@{ name = $Validation.name; status = 'passed'; log = [string]$Validation.log; expected = $expected })
 }
 
+function Invoke-SimulationAttempt {
+    param(
+        [Parameter(Mandatory)][string] $LauncherPath,
+        [Parameter(Mandatory)][string[]] $Arguments,
+        [Parameter(Mandatory)][string] $AttemptLabel,
+        [Parameter(Mandatory)][int] $TimeoutSeconds
+    )
+    $attemptRoot = Join-Path (Join-Path $repoRoot 'logs\godot\ai_simulation') $runId
+    $attemptDir = Join-Path $attemptRoot $AttemptLabel
+    $launcherLogDir = Join-Path $attemptDir 'launcher'
+    if (-not (Test-Path -LiteralPath $launcherLogDir)) {
+        New-Item -ItemType Directory -Path $launcherLogDir | Out-Null
+    }
+    $stdoutPath = Join-Path $attemptRoot ("{0}_stdout.log" -f $AttemptLabel)
+    $stderrPath = Join-Path $attemptRoot ("{0}_stderr.log" -f $AttemptLabel)
+    $attemptArgs = New-Object System.Collections.Generic.List[string]
+    foreach ($argument in $Arguments) {
+        $attemptArgs.Add([string]$argument)
+    }
+    $startedAt = Get-Date
+    try {
+        $result = Invoke-RepoProcess -Label "$Tier simulation $AttemptLabel" -FilePath $LauncherPath -ArgumentList @($attemptArgs.ToArray()) -WorkingDirectory $repoRoot -TimeoutSeconds $TimeoutSeconds -StdoutPath $stdoutPath -StderrPath $stderrPath -EnvironmentVariables @{ TD_SIM_LOG_DIR = $launcherLogDir } -MirrorRunProgress -ReturnResult
+    } catch {
+        $result = [pscustomobject]@{
+            succeeded = $false
+            exitCode = -1
+            timedOut = $false
+            durationSeconds = [math]::Round(((Get-Date) - $startedAt).TotalSeconds, 3)
+            processId = $null
+            diagnostics = @()
+            maxWorkingSetBytes = 0
+            maxPrivateMemoryBytes = 0
+            maxCpuSeconds = 0
+            launchError = $_.Exception.Message
+            capturedAt = (Get-Date).ToString('s')
+        }
+    }
+    return [pscustomobject]@{
+        label = $AttemptLabel
+        succeeded = [bool]$result.succeeded
+        exitCode = [int]$result.exitCode
+        timedOut = [bool]$result.timedOut
+        durationSeconds = $result.durationSeconds
+        processId = $result.processId
+        diagnostics = @($result.diagnostics)
+        maxWorkingSetBytes = $result.maxWorkingSetBytes
+        maxPrivateMemoryBytes = $result.maxPrivateMemoryBytes
+        maxCpuSeconds = $result.maxCpuSeconds
+        launchError = $result.launchError
+        capturedAt = $result.capturedAt
+        stdoutPath = $stdoutPath
+        stderrPath = $stderrPath
+        launcherLogDir = $launcherLogDir
+        startedAt = $startedAt.ToString('s')
+        finishedAt = (Get-Date).ToString('s')
+    }
+}
+
+function Invoke-SimulationWithResilience {
+    param(
+        [Parameter(Mandatory)][string] $LauncherPath,
+        [Parameter(Mandatory)] $TierConfig
+    )
+    $simulationConfig = Get-ObjectProperty -Object $config -Name 'simulationResilience' -Default @{}
+    $retryCount = [int](Get-ObjectProperty -Object $simulationConfig -Name 'retryCount' -Default 1)
+    $attempt = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments @($TierConfig.args) -AttemptLabel 'attempt_1' -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
+    $script:simulationAttempts.Add($attempt)
+    if ($attempt.succeeded) {
+        return [pscustomobject]@{ mode = 'normal'; packet = $null }
+    }
+
+    Write-StepSummary -Step "$Tier simulation attempt 1" -Status 'failed; retrying' -Detail "exit=$($attempt.exitCode), timedOut=$($attempt.timedOut), stdout=$($attempt.stdoutPath), stderr=$($attempt.stderrPath)"
+    if ($retryCount -gt 0) {
+        $retry = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments @($TierConfig.args) -AttemptLabel 'attempt_2' -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
+        $script:simulationAttempts.Add($retry)
+        if ($retry.succeeded) {
+            return [pscustomobject]@{ mode = 'recovered_after_retry'; packet = $null }
+        }
+        Write-StepSummary -Step "$Tier simulation attempt 2" -Status 'failed' -Detail "exit=$($retry.exitCode), timedOut=$($retry.timedOut), stdout=$($retry.stdoutPath), stderr=$($retry.stderrPath)"
+    }
+
+    $fallback = Get-ObjectProperty -Object $simulationConfig -Name 'lightFallback' -Default $null
+    $fallbackEnabled = $Tier -eq 'Light' -and $null -ne $fallback -and [bool](Get-ObjectProperty -Object $fallback -Name 'enabled' -Default $false)
+    if (-not $fallbackEnabled) {
+        $script:simulationMode = 'unrecoverable_failure'
+        throw "$Tier simulation failed after $($retryCount + 1) full-run attempt(s); no chunk fallback is configured. Attempt diagnostics are under logs/godot/ai_simulation/$runId."
+    }
+
+    $chunkCount = [int](Get-ObjectProperty -Object $fallback -Name 'chunkCount' -Default 2)
+    $chunkRuns = [int](Get-ObjectProperty -Object $fallback -Name 'chunkRuns' -Default 120)
+    $chunkArgsBase = @((Get-ObjectProperty -Object $fallback -Name 'args' -Default @()))
+    $chunkJsonPaths = New-Object System.Collections.Generic.List[string]
+    for ($chunkIndex = 0; $chunkIndex -lt $chunkCount; $chunkIndex++) {
+        $chunkStartedAt = Get-Date
+        $chunkArgs = New-Object System.Collections.Generic.List[string]
+        foreach ($argument in $chunkArgsBase) {
+            $chunkArgs.Add([string]$argument)
+        }
+        $chunkArgs.Add("--run-offset=$($chunkIndex * $chunkRuns)")
+        $chunkArgs.Add("--report-label=light_chunk_$($chunkIndex + 1)_$runId")
+        $chunkResult = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments @($chunkArgs.ToArray()) -AttemptLabel ("chunk_{0}" -f ($chunkIndex + 1)) -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
+        $script:simulationAttempts.Add($chunkResult)
+        if (-not $chunkResult.succeeded) {
+            $script:simulationMode = 'unrecoverable_failure'
+            throw "Light simulation chunk $($chunkIndex + 1) failed with exit=$($chunkResult.exitCode), timedOut=$($chunkResult.timedOut). Attempt diagnostics are under logs/godot/ai_simulation/$runId."
+        }
+        $chunkPacket = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $chunkStartedAt
+        if (-not $chunkPacket.complete) {
+            throw "Light simulation chunk $($chunkIndex + 1) completed without a fresh report packet."
+        }
+        $chunkJsonPaths.Add($chunkPacket.json.FullName)
+    }
+
+    $aggregateInputsPath = Join-Path (Join-Path (Join-Path $repoRoot 'logs\godot\ai_simulation') $runId) 'aggregate_inputs.txt'
+    @($chunkJsonPaths.ToArray()) | Set-Content -LiteralPath $aggregateInputsPath -Encoding UTF8
+    $aggregateStartedAt = Get-Date
+    $aggregateArgs = @(
+        '--test',
+        "--profile=medium",
+        "--runs=$($chunkCount * $chunkRuns)",
+        '--max-waves=6',
+        '--seed-count=5',
+        '--strategy-group=standard_research',
+        '--scenario-probes=auto',
+        '--output-dir=res://.godot/ai_simulation',
+        '--aggregate-inputs-file',
+        $aggregateInputsPath,
+        "--report-label=light_chunked_fallback_$runId"
+    )
+    $aggregateResult = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments $aggregateArgs -AttemptLabel 'aggregate' -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
+    $script:simulationAttempts.Add($aggregateResult)
+    if (-not $aggregateResult.succeeded) {
+        $script:simulationMode = 'unrecoverable_failure'
+        throw "Light chunk aggregation failed with exit=$($aggregateResult.exitCode), timedOut=$($aggregateResult.timedOut)."
+    }
+    $aggregatePacket = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $aggregateStartedAt
+    if (-not $aggregatePacket.complete) {
+        throw 'Light chunk aggregation completed without a fresh canonical report packet.'
+    }
+    return [pscustomobject]@{ mode = 'chunked_fallback'; packet = $aggregatePacket }
+}
+
 function Write-WorkflowState {
     param(
         [string] $Status,
@@ -206,7 +351,9 @@ function Write-WorkflowState {
         [object[]] $InitialGitStatus,
         [object[]] $FinalGitStatus,
         $Packet,
-        $VisualEvidence
+        $VisualEvidence,
+        [object[]] $SimulationAttempts,
+        [string] $SimulationMode
     )
     $findingsPath = Join-Path $stateDir 'findings.json'
     $statusPath = Join-Path $stateDir 'status.json'
@@ -231,6 +378,10 @@ function Write-WorkflowState {
         tier = $Tier
         status = $Status
         failure = $Failure
+        simulation = [pscustomobject]@{
+            mode = $SimulationMode
+            attempts = @($SimulationAttempts)
+        }
         repoRoot = $repoRoot
         canonicalFiles = [pscustomobject]@{
             launcher = $config.launcher
@@ -263,6 +414,10 @@ function Write-WorkflowState {
         status = $Status
         tier = $Tier
         failure = $Failure
+        simulation = [pscustomobject]@{
+            mode = $SimulationMode
+            attempts = @($SimulationAttempts)
+        }
         evidenceBaseline = $evidenceBaseline
         report = (Join-Path $repoRoot $config.auditReport)
         findings = $findingsPath
@@ -293,14 +448,23 @@ try {
         if (-not (Test-Path -LiteralPath $launcherPath)) {
             throw "Simulation launcher is missing: $launcherPath"
         }
-        $simulationStdoutPath = Join-Path $stateDir 'simulation_stdout.log'
-        Invoke-RepoProcess -Label "$Tier simulation" -FilePath $launcherPath -ArgumentList @($tierConfig.args) -WorkingDirectory $repoRoot -TimeoutSeconds ([int]$tierConfig.timeoutSeconds) -StdoutPath $simulationStdoutPath -MirrorRunProgress
-        $packet = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $simulationStartedAt
+        $simulationResult = Invoke-SimulationWithResilience -LauncherPath $launcherPath -TierConfig $tierConfig
+        $simulationMode = [string]$simulationResult.mode
+        $packet = $simulationResult.packet
+        if ($null -eq $packet) {
+            $packet = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $simulationStartedAt
+        }
         if (-not $packet.complete) {
             throw "Simulation completed but did not write a complete fresh packet under $($config.simulationDir)."
         }
-        Add-Check -Name 'simulation' -Status 'passed' -Detail "${Tier}: $($tierConfig.description)"
-        Write-StepSummary -Step "$Tier simulation" -Status 'passed' -LogPath $config.playtestLog -Detail "$($tierConfig.description)"
+        $simulationCheckStatus = if ($simulationMode -eq 'chunked_fallback') { 'passed with fallback' } elseif ($simulationMode -eq 'recovered_after_retry') { 'recovered after retry' } else { 'passed' }
+        Add-Check -Name 'simulation' -Status $simulationCheckStatus -Detail "${Tier}: $($tierConfig.description); mode=$simulationMode"
+        if ($simulationMode -eq 'chunked_fallback') {
+            Add-Gap -Area 'AI simulation resilience' -Detail 'The full Light process required chunked fallback; the aggregate packet is valid but was not produced by one uninterrupted process.' -RecommendedEvidence 'Repeat a normal Light audit after the process environment is stable.'
+        } elseif ($simulationMode -eq 'recovered_after_retry') {
+            Add-Gap -Area 'AI simulation resilience' -Detail 'The first full Light process failed, but the one permitted retry completed successfully.' -RecommendedEvidence 'Review attempt diagnostics under logs/godot/ai_simulation before treating this as a stable baseline.'
+        }
+        Write-StepSummary -Step "$Tier simulation" -Status $simulationCheckStatus -LogPath $config.playtestLog -Detail "$($tierConfig.description); mode=$simulationMode; attempt artifacts under logs/godot/ai_simulation/$runId"
     }
 
     if ($SkipValidations) {
@@ -343,18 +507,23 @@ try {
         $finalStatus = 'pass with gaps'
     }
     $finalGitStatus = @(Get-ShortGitStatus -RepoRoot $repoRoot)
-    Write-WorkflowState -Status $finalStatus -Failure $failureMessage -InitialGitStatus $initialStatus -FinalGitStatus $finalGitStatus -Packet $packet -VisualEvidence $visualEvidence
+    Write-WorkflowState -Status $finalStatus -Failure $failureMessage -InitialGitStatus $initialStatus -FinalGitStatus $finalGitStatus -Packet $packet -VisualEvidence $visualEvidence -SimulationAttempts @($simulationAttempts.ToArray()) -SimulationMode $simulationMode
     Write-Host $finalStatus
     Write-StepSummary -Step 'workflow state write' -Status $finalStatus -LogPath (Join-Path $stateDir 'findings.json') -Detail "$($findings.Count) finding row(s), $($gaps.Count) gap row(s)"
 } catch {
     $finalStatus = 'fail'
     $failureMessage = $_.Exception.Message
+    if ($simulationAttempts.Count -gt 0 -and $simulationMode -eq 'not_run') {
+        $simulationMode = 'unrecoverable_failure'
+    }
     Add-Check -Name 'workflow_failure' -Status 'failed' -Detail $failureMessage
-    $packet = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config
+    if ($null -eq $packet) {
+        $packet = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $simulationStartedAt
+    }
     $visualEvidence = Get-VisualReviewEvidence -RepoRoot $repoRoot -Config $config
     Stop-NewGodotProcesses -PreExistingIds $preExistingGodotProcessIds
     $finalGitStatus = @(Get-ShortGitStatus -RepoRoot $repoRoot)
-    Write-WorkflowState -Status $finalStatus -Failure $failureMessage -InitialGitStatus @() -FinalGitStatus $finalGitStatus -Packet $packet -VisualEvidence $visualEvidence
+    Write-WorkflowState -Status $finalStatus -Failure $failureMessage -InitialGitStatus $initialStatus -FinalGitStatus $finalGitStatus -Packet $packet -VisualEvidence $visualEvidence -SimulationAttempts @($simulationAttempts.ToArray()) -SimulationMode $simulationMode
     Write-StepSummary -Step 'workflow state write' -Status $finalStatus -LogPath (Join-Path $stateDir 'findings.json') -Detail $failureMessage
     $global:LASTEXITCODE = 1
     return

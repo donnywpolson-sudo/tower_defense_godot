@@ -54,6 +54,18 @@ Both tiers then run the focused validation matrix. The timeout budgets are for
 the simulation launcher process tree; individual focused validations have their
 own narrow caps.
 
+Simulation resilience behavior:
+
+- Each simulation attempt writes separate stdout/stderr and launcher logs under
+  `logs/godot/ai_simulation/<run-id>/` and records process/memory diagnostics in
+  the workflow state.
+- Light retries one failed or timed-out full run once.
+- If both full Light attempts fail, Light runs two 120-run chunks without
+  another retry, then aggregates them into one schema-6 report. The aggregate
+  runs scenario probes once and records its source packets and fallback mode.
+- Deep does not use chunk fallback. An unrecoverable simulation failure stops
+  before queue application or Codex execution.
+
 Timing basis from local smoke probes on 2026-07-08:
 
 - 60 runs / 6 waves: 91.84 seconds.
@@ -68,6 +80,12 @@ For plumbing checks without a broad Godot run:
 
 ```powershell
 .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -SkipAudit
+```
+
+For the deterministic process-wrapper resilience check:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\_ai_audit_workflow\_internal\run_resilience_validation.ps1
 ```
 
 Dirty working-tree audit output is evidence only by default. If the audit starts

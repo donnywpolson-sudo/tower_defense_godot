@@ -8,6 +8,16 @@
   "visualReviewDir": "logs\\godot\\visual_review\\generated",
   "playtestLog": "logs\\godot\\godot_ai_simulation.log",
   "scoreThresholdForQueue": 80,
+  "simulationResilience": {
+    "retryCount": 1,
+    "lightFallback": {
+      "enabled": true,
+      "chunkCount": 2,
+      "chunkRuns": 120,
+      "chunkRetryCount": 0,
+      "args": ["--test", "medium", "--runs=120", "--max-waves=6", "--seed-count=5", "--strategy-group=standard_research", "--scenario-probes=off"]
+    }
+  },
   "tiers": {
     "Light": {
       "args": ["--test", "medium", "--runs=240", "--max-waves=6", "--seed-count=5", "--strategy-group=standard_research", "--scenario-probes=auto", "--report-label=light_audit_5min"],
