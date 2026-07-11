@@ -64,6 +64,38 @@ Write-Host 'RESILIENCE_PROCESS_VALIDATION_OK'
 $config = Read-WorkflowConfig
 $validationScriptRoot = Join-Path $repoRoot 'logs\godot\ai_simulation\resilience_validation'
 $realLauncher = Join-Path $repoRoot $config.launcher
+$workflowStateDir = Join-Path $repoRoot $config.currentDir
+$workflowStateBackupDir = Join-Path ([System.IO.Path]::GetTempPath()) ("tower_defense_audit_state_" + [guid]::NewGuid().ToString('N'))
+$hadWorkflowState = Test-Path -LiteralPath $workflowStateDir
+
+function Get-WorkflowStateManifest {
+    param([Parameter(Mandatory)][string] $StateDir)
+    if (-not (Test-Path -LiteralPath $StateDir)) {
+        return @()
+    }
+    return @(
+        Get-ChildItem -LiteralPath $StateDir -Recurse -File -Force |
+            Sort-Object FullName |
+            ForEach-Object {
+                $relativePath = $_.FullName.Substring($StateDir.Length).TrimStart('\')
+                "$relativePath|$($_.Length)|$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash)"
+            }
+    )
+}
+
+function Restore-WorkflowState {
+    if (Test-Path -LiteralPath $workflowStateDir) {
+        Remove-Item -LiteralPath $workflowStateDir -Recurse -Force
+    }
+    if ($hadWorkflowState) {
+        Copy-Item -LiteralPath $workflowStateBackupDir -Destination $workflowStateDir -Recurse -Force
+    }
+}
+
+$workflowStateManifest = Get-WorkflowStateManifest -StateDir $workflowStateDir
+if ($hadWorkflowState) {
+    Copy-Item -LiteralPath $workflowStateDir -Destination $workflowStateBackupDir -Recurse -Force
+}
 
 function New-FailureLauncherShim {
     param([Parameter(Mandatory)][string] $Name, [bool] $FailChunks)
@@ -122,6 +154,7 @@ function Read-WorkflowFindings {
 }
 
 $deepAuditPath = Join-Path $PSScriptRoot 'run_deep_audit.ps1'
+try {
 if (-not $SkipProductionFallback) {
 $fallbackShim = New-FailureLauncherShim -Name 'fail_full_only_launcher' -FailChunks:$false
 $fallbackRunLog = Join-Path $validationScriptRoot 'fallback_end_to_end.log'
@@ -197,3 +230,14 @@ if ($manualGateResult.succeeded -or $manualGateOutput -match 'Launching Codex|co
     throw 'Direct manual apply path did not reject the invalidated queue before Codex.'
 }
 Write-Host 'RESILIENCE_MANUAL_APPLY_GATE_OK'
+} finally {
+    Restore-WorkflowState
+    $restoredManifest = Get-WorkflowStateManifest -StateDir $workflowStateDir
+    if (($workflowStateManifest -join "`n") -ne ($restoredManifest -join "`n")) {
+        throw 'Resilience validation did not restore the workflow state manifest.'
+    }
+    if (Test-Path -LiteralPath $workflowStateBackupDir) {
+        Remove-Item -LiteralPath $workflowStateBackupDir -Recurse -Force
+    }
+    Write-Host 'RESILIENCE_WORKFLOW_STATE_RESTORED'
+}

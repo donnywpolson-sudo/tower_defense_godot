@@ -51,6 +51,8 @@ var wave_complete: bool = false
 var game_over: bool = false
 var spawned_this_wave: int = 0
 var spawned_extra_this_wave: int = 0
+var spawned_boss_this_wave: int = 0
+var spawned_commander_this_wave: int = 0
 var spawn_timer: float = 0.0
 var leaks: int = 0
 var kills: int = 0
@@ -91,6 +93,8 @@ func reset_slice() -> void:
 	game_over = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -235,6 +239,8 @@ func start_wave() -> bool:
 	spawn_timer = 0.0
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	_clear_feedback()
 	_play_sound("sounds/ui/wave.wav", 480.0)
 	_emit_status()
@@ -253,6 +259,8 @@ func advance_to_next_wave() -> bool:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -1255,15 +1263,25 @@ func _sell_refund(tower: Dictionary) -> int:
 
 
 func _update_spawning(delta: float) -> void:
-	if spawned_this_wave >= _regular_enemy_count():
+	if spawned_this_wave >= _regular_enemy_count() and _scheduled_specials_are_spawned():
 		return
 	spawn_timer += delta
 	var interval: float = _spawn_interval()
 	if spawn_timer < interval:
 		return
 	spawn_timer = 0.0
-	spawned_this_wave += 1
-	enemies.append(create_enemy(_wave_enemy_kind()))
+	var special := _next_scheduled_special_enemy()
+	if not special.is_empty():
+		enemies.append(special)
+		spawned_extra_this_wave += 1
+		if bool(special.get("boss", false)):
+			spawned_boss_this_wave += 1
+		elif bool(special.get("commander", false)):
+			spawned_commander_this_wave += 1
+		return
+	if spawned_this_wave < _regular_enemy_count():
+		spawned_this_wave += 1
+		enemies.append(create_enemy(_wave_enemy_kind()))
 
 
 func _create_normal_enemy() -> Dictionary:
@@ -1299,6 +1317,8 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 		"shield_hits": shield_hits,
 		"max_shield_hits": shield_hits,
 		"tags": modifier.get("tags", []).duplicate(true),
+		"boss": false,
+		"boss_kind": "",
 		"commander": bool(modifier.get("commander", false)),
 		"damage_taken_multiplier": 1.0,
 		"regen_scale": 0.0,
@@ -1309,6 +1329,47 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 		"death_burst_radius": 0.0,
 	}
 	_apply_wave_modifier(enemy)
+	return enemy
+
+
+func _scheduled_boss_count() -> int:
+	return max(0, int(wave_row.get("boss_count", 0)))
+
+
+func _scheduled_commander_count() -> int:
+	return max(0, int(wave_row.get("commander_count", 0)))
+
+
+func _scheduled_specials_are_spawned() -> bool:
+	return spawned_boss_this_wave >= _scheduled_boss_count() and spawned_commander_this_wave >= _scheduled_commander_count()
+
+
+func _next_scheduled_special_enemy() -> Dictionary:
+	if spawned_boss_this_wave < _scheduled_boss_count():
+		return _create_boss_enemy()
+	if spawned_commander_this_wave < _scheduled_commander_count():
+		return create_enemy("commander")
+	return {}
+
+
+func _create_boss_enemy() -> Dictionary:
+	var enemy := create_enemy(_wave_enemy_kind())
+	var boss_rules: Dictionary = game_data.get("enemies", {}).get("boss_rules", {})
+	var overrides: Dictionary = boss_rules.get("wave_overrides", {})
+	var raw_rule: Variant = overrides.get(str(wave), overrides.get("default", {}))
+	var rule: Dictionary = raw_rule if raw_rule is Dictionary else {}
+	enemy["boss"] = true
+	enemy["boss_kind"] = str(rule.get("kind", "boss"))
+	enemy["hp"] = float(enemy.get("hp", 0.0)) * float(rule.get("hp_multiplier", 1.0))
+	enemy["max_hp"] = float(enemy.get("hp", 0.0))
+	enemy["speed"] = float(enemy.get("speed", 0.0)) * float(rule.get("speed_multiplier", 1.0))
+	enemy["reward"] = int(enemy.get("reward", 0)) + int(rule.get("reward_bonus", 0))
+	if rule.has("shield_hits"):
+		var shield_hits: int = max(0, int(rule.get("shield_hits", 0)))
+		enemy["shield_hits"] = shield_hits
+		enemy["max_shield_hits"] = shield_hits
+	if rule.has("death_spawns"):
+		enemy["death_spawns"] = max(0, int(rule.get("death_spawns", 0)))
 	return enemy
 
 
@@ -1543,6 +1604,8 @@ func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
 	child["death_burst_damage_fraction"] = 0.0
 	child["death_burst_radius"] = 0.0
 	child["damage_taken_multiplier"] = 1.0
+	child["boss"] = false
+	child["boss_kind"] = ""
 	child["slow_timer"] = 0.0
 	child["slow_multiplier"] = 1.0
 	child["speed"] = float(parent.get("speed", 0.0)) * 1.08
@@ -1771,6 +1834,8 @@ func set_wave_for_test(wave_number: int) -> Dictionary:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -1788,6 +1853,16 @@ func spawn_regular_wave_for_test(wave_number: int) -> Dictionary:
 	for _index in range(spawn_count):
 		enemies.append(create_enemy(enemy_kind, wave))
 	spawned_this_wave = spawn_count
+	while not _scheduled_specials_are_spawned():
+		var special := _next_scheduled_special_enemy()
+		if special.is_empty():
+			break
+		enemies.append(special)
+		spawned_extra_this_wave += 1
+		if bool(special.get("boss", false)):
+			spawned_boss_this_wave += 1
+		elif bool(special.get("commander", false)):
+			spawned_commander_this_wave += 1
 	var kind_counts: Dictionary = {}
 	var boss_count := 0
 	var commander_count := 0
@@ -1953,6 +2028,8 @@ func snapshot() -> Dictionary:
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
 		"spawned_extra_this_wave": spawned_extra_this_wave,
+		"spawned_boss_this_wave": spawned_boss_this_wave,
+		"spawned_commander_this_wave": spawned_commander_this_wave,
 		"spawned_total_this_wave": _spawned_total_this_wave(),
 		"spawn_limit": _regular_enemy_count(),
 		"spawn_interval": _spawn_interval(),
@@ -2043,6 +2120,8 @@ func _debug_set_wave(target_wave: int) -> void:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -2096,11 +2175,13 @@ func _debug_skip_wave() -> Dictionary:
 	enemies = []
 	projectiles = []
 	spawned_this_wave = _regular_enemy_count()
-	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = _scheduled_boss_count()
+	spawned_commander_this_wave = _scheduled_commander_count()
+	spawned_extra_this_wave = spawned_boss_this_wave + spawned_commander_this_wave
 	if not already_complete:
 		wave_active = false
 		wave_complete = true
-		kills = spawned_this_wave
+		kills = _spawned_total_this_wave()
 		leaks = 0
 		wave_reward_money = _wave_completion_money()
 		wave_reward_research = _research_reward()
@@ -2250,6 +2331,8 @@ func serialize_run_state() -> Dictionary:
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
 		"spawned_extra_this_wave": spawned_extra_this_wave,
+		"spawned_boss_this_wave": spawned_boss_this_wave,
+		"spawned_commander_this_wave": spawned_commander_this_wave,
 		"spawn_timer": spawn_timer,
 		"leaks": leaks,
 		"kills": kills,
@@ -2295,6 +2378,8 @@ func restore_run_state(state: Dictionary) -> bool:
 		spawned_extra_this_wave = max(0, kills + leaks - spawned_this_wave)
 	else:
 		spawned_extra_this_wave = 0
+	spawned_boss_this_wave = int(state.get("spawned_boss_this_wave", 0))
+	spawned_commander_this_wave = int(state.get("spawned_commander_this_wave", 0))
 	var requested_selection: int = int(state.get("selected_tower_index", NO_SELECTED_TOWER))
 	selected_tower_index = requested_selection if requested_selection >= 0 and requested_selection < towers.size() else NO_SELECTED_TOWER
 	if game_over:
@@ -2380,6 +2465,8 @@ func _serialize_enemies() -> Array:
 			"shield_hits": int(enemy.get("shield_hits", 0)),
 			"max_shield_hits": int(enemy.get("max_shield_hits", 0)),
 			"tags": enemy.get("tags", []).duplicate(true),
+			"boss": bool(enemy.get("boss", false)),
+			"boss_kind": str(enemy.get("boss_kind", "")),
 			"commander": bool(enemy.get("commander", false)),
 			"damage_taken_multiplier": float(enemy.get("damage_taken_multiplier", 1.0)),
 			"regen_scale": float(enemy.get("regen_scale", 0.0)),
@@ -2417,6 +2504,8 @@ func _enemy_from_state(record: Dictionary) -> Dictionary:
 		"shield_hits": int(record.get("shield_hits", 0)),
 		"max_shield_hits": int(record.get("max_shield_hits", 0)),
 		"tags": record.get("tags", []).duplicate(true),
+		"boss": bool(record.get("boss", false)),
+		"boss_kind": str(record.get("boss_kind", "")),
 		"commander": bool(record.get("commander", false)),
 		"damage_taken_multiplier": float(record.get("damage_taken_multiplier", 1.0)),
 		"regen_scale": float(record.get("regen_scale", 0.0)),

@@ -27,6 +27,8 @@ func _run_validation() -> void:
 	_expect_json_value(smoke, ["config", "profile_overridden"], true, "smoke profile override")
 	_expect_json_value(smoke, ["config", "balance_actionable"], false, "smoke config balance actionable")
 	_expect_json_value(smoke, ["balance_actionable"], false, "smoke report balance actionable")
+	_expect_json_value(smoke, ["config", "enabled_tower_types"], ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"], "enabled tower coverage")
+	_expect_json_value(smoke, ["config", "unsupported_tower_types"], ["poison", "support", "barracks"], "unsupported tower coverage")
 	_expect_contains(smoke.get("prompt", ""), "Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code.", "verification-first prompt")
 	_expect_contains(smoke.get("prompt", ""), "No gameplay or data changes are acceptable when no confirmed issue exists.", "no-change allowed prompt")
 	_expect_contains(smoke.get("prompt", ""), "This is smoke/custom diagnostic evidence and is not balance-actionable.", "smoke prompt warning")

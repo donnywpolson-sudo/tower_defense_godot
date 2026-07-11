@@ -33,12 +33,12 @@ func _run_validation() -> void:
 	var full := _run_fixture("full", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_full", "--compare-previous=false", "--scenario-probes=full"])
 	_expect_json_value(full, ["schema_version"], 6, "schema version")
 	_expect_json_value(full, ["scenario_probes", "mode"], "full", "full mode")
-	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "sniper", "tesla"], "full tower probes")
+	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"], "full tower probes")
 	_expect_probe_ids(full, "enemy_kind_probes", ["armored", "commander", "fast", "flying", "normal", "shield", "swarm", "tank"], "full enemy probes")
 	_expect_probe_waves(full, "scheduled_wave_probes", [5, 8, 10, 12, 15, 16, 20, 24, 25, 28, 30], "full scheduled waves")
 	_expect_all_enabled_branches(full)
 	_expect_branch_exercise(full)
-	_expect_special_wave_diagnostics(full)
+	_expect_special_wave_spawns(full)
 	_expect_flying_probe_uses_unlocked_anti_air(full, "full")
 	_expect_contains(full.get("markdown", ""), "## Scenario probes", "markdown scenario section")
 	_expect_contains(full.get("prompt", ""), "## Scenario Probes", "prompt scenario section")
@@ -142,7 +142,7 @@ func _expect_branch_subset(fixture: Dictionary, tower_types: Array, label: Strin
 
 
 func _expect_all_enabled_branches(fixture: Dictionary) -> void:
-	var expected_count := 15
+	var expected_count := 18
 	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("branch_probes", [])
 	if probes.size() != expected_count:
 		_errors.append("full branch probe count expected %s, got %s." % [expected_count, probes.size()])
@@ -155,15 +155,21 @@ func _expect_branch_exercise(fixture: Dictionary) -> void:
 			_errors.append("branch probe did not exercise requested branch: %s." % str(probe))
 
 
-func _expect_special_wave_diagnostics(fixture: Dictionary) -> void:
+func _expect_special_wave_spawns(fixture: Dictionary) -> void:
 	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("scheduled_wave_probes", [])
-	var diagnostic_count := 0
+	var scheduled_special_count := 0
 	for probe in probes:
+		var scheduled := int(probe.get("scheduled_boss_count", 0)) + int(probe.get("scheduled_commander_count", 0))
+		var spawned := int(probe.get("spawned_boss_count", 0)) + int(probe.get("spawned_commander_count", 0))
+		if scheduled > 0:
+			scheduled_special_count += 1
+			if spawned != scheduled:
+				_errors.append("scheduled special probe did not spawn its configured specials: %s." % str(probe))
 		for failure in probe.get("failures", []):
 			if str(failure.get("label", "")) == "scenario_scheduled_special_unspawned" and str(failure.get("severity", "")) == "info":
-				diagnostic_count += 1
-	if diagnostic_count == 0:
-		_errors.append("expected at least one scheduled special known-gap diagnostic.")
+				_errors.append("scheduled special probe still reported an unspawned-special diagnostic: %s." % str(probe))
+	if scheduled_special_count == 0:
+		_errors.append("expected at least one scheduled special probe.")
 
 
 func _expect_flying_probe_uses_unlocked_anti_air(fixture: Dictionary, label: String) -> void:

@@ -43,22 +43,21 @@ func _initialize() -> void:
 
 func _check_first_five_regular_waves(game: Node, result: Dictionary) -> void:
 	var expected: Dictionary = {
-		1: {"enemy_kind": "normal", "spawned_count": 11, "spawn_interval": 0.66, "game_data_boss_count": 0},
-		2: {"enemy_kind": "swarm", "spawned_count": 16, "spawn_interval": 0.596, "game_data_boss_count": 0},
-		3: {"enemy_kind": "fast", "spawned_count": 19, "spawn_interval": 0.584, "game_data_boss_count": 0},
-		4: {"enemy_kind": "tank", "spawned_count": 22, "spawn_interval": 0.572, "game_data_boss_count": 0},
-		5: {"enemy_kind": "swarm", "spawned_count": 25, "spawn_interval": 0.56, "game_data_boss_count": 1},
+		1: {"enemy_kind": "normal", "regular_count": 11, "boss_count": 0, "commander_count": 0, "spawn_interval": 0.66},
+		2: {"enemy_kind": "swarm", "regular_count": 16, "boss_count": 0, "commander_count": 0, "spawn_interval": 0.596},
+		3: {"enemy_kind": "fast", "regular_count": 19, "boss_count": 0, "commander_count": 0, "spawn_interval": 0.584},
+		4: {"enemy_kind": "tank", "regular_count": 22, "boss_count": 0, "commander_count": 0, "spawn_interval": 0.572},
+		5: {"enemy_kind": "swarm", "regular_count": 25, "boss_count": 1, "commander_count": 0, "spawn_interval": 0.56},
 	}
 	for wave_number in expected:
 		var summary: Dictionary = game.spawn_regular_wave_for_test(wave_number)
 		var want: Dictionary = expected[wave_number]
 		_record_check(result, "wave_%s_kind" % wave_number, summary["enemy_kind"] == want["enemy_kind"], summary)
-		_record_check(result, "wave_%s_count" % wave_number, int(summary["spawned_count"]) == int(want["spawned_count"]) and int(summary["spawn_limit"]) == int(want["spawned_count"]), summary)
+		_record_check(result, "wave_%s_count" % wave_number, int(summary["spawned_count"]) == int(want["regular_count"]) + int(want["boss_count"]) + int(want["commander_count"]) and int(summary["spawn_limit"]) == int(want["regular_count"]), summary)
 		_record_check(result, "wave_%s_interval" % wave_number, is_equal_approx(float(summary["spawn_interval"]), float(want["spawn_interval"])), summary)
-		_record_check(result, "wave_%s_kind_count" % wave_number, int(summary["kind_counts"].get(want["enemy_kind"], 0)) == int(want["spawned_count"]), summary)
-		_record_check(result, "wave_%s_game_data_boss_count" % wave_number, int(summary["game_data_boss_count"]) == int(want["game_data_boss_count"]), summary)
-		_record_check(result, "wave_%s_no_boss_spawned" % wave_number, int(summary["spawned_boss_count"]) == 0, summary)
-		_record_check(result, "wave_%s_no_commander_spawned" % wave_number, int(summary["spawned_commander_count"]) == 0, summary)
+		_record_check(result, "wave_%s_kind_count" % wave_number, int(summary["kind_counts"].get(want["enemy_kind"], 0)) == int(want["regular_count"]) + int(want["boss_count"]), summary)
+		_record_check(result, "wave_%s_boss_count" % wave_number, int(summary["game_data_boss_count"]) == int(want["boss_count"]) and int(summary["spawned_boss_count"]) == int(want["boss_count"]), summary)
+		_record_check(result, "wave_%s_commander_count" % wave_number, int(summary["game_data_commander_count"]) == int(want["commander_count"]) and int(summary["spawned_commander_count"]) == int(want["commander_count"]), summary)
 
 
 func _check_all_regular_schedule_rows(game: Node, result: Dictionary) -> void:
@@ -78,12 +77,14 @@ func _check_all_regular_schedule_rows(game: Node, result: Dictionary) -> void:
 			"game_data_commander_count": int(row.get("commander_count", 0)),
 			"summary": summary,
 		}
-		_record_check(result, "wave_%s_regular_count_from_schedule" % wave_number, int(summary["spawned_count"]) == regular_count and int(summary["spawn_limit"]) == regular_count, detail)
+		var boss_count := int(row.get("boss_count", 0))
+		var commander_count := int(row.get("commander_count", 0))
+		_record_check(result, "wave_%s_regular_count_from_schedule" % wave_number, int(summary["spawned_count"]) == regular_count + boss_count + commander_count and int(summary["spawn_limit"]) == regular_count, detail)
 		_record_check(result, "wave_%s_not_legacy_slice_limit" % wave_number, int(summary["spawn_limit"]) != 3, detail)
 		_record_check(result, "wave_%s_kind_from_schedule" % wave_number, str(summary["enemy_kind"]) == str(row.get("enemy_kind", "")), detail)
 		_record_check(result, "wave_%s_interval_from_schedule" % wave_number, is_equal_approx(float(summary["spawn_interval"]), float(row.get("spawn_interval", -1.0))), detail)
-		_record_check(result, "wave_%s_ignores_bosses" % wave_number, int(summary["spawned_boss_count"]) == 0, detail)
-		_record_check(result, "wave_%s_ignores_commanders" % wave_number, int(summary["spawned_commander_count"]) == 0, detail)
+		_record_check(result, "wave_%s_spawns_bosses" % wave_number, int(summary["spawned_boss_count"]) == boss_count, detail)
+		_record_check(result, "wave_%s_spawns_commanders" % wave_number, int(summary["spawned_commander_count"]) == commander_count, detail)
 		if row.get("modifier", null) != null:
 			_record_check(result, "wave_%s_reports_wave_modifier" % wave_number, summary["modifier"] == str(row.get("modifier", "")) and summary["modifier_label"] != "", detail)
 

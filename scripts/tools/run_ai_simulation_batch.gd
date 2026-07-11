@@ -31,8 +31,8 @@ const PROFILE_DEFAULTS := {
 	"overnight": {"runs": OVERNIGHT_RUNS, "max_waves": OVERNIGHT_MAX_WAVES, "seed_count": 12, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "full_research", "full_action_log": false, "compare_previous": true},
 }
 
-const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "sniper", "tesla"]
-const UNSUPPORTED_TOWER_TYPES := ["frost", "poison", "support", "barracks"]
+const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
+const UNSUPPORTED_TOWER_TYPES := ["poison", "support", "barracks"]
 const DEFAULT_STRATEGIES := ["balanced_builder", "tower_specialist", "upgrade_rusher", "wide_builder", "target_mode_tester", "edge_case_explorer", "speed_stress"]
 const STRATEGY_GROUPS := {
 	"default": DEFAULT_STRATEGIES,
@@ -585,7 +585,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 	var fixture := str(options.get("metadata_fixture", "")).to_lower()
 	var issues: Array = []
 	if fixture == "known_gap":
-		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "frost"}))
+		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "poison"}))
 	elif fixture == "balance_empty":
 		pass
 	elif fixture not in ["smoke", "medium", "schema4_previous", "label_only_previous"]:
@@ -1230,7 +1230,6 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 			break
 		_pre_wave_actions(game, rng, run, policy, bool(options["full_action_log"]))
 		var target_wave: int = int(before_start["wave"]) + 1 if bool(before_start.get("wave_complete", false)) else int(before_start["wave"])
-		_record_known_wave_gaps(game, run, target_wave)
 
 		var started: bool = game.start_wave()
 		_record_action(run, "start_wave", {"wave": target_wave, "started": started}, bool(options["full_action_log"]))
@@ -1243,6 +1242,7 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 
 		var outcome := _simulate_current_wave(game, rng, run, policy, bool(options["full_action_log"]), strategy == "speed_stress")
 		run["wave_outcomes"].append(outcome)
+		_record_scheduled_special_gap(run, outcome)
 		if str(outcome.get("status", "")) == "stalled":
 			run["failure_reason"] = "wave_stall"
 			break
@@ -1421,8 +1421,8 @@ func _simulate_current_wave(game: Node, rng: RandomNumberGenerator, run: Diction
 		"scheduled_regular_count": int(wave_schedule.get("regular_enemy_count", spawn_limit)),
 		"scheduled_boss_count": int(wave_schedule.get("boss_count", 0)),
 		"scheduled_commander_count": int(wave_schedule.get("commander_count", 0)),
-		"spawned_boss_count": _spawned_special_count(enemy_kind, spawned_regular, "boss"),
-		"spawned_commander_count": _spawned_special_count(enemy_kind, spawned_regular, "commander"),
+		"spawned_boss_count": int(final_snapshot.get("spawned_boss_this_wave", 0)),
+		"spawned_commander_count": int(final_snapshot.get("spawned_commander_this_wave", 0)),
 		"spawned_regular": spawned_regular,
 		"spawned_extra": spawned_extra,
 		"spawned": spawned,
@@ -1838,19 +1838,20 @@ func _cycle_random_target_mode(game: Node, rng: RandomNumberGenerator, run: Dict
 	return changed
 
 
-func _record_known_wave_gaps(_game: Node, run: Dictionary, wave_number: int) -> void:
-	var schedule: Array = _game_data.get("waves", {}).get("schedule", [])
-	if wave_number < 1 or wave_number > schedule.size():
+func _record_scheduled_special_gap(run: Dictionary, outcome: Dictionary) -> void:
+	var scheduled_boss := int(outcome.get("scheduled_boss_count", 0))
+	var scheduled_commander := int(outcome.get("scheduled_commander_count", 0))
+	var spawned_boss := int(outcome.get("spawned_boss_count", 0))
+	var spawned_commander := int(outcome.get("spawned_commander_count", 0))
+	if scheduled_boss == spawned_boss and scheduled_commander == spawned_commander:
 		return
-	var row: Dictionary = schedule[wave_number - 1]
-	var boss_count := int(row.get("boss_count", 0))
-	var commander_count := int(row.get("commander_count", 0))
-	if boss_count > 0 or commander_count > 0:
-		_add_issue(run, "known_gap", "info", "boss_commander_rules_unported", "Canonical wave has boss or commander pressure that the current slice does not spawn.", {
-			"wave": wave_number,
-			"canonical_boss_count": boss_count,
-			"canonical_commander_count": commander_count,
-		})
+	_add_issue(run, "known_gap", "info", "boss_commander_rules_unported", "Canonical wave did not spawn every configured boss or commander unit.", {
+		"wave": int(outcome.get("wave", 0)),
+		"scheduled_boss_count": scheduled_boss,
+		"spawned_boss_count": spawned_boss,
+		"scheduled_commander_count": scheduled_commander,
+		"spawned_commander_count": spawned_commander,
+	})
 
 
 func _check_state_invariants(game: Node, run: Dictionary, wave_number: int) -> void:
@@ -2195,14 +2196,6 @@ func _wave_schedule_row(wave_number: int) -> Dictionary:
 		return {}
 	var row: Variant = schedule[wave_number - 1]
 	return row if row is Dictionary else {}
-
-
-func _spawned_special_count(enemy_kind: String, spawned: int, flag: String) -> int:
-	var modifiers: Dictionary = _game_data.get("enemies", {}).get("kind_modifiers", {})
-	var modifier: Variant = modifiers.get(enemy_kind, {})
-	if modifier is Dictionary and bool(modifier.get(flag, false)):
-		return spawned
-	return 0
 
 
 func _build_balance_issues(runs: Array) -> Array:
@@ -3386,8 +3379,8 @@ func _simulate_probe_resolution(game: Node, wave_number: int, before_totals: Dic
 		"runtime_invariant_failures": invariant_failures,
 		"scheduled_boss_count": int(_wave_schedule_row(wave_number).get("boss_count", 0)),
 		"scheduled_commander_count": int(_wave_schedule_row(wave_number).get("commander_count", 0)),
-		"spawned_boss_count": 0,
-		"spawned_commander_count": 0,
+		"spawned_boss_count": int(final_snapshot.get("spawned_boss_this_wave", 0)),
+		"spawned_commander_count": int(final_snapshot.get("spawned_commander_this_wave", 0)),
 		"final_snapshot": _trim_snapshot(final_snapshot),
 		"failures": [],
 	}
