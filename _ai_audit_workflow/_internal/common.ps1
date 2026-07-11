@@ -471,6 +471,59 @@ function Read-JsonFileOrNull {
     return $raw | ConvertFrom-Json
 }
 
+function Get-AuditQueueValidation {
+    param(
+        [Parameter(Mandatory)][string] $RepoRoot,
+        [Parameter(Mandatory)] $Config
+    )
+    $stateDir = Join-Path $RepoRoot $Config.currentDir
+    $queuePath = Join-Path $stateDir 'improvement_queue.json'
+    $findingsPath = Join-Path $stateDir 'findings.json'
+    $queue = Read-JsonFileOrNull -Path $queuePath
+    $findings = Read-JsonFileOrNull -Path $findingsPath
+    $fail = {
+        param([string] $Reason)
+        return [pscustomobject]@{
+            valid = $false
+            reason = $Reason
+            queuePath = $queuePath
+            findingsPath = $findingsPath
+            queue = $queue
+            findings = $findings
+            queuedItemCount = 0
+        }
+    }
+    if ($null -eq $queue) {
+        return & $fail "The audit queue is missing or invalid: $queuePath"
+    }
+    if ($null -eq $findings) {
+        return & $fail "The latest findings state is missing or invalid: $findingsPath"
+    }
+    $queueRunId = [string](Get-ObjectProperty -Object $queue -Name 'sourceRunId' -Default '')
+    $findingsRunId = [string](Get-ObjectProperty -Object $findings -Name 'runId' -Default '')
+    $queueStatus = [string](Get-ObjectProperty -Object $queue -Name 'sourceStatus' -Default '')
+    $findingsStatus = [string](Get-ObjectProperty -Object $findings -Name 'status' -Default '')
+    if ([bool](Get-ObjectProperty -Object $queue -Name 'invalidated' -Default $false)) {
+        return & $fail 'The audit queue is explicitly invalidated.'
+    }
+    if ($queueRunId.Trim().Length -eq 0 -or $findingsRunId.Trim().Length -eq 0 -or $queueRunId -ne $findingsRunId) {
+        return & $fail 'The audit queue source run does not match the latest findings run.'
+    }
+    if ($findingsStatus -eq 'fail' -or $queueStatus -ne $findingsStatus) {
+        return & $fail 'The audit queue source status does not match a successful latest findings state.'
+    }
+    $queuedItemCount = @($queue.items | Where-Object { $_.status -eq 'queued' }).Count
+    return [pscustomobject]@{
+        valid = $true
+        reason = ''
+        queuePath = $queuePath
+        findingsPath = $findingsPath
+        queue = $queue
+        findings = $findings
+        queuedItemCount = $queuedItemCount
+    }
+}
+
 function Get-LatestFile {
     param(
         [Parameter(Mandatory)][string] $Folder,

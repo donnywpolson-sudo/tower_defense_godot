@@ -81,10 +81,12 @@ echo(%*| findstr /C:"--runs=120" >nul && set "IS_CHUNK=1"
 echo(%*| findstr /C:"--aggregate-metadata-file" >nul && set "IS_AGGREGATE=1"
 if "!IS_FULL!"=="1" if "!IS_AGGREGATE!"=="1" goto delegate
 if "!IS_FULL!"=="1" (
+    if defined TD_SIM_ENGINE_STDERR_PATH echo TEST_ENGINE_STDERR_FULL_FAILURE>"%TD_SIM_ENGINE_STDERR_PATH%"
     echo TEST_FORCED_FULL_FAILURE 1>&2
     exit /b 17
 )
 if "!FAIL_CHUNKS!"=="1" if "!IS_CHUNK!"=="1" (
+    if defined TD_SIM_ENGINE_STDERR_PATH echo TEST_ENGINE_STDERR_CHUNK_FAILURE>"%TD_SIM_ENGINE_STDERR_PATH%"
     echo TEST_FORCED_CHUNK_FAILURE 1>&2
     exit /b 19
 )
@@ -149,6 +151,22 @@ foreach ($attempt in @($fallbackState.simulation.attempts)) {
             throw "Expected root-level attempt artifact is missing: $artifactPath"
         }
     }
+    if ([string]$attempt.engineStderrPath -notmatch '\\[^\\]+_engine_stderr\.log$') {
+        throw "Attempt engine-stderr path is not a root-level artifact: $($attempt.engineStderrPath)"
+    }
+    if ([string]$attempt.label -in @('attempt_1', 'attempt_2')) {
+        $engineStderrText = Get-Content -Raw -LiteralPath ([string]$attempt.engineStderrPath)
+        if ($engineStderrText -notmatch 'TEST_ENGINE_STDERR_FULL_FAILURE') {
+            throw "Forced full failure did not reach the root engine-stderr artifact: $($attempt.engineStderrPath)"
+        }
+    }
+}
+foreach ($attempt in @($aggregateReport.aggregation.attempt_history)) {
+    foreach ($propertyName in @('exitCode', 'timedOut', 'durationSeconds', 'diagnostics', 'maxWorkingSetBytes', 'maxPrivateMemoryBytes', 'maxCpuSeconds', 'stdoutPath', 'stderrPath', 'engineStderrPath')) {
+        if ($null -eq $attempt.PSObject.Properties[$propertyName]) {
+            throw "Aggregate attempt history is missing $propertyName for $($attempt.label)."
+        }
+    }
 }
 Write-Host 'RESILIENCE_FALLBACK_END_TO_END_OK'
 }
@@ -157,6 +175,9 @@ $allFailureShim = New-FailureLauncherShim -Name 'fail_full_and_chunk_launcher' -
 $cyclePath = Join-Path $PSScriptRoot 'run_cycle.ps1'
 $failureRunLog = Join-Path $validationScriptRoot 'unrecoverable_failure.log'
 $failureResult = Invoke-TestPowerShellScript -ScriptPath $cyclePath -Arguments @('-Tier', 'Light', '-SimulationLauncherOverride', $allFailureShim) -OutputPath $failureRunLog
+if ($failureResult.succeeded -or [int]$failureResult.exitCode -eq 0) {
+    throw "Standalone run_cycle.ps1 did not propagate the unrecoverable failure exit code: $($failureResult.exitCode)"
+}
 $failureState = Read-WorkflowFindings
 $queuePath = Join-Path (Join-Path $repoRoot $config.currentDir) 'improvement_queue.json'
 $failureQueue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
@@ -168,3 +189,11 @@ if ($failureOutput -notmatch '(?im)^fail\s*$' -or $failureOutput -match 'build_i
     throw 'Unrecoverable failure path reached queue building or Codex execution.'
 }
 Write-Host 'RESILIENCE_UNRECOVERABLE_GATE_OK'
+
+$manualGateLog = Join-Path $validationScriptRoot 'direct_manual_apply_gate.log'
+$manualGateResult = Invoke-TestPowerShellScript -ScriptPath (Join-Path $PSScriptRoot 'run_improvement_pass.ps1') -Arguments @('-RunCodex') -OutputPath $manualGateLog
+$manualGateOutput = (Get-Content -Raw -LiteralPath $manualGateLog) + (Get-Content -Raw -LiteralPath ([System.IO.Path]::ChangeExtension($manualGateLog, '.stderr.log')))
+if ($manualGateResult.succeeded -or $manualGateOutput -match 'Launching Codex|codex exec') {
+    throw 'Direct manual apply path did not reject the invalidated queue before Codex.'
+}
+Write-Host 'RESILIENCE_MANUAL_APPLY_GATE_OK'

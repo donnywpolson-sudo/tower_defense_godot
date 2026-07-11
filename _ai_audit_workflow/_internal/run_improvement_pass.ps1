@@ -14,6 +14,12 @@ $stateDir = Ensure-WorkflowState -Config $config
 $queuePath = Join-Path $stateDir 'improvement_queue.json'
 $promptPath = Join-Path $stateDir 'next_improvement_prompt.md'
 $resultPath = Join-Path $stateDir 'last_improvement_result.md'
+$queueValidation = Get-AuditQueueValidation -RepoRoot $repoRoot -Config $config
+if (-not $queueValidation.valid) {
+    Write-Host "Refusing improvement pass: $($queueValidation.reason)"
+    Write-StepSummary -Step 'next fix preflight' -Status 'blocked' -LogPath $queueValidation.queuePath -Detail $queueValidation.reason
+    exit 1
+}
 
 function Set-QueueItemHandled {
     param(
@@ -81,14 +87,7 @@ function Invoke-DiffCheckOrThrow {
     }
 }
 
-if (-not (Test-Path -LiteralPath $queuePath)) {
-    Write-Host 'No improvement queue found yet.'
-    Write-Host 'Choose Light audit or Deep audit first, then come back to Next fix/review prompt.'
-    Write-StepSummary -Step 'next fix prompt' -Status 'skipped' -LogPath $queuePath -Detail 'No improvement queue found.'
-    exit 0
-}
-
-$queue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
+$queue = $queueValidation.queue
 $items = @($queue.items)
 if ($FindingId.Trim().Length -gt 0) {
     $item = $items | Where-Object { $_.id -eq $FindingId } | Select-Object -First 1

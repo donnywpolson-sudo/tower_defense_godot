@@ -386,10 +386,16 @@ func _run_aggregate(options: Dictionary) -> Dictionary:
 			return {"ok": false, "errors": ["Aggregation input %d must contain exactly 120 runs." % (chunk_index + 1)]}
 		if int(source_config.get("run_offset", -1)) != expected_offset:
 			return {"ok": false, "errors": ["Aggregation input %d must use run_offset=%d." % [chunk_index + 1, expected_offset]]}
-		if int(source_config.get("max_waves", 0)) != 6 or int(source_config.get("seed_count", 0)) != 5 or str(source_config.get("strategy_group", "")) != "standard_research":
+		if str(source_config.get("profile", "")) != "medium" or int(source_config.get("max_waves", 0)) != 6 or int(source_config.get("seed_count", 0)) != 5 or int(source_config.get("seed_step", 0)) <= 0 or str(source_config.get("strategy_group", "")) != "standard_research" or bool(source_config.get("full_action_log", true)):
 			return {"ok": false, "errors": ["Aggregation input %d does not match the six-wave, five-seed standard_research configuration." % (chunk_index + 1)]}
 		if str(source_config.get("scenario_probe_mode", "")) != "off":
 			return {"ok": false, "errors": ["Aggregation input %d must have scenario probes disabled." % (chunk_index + 1)]}
+		if chunk_index > 0:
+			var first_seed := int(first_config.get("seed", -1))
+			var first_seed_step := int(first_config.get("seed_step", -1))
+			var first_strategies := str(first_config.get("strategies", []))
+			if int(source_config.get("seed", -1)) != first_seed or int(source_config.get("seed_step", -1)) != first_seed_step or str(source_config.get("strategies", [])) != first_strategies or str(source_config.get("profile", "")) != str(first_config.get("profile", "")) or int(source_config.get("max_waves", -1)) != int(first_config.get("max_waves", -1)) or int(source_config.get("seed_count", -1)) != int(first_config.get("seed_count", -1)) or str(source_config.get("strategy_group", "")) != str(first_config.get("strategy_group", "")) or bool(source_config.get("full_action_log", true)) != bool(first_config.get("full_action_log", true)):
+				return {"ok": false, "errors": ["Aggregation input %d does not match the first chunk's simulation configuration." % (chunk_index + 1)]}
 		for local_index in range(source_runs.size()):
 			var expected_run_id: int = expected_offset + local_index + 1
 			if int(source_runs[local_index].get("run_id", 0)) != expected_run_id:

@@ -51,7 +51,7 @@ if ($SkipAudit) {
         Invalidate-ImprovementQueue -Reason "Audit failed with exit code $exitCode."
         Write-Host 'fail'
         $global:LASTEXITCODE = $exitCode
-        return
+        throw "Audit failed with exit code $exitCode; improvement queue generation was blocked."
     }
 } else {
     & (Join-Path $PSScriptRoot 'run_deep_audit.ps1') -Tier $Tier -SimulationLauncherOverride $SimulationLauncherOverride
@@ -60,7 +60,7 @@ if ($SkipAudit) {
         Invalidate-ImprovementQueue -Reason "Audit failed with exit code $exitCode."
         Write-Host 'fail'
         $global:LASTEXITCODE = $exitCode
-        return
+        throw "Audit failed with exit code $exitCode; improvement queue generation was blocked."
     }
 }
 
@@ -69,7 +69,7 @@ $exitCode = Get-SafeLastExitCode
 if ($exitCode -ne 0) {
     Write-Host 'fail'
     $global:LASTEXITCODE = $exitCode
-    return
+    throw "Improvement queue build failed with exit code $exitCode."
 }
 
 $config = Read-WorkflowConfig

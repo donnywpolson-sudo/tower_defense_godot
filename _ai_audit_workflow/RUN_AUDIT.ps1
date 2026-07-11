@@ -177,28 +177,15 @@ function Test-AuditQueue {
         [Parameter(Mandatory)][string] $RepoRoot,
         [Parameter(Mandatory)] $Config
     )
-    $queuePath = Join-Path (Join-Path $RepoRoot $Config.currentDir) 'improvement_queue.json'
-    if (-not (Test-Path -LiteralPath $queuePath)) {
-        Add-PreflightIssue -Title 'No audit queue yet' -Problem "The next-fix queue does not exist: $queuePath" -Fix 'Choose 1 for Light audit or 2 for Deep audit first. After that finishes, choose 3 again.'
+    $queueValidation = Get-AuditQueueValidation -RepoRoot $RepoRoot -Config $Config
+    if (-not $queueValidation.valid) {
+        $title = if ($queueValidation.reason -like '*missing or invalid*' -and -not (Test-Path -LiteralPath $queueValidation.queuePath)) { 'No audit queue yet' } else { 'Audit queue is stale or invalidated' }
+        $fix = if ($title -eq 'No audit queue yet') { 'Choose 1 for Light audit or 2 for Deep audit first. After that finishes, choose 3 again.' } else { 'Run a fresh successful Light or Deep audit before applying any queued item.' }
+        Add-PreflightIssue -Title $title -Problem $queueValidation.reason -Fix $fix
         return
     }
-    try {
-        $queue = Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json
-        $queuedItems = @($queue.items | Where-Object { $_.status -eq 'queued' })
-        $findingsPath = Join-Path (Join-Path $RepoRoot $Config.currentDir) 'findings.json'
-        $findings = if (Test-Path -LiteralPath $findingsPath) { Get-Content -Raw -LiteralPath $findingsPath | ConvertFrom-Json } else { $null }
-        $queueRunId = if ($null -ne $queue.PSObject.Properties['sourceRunId']) { [string]$queue.sourceRunId } else { '' }
-        $findingsRunId = if ($null -ne $findings -and $null -ne $findings.PSObject.Properties['runId']) { [string]$findings.runId } else { '' }
-        $findingsStatus = if ($null -ne $findings -and $null -ne $findings.PSObject.Properties['status']) { [string]$findings.status } else { '' }
-        if ($null -eq $findings -or $queueRunId.Length -eq 0 -or $findingsRunId.Length -eq 0 -or $findingsStatus -eq 'fail' -or $queueRunId -ne $findingsRunId) {
-            Add-PreflightIssue -Title 'Audit queue is stale or invalidated' -Problem 'The queue does not belong to the latest successful audit state, or the latest audit failed.' -Fix 'Run a fresh successful Light or Deep audit before applying any queued item.'
-            return
-        }
-        if ($queuedItems.Count -eq 0) {
-            Add-PreflightIssue -Title 'No queued fix or review prompt' -Problem 'The latest audit queue exists, but it does not contain a queued evidence-backed fix or review-backed polish prompt.' -Fix 'Run a fresh Light or Deep audit, or review the audit report for residual gaps that need manual evidence.'
-        }
-    } catch {
-        Add-PreflightIssue -Title 'Broken audit queue' -Problem "The improvement queue could not be parsed: $queuePath. $($_.Exception.Message)" -Fix 'Run a fresh Light or Deep audit to rebuild the queue.'
+    if ($queueValidation.queuedItemCount -eq 0) {
+        Add-PreflightIssue -Title 'No queued fix or review prompt' -Problem 'The latest audit queue exists, but it does not contain a queued evidence-backed fix or review-backed polish prompt.' -Fix 'Run a fresh Light or Deep audit, or review the audit report for residual gaps that need manual evidence.'
     }
 }
 
