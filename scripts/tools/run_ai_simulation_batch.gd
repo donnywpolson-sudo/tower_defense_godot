@@ -244,6 +244,8 @@ func _run_batch() -> Dictionary:
 	var options := _parse_options()
 	if not str(options.get("error", "")).is_empty():
 		return {"ok": false, "errors": [options["error"]]}
+	if not options.get("aggregate_inputs", []).is_empty():
+		return _run_aggregate(options)
 	if not str(options.get("metadata_fixture", "")).is_empty():
 		return _run_metadata_fixture(options)
 
@@ -259,14 +261,16 @@ func _run_batch() -> Dictionary:
 	var strategies: Array = options["strategies"]
 	var started_usec: int = Time.get_ticks_usec()
 	var progress_interval: int = _progress_interval(run_count)
+	var run_offset: int = int(options.get("run_offset", 0))
 	_print_progress(0, run_count, started_usec)
 	for index in range(run_count):
-		var strategy_index: int = index % strategies.size()
-		var seed_bucket: int = index % seed_count
+		var global_index: int = run_offset + index
+		var strategy_index: int = global_index % strategies.size()
+		var seed_bucket: int = global_index % seed_count
 		var seed_value: int = base_seed + seed_bucket * seed_step
 		var strategy: String = str(strategies[strategy_index])
-		var run_seed: int = seed_value + index * 104729 + strategy_index * 7919
-		var run_result: Dictionary = _run_single_simulation(game, options, index + 1, run_seed, strategy, seed_bucket, seed_value)
+		var run_seed: int = seed_value + global_index * 104729 + strategy_index * 7919
+		var run_result: Dictionary = _run_single_simulation(game, options, global_index + 1, run_seed, strategy, seed_bucket, seed_value)
 		runs.append(run_result)
 		for issue in run_result.get("issues", []):
 			issues.append(issue)
@@ -321,6 +325,7 @@ func _run_batch() -> Dictionary:
 		"late_wave_metrics": late_wave_metrics,
 		"scenario_probes": scenario_probes,
 		"regression": {},
+		"aggregation": {},
 		"recommendations": _build_recommendations(summary, issues),
 	}
 	_apply_late_report_metadata(report)
@@ -342,6 +347,186 @@ func _run_batch() -> Dictionary:
 		"archived_legacy_count": write_result["archived_legacy_count"],
 		"run_count": run_count,
 	}
+
+
+func _run_aggregate(options: Dictionary) -> Dictionary:
+	var input_paths: Array = options.get("aggregate_inputs", [])
+	var aggregation_metadata: Dictionary = options.get("aggregate_metadata", {})
+	if input_paths.size() != 2:
+		return {"ok": false, "errors": ["Aggregation requires exactly two input report JSON paths."]}
+	var expected_chunk_runs: Array = [120, 120]
+	if int(aggregation_metadata.get("chunk_count", 2)) != 2:
+		return {"ok": false, "errors": ["Aggregation requires chunk_count=2."]}
+	var metadata_chunk_runs: Array = aggregation_metadata.get("chunk_runs", expected_chunk_runs)
+	if metadata_chunk_runs.size() != 2 or int(metadata_chunk_runs[0]) != 120 or int(metadata_chunk_runs[1]) != 120:
+		return {"ok": false, "errors": ["Aggregation requires chunk_runs=[120, 120]."]}
+	var metadata_source_reports: Array = aggregation_metadata.get("source_reports", input_paths)
+	if metadata_source_reports.size() != 2:
+		return {"ok": false, "errors": ["Aggregation metadata must contain exactly two source reports."]}
+
+	var source_reports: Array = []
+	for input_path in input_paths:
+		var source_report := _read_json_report(str(input_path))
+		if source_report.is_empty():
+			return {"ok": false, "errors": ["Could not parse aggregation input: %s" % str(input_path)]}
+		source_reports.append(source_report)
+
+	var first_config: Dictionary = source_reports[0].get("config", {})
+	var total_runs := 0
+	var all_runs: Array = []
+	var retained_issues: Array = []
+	for chunk_index in range(source_reports.size()):
+		var source_report: Dictionary = source_reports[chunk_index]
+		var source_config: Dictionary = source_report.get("config", {})
+		var source_runs: Array = source_report.get("runs", [])
+		var expected_offset: int = chunk_index * 120
+		if int(source_report.get("schema_version", 0)) != SCHEMA_VERSION:
+			return {"ok": false, "errors": ["Aggregation input %d is not schema %d." % [chunk_index + 1, SCHEMA_VERSION]]}
+		if source_runs.size() != 120 or int(source_config.get("runs", 0)) != 120:
+			return {"ok": false, "errors": ["Aggregation input %d must contain exactly 120 runs." % (chunk_index + 1)]}
+		if int(source_config.get("run_offset", -1)) != expected_offset:
+			return {"ok": false, "errors": ["Aggregation input %d must use run_offset=%d." % [chunk_index + 1, expected_offset]]}
+		if str(source_config.get("profile", "")) != "medium" or int(source_config.get("max_waves", 0)) != 6 or int(source_config.get("seed_count", 0)) != 5 or int(source_config.get("seed_step", 0)) <= 0 or str(source_config.get("strategy_group", "")) != "standard_research" or bool(source_config.get("full_action_log", true)):
+			return {"ok": false, "errors": ["Aggregation input %d does not match the six-wave, five-seed standard_research configuration." % (chunk_index + 1)]}
+		if str(source_config.get("scenario_probe_mode", "")) != "off":
+			return {"ok": false, "errors": ["Aggregation input %d must have scenario probes disabled." % (chunk_index + 1)]}
+		if chunk_index > 0:
+			var first_seed := int(first_config.get("seed", -1))
+			var first_seed_step := int(first_config.get("seed_step", -1))
+			var first_strategies := str(first_config.get("strategies", []))
+			if int(source_config.get("seed", -1)) != first_seed or int(source_config.get("seed_step", -1)) != first_seed_step or str(source_config.get("strategies", [])) != first_strategies or str(source_config.get("profile", "")) != str(first_config.get("profile", "")) or int(source_config.get("max_waves", -1)) != int(first_config.get("max_waves", -1)) or int(source_config.get("seed_count", -1)) != int(first_config.get("seed_count", -1)) or str(source_config.get("strategy_group", "")) != str(first_config.get("strategy_group", "")) or bool(source_config.get("full_action_log", true)) != bool(first_config.get("full_action_log", true)):
+				return {"ok": false, "errors": ["Aggregation input %d does not match the first chunk's simulation configuration." % (chunk_index + 1)]}
+		for local_index in range(source_runs.size()):
+			var expected_run_id: int = expected_offset + local_index + 1
+			if int(source_runs[local_index].get("run_id", 0)) != expected_run_id:
+				return {"ok": false, "errors": ["Aggregation input %d has a non-contiguous run ID at local index %d." % [chunk_index + 1, local_index]]}
+			var run: Dictionary = source_runs[local_index].duplicate(true)
+			run["run_id"] = expected_run_id
+			all_runs.append(run)
+			total_runs += 1
+		for source_issue in source_report.get("issues", []):
+			var issue: Dictionary = source_issue.duplicate(true)
+			var issue_run_id := int(issue.get("run_id", 0))
+			if issue_run_id > 0:
+				if issue_run_id <= source_runs.size():
+					issue["run_id"] = expected_offset + issue_run_id
+				retained_issues.append(issue)
+			elif chunk_index == 0 and str(issue.get("category", "")) == "validation":
+				retained_issues.append(issue)
+
+	if total_runs != 240:
+		return {"ok": false, "errors": ["Aggregation must contain exactly 240 runs; got %d." % total_runs]}
+	var seen_run_ids := {}
+	for run in all_runs:
+		var run_id := int(run.get("run_id", 0))
+		if run_id < 1 or run_id > 240 or seen_run_ids.has(run_id):
+			return {"ok": false, "errors": ["Aggregated run IDs must be unique and cover 1-240."]}
+		seen_run_ids[run_id] = true
+
+	var aggregate_options := _aggregate_options_from_config(first_config, options, total_runs)
+	var game := _create_game()
+	game.reset_slice()
+	var scenario_probes := _run_scenario_probes(aggregate_options)
+	for issue in scenario_probes.get("issues", []):
+		retained_issues.append(issue)
+	for issue in _build_balance_issues(all_runs):
+		retained_issues.append(issue)
+	_assign_issue_ids(retained_issues)
+
+	var summary := _build_summary(all_runs, retained_issues)
+	var chunk_run_counts: Array = []
+	for expected_runs in expected_chunk_runs:
+		chunk_run_counts.append(int(expected_runs))
+	var attempt_history: Array = aggregation_metadata.get("attempt_history", [])
+	var report := {
+		"schema_version": SCHEMA_VERSION,
+		"config": _public_config(aggregate_options),
+		"preflight": source_reports[0].get("preflight", {}),
+		"known_limitations": KNOWN_LIMITATIONS.duplicate(),
+		"telemetry_coverage": _build_telemetry_coverage(),
+		"summary": summary,
+		"runs": all_runs,
+		"issues": retained_issues,
+		"strategy_metrics": _build_strategy_metrics(all_runs),
+		"wave_metrics": _build_wave_metrics(all_runs),
+		"tower_metrics": _build_tower_metrics(all_runs),
+		"blocked_action_metrics": _build_blocked_action_metrics(all_runs),
+		"seed_metrics": _build_seed_metrics(all_runs),
+		"economy_metrics": _build_economy_metrics(all_runs),
+		"damage_metrics": _build_damage_metrics(all_runs),
+		"enemy_kind_metrics": _build_enemy_kind_metrics(all_runs),
+		"boss_commander_metrics": _build_boss_commander_metrics(all_runs),
+		"upgrade_branch_metrics": _build_upgrade_branch_metrics(all_runs),
+		"target_mode_metrics": _build_target_mode_metrics(all_runs),
+		"progression_metrics": _build_progression_metrics(all_runs),
+		"late_wave_metrics": _build_late_wave_metrics(all_runs),
+		"scenario_probes": scenario_probes,
+		"regression": {},
+		"aggregation": {
+			"mode": str(aggregation_metadata.get("mode", "chunked_fallback")),
+			"fallback_status": str(aggregation_metadata.get("fallback_status", "completed")),
+			"chunk_count": 2,
+			"chunk_runs": chunk_run_counts,
+			"source_reports": input_paths.duplicate(),
+			"attempt_history": attempt_history.duplicate(true),
+			"status": "completed",
+		},
+		"recommendations": _build_recommendations(summary, retained_issues),
+	}
+	_apply_late_report_metadata(report)
+	_apply_evidence_warnings(report, str(aggregate_options["output_dir"]))
+	report["regression"] = _build_regression(report, {})
+
+	var write_result := _write_reports(report, str(aggregate_options["output_dir"]))
+	if not bool(write_result.get("ok", false)):
+		return {"ok": false, "errors": write_result.get("errors", [])}
+	return {
+		"ok": true,
+		"json_path": write_result["json_path"],
+		"markdown_path": write_result["markdown_path"],
+		"prompt_path": write_result["prompt_path"],
+		"visible_prompt_path": write_result["visible_prompt_path"],
+		"archived_previous_count": write_result["archived_previous_count"],
+		"archived_legacy_count": write_result["archived_legacy_count"],
+		"run_count": total_runs,
+	}
+
+
+func _read_json_report(path: String) -> Dictionary:
+	var resolved_path := ProjectSettings.globalize_path(path) if path.begins_with("res://") else path
+	if not FileAccess.file_exists(resolved_path):
+		return {}
+	var file := FileAccess.open(resolved_path, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	return parsed if parsed is Dictionary else {}
+
+
+func _aggregate_options_from_config(source_config: Dictionary, aggregate_options: Dictionary, total_runs: int) -> Dictionary:
+	var options := {
+		"profile": str(source_config.get("profile", "medium")),
+		"runs": total_runs,
+		"max_waves": int(source_config.get("max_waves", MEDIUM_MAX_WAVES)),
+		"seed": int(source_config.get("seed", DEFAULT_SEED)),
+		"seed_count": int(source_config.get("seed_count", DEFAULT_SEED_COUNT)),
+		"seed_step": int(source_config.get("seed_step", DEFAULT_SEED_STEP)),
+		"strategy_group": str(source_config.get("strategy_group", "standard_research")),
+		"output_dir": str(aggregate_options.get("output_dir", DEFAULT_OUTPUT_DIR)),
+		"full_action_log": bool(source_config.get("full_action_log", false)),
+		"compare_previous": false,
+		"strategies": source_config.get("strategies", DEFAULT_STRATEGIES).duplicate(),
+		"report_label": str(aggregate_options.get("report_label", "chunked_fallback")),
+		"metadata_fixture": "",
+		"scenario_probes": str(aggregate_options.get("scenario_probes", "auto")),
+		"run_offset": 0,
+		"aggregate_inputs": [],
+		"profile_explicit": true,
+		"raw_user_args": [],
+		"error": "",
+	}
+	return options
 
 
 func _create_game() -> Node:
@@ -426,6 +611,21 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"expected_by_action": {},
 		"avoidable_by_action": {},
 	}
+	var economy_metrics := {}
+	if fixture == "medium":
+		economy_metrics = {
+			"by_wave": {
+				"1": {
+					"runs": int(options["runs"]),
+					"avg_money_delta": 12.0,
+					"avg_spend_delta": 18.0,
+					"avg_lives_delta": 0.0,
+					"avg_tech_delta": 0.0,
+					"avg_tower_delta": 1.0,
+				},
+			},
+			"by_strategy": {},
+		}
 	var report := {
 		"schema_version": 4 if fixture == "schema4_previous" else SCHEMA_VERSION,
 		"config": _public_config(options),
@@ -440,7 +640,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"tower_metrics": {},
 		"blocked_action_metrics": blocked_action_metrics,
 		"seed_metrics": {},
-		"economy_metrics": {},
+		"economy_metrics": economy_metrics,
 		"damage_metrics": {},
 		"enemy_kind_metrics": {},
 		"boss_commander_metrics": {},
@@ -537,6 +737,11 @@ func _parse_options() -> Dictionary:
 		"report_label": "",
 		"metadata_fixture": "",
 		"scenario_probes": "auto",
+		"run_offset": 0,
+		"aggregate_inputs": [],
+		"aggregate_inputs_file": "",
+		"aggregate_metadata_file": "",
+		"aggregate_metadata": {},
 		"profile_explicit": false,
 		"raw_user_args": [],
 		"error": "",
@@ -558,7 +763,7 @@ func _parse_options() -> Dictionary:
 		elif normalized_arg == "overnight":
 			options["profile"] = "overnight"
 			options["profile_explicit"] = true
-		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes"]:
+		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes", "run-offset", "run_offset", "aggregate-inputs", "aggregate_inputs", "aggregate-inputs-file", "aggregate_inputs_file", "aggregate-metadata-file", "aggregate_metadata_file"]:
 			pending_key = normalized_arg
 		elif normalized_arg.begins_with("profile=") or normalized_arg.begins_with("ai-profile=") or normalized_arg.begins_with("ai_profile=") or normalized_arg.begins_with("mode=") or normalized_arg.begins_with("batch-profile=") or normalized_arg.begins_with("batch_profile="):
 			options["profile"] = _arg_value(normalized_arg)
@@ -589,9 +794,48 @@ func _parse_options() -> Dictionary:
 			options["metadata_fixture"] = _arg_value(normalized_arg)
 		elif normalized_arg.begins_with("scenario-probes=") or normalized_arg.begins_with("scenario_probes="):
 			options["scenario_probes"] = _arg_value(normalized_arg)
+		elif normalized_arg.begins_with("run-offset=") or normalized_arg.begins_with("run_offset="):
+			options["run_offset"] = int(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("aggregate-inputs=") or normalized_arg.begins_with("aggregate_inputs="):
+			options["aggregate_inputs"] = _parse_csv(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("aggregate-metadata-file=") or normalized_arg.begins_with("aggregate_metadata_file="):
+			options["aggregate_metadata_file"] = _arg_value(normalized_arg)
 	if not pending_key.is_empty():
 		options["error"] = "Missing value for --%s." % pending_key
 		return options
+	if not str(options["aggregate_inputs_file"]).is_empty():
+		var manifest_path := str(options["aggregate_inputs_file"])
+		if manifest_path.begins_with("res://"):
+			manifest_path = ProjectSettings.globalize_path(manifest_path)
+		if not FileAccess.file_exists(manifest_path):
+			options["error"] = "Aggregation input manifest was not found: %s" % str(options["aggregate_inputs_file"])
+			return options
+		var manifest := FileAccess.open(manifest_path, FileAccess.READ)
+		if manifest == null:
+			options["error"] = "Aggregation input manifest could not be opened: %s" % str(options["aggregate_inputs_file"])
+			return options
+		var manifest_inputs: Array = []
+		for line in manifest.get_as_text().split("\n"):
+			var input_path := line.strip_edges()
+			if not input_path.is_empty():
+				manifest_inputs.append(input_path)
+		manifest.close()
+		options["aggregate_inputs"] = manifest_inputs
+		if manifest_inputs.is_empty():
+			options["error"] = "Aggregation input manifest was empty: %s" % str(options["aggregate_inputs_file"])
+			return options
+	if not str(options["aggregate_metadata_file"]).is_empty():
+		var metadata_path := str(options["aggregate_metadata_file"])
+		var metadata := _read_json_report(metadata_path)
+		if metadata.is_empty():
+			options["error"] = "Aggregation metadata sidecar was not found or invalid: %s" % str(options["aggregate_metadata_file"])
+			return options
+		var metadata_sources: Array = metadata.get("source_reports", [])
+		if metadata_sources.size() != 2:
+			options["error"] = "Aggregation metadata sidecar must contain exactly two source reports."
+			return options
+		options["aggregate_metadata"] = metadata
+		options["aggregate_inputs"] = metadata_sources
 
 	var profile := str(options["profile"])
 	if not PROFILE_DEFAULTS.has(profile):
@@ -684,6 +928,14 @@ func _apply_option_value(options: Dictionary, key: String, value: String) -> voi
 		options["metadata_fixture"] = normalized_value
 	elif key in ["scenario-probes", "scenario_probes"]:
 		options["scenario_probes"] = normalized_value
+	elif key in ["run-offset", "run_offset"]:
+		options["run_offset"] = int(normalized_value)
+	elif key in ["aggregate-inputs", "aggregate_inputs"]:
+		options["aggregate_inputs"] = _parse_csv(normalized_value)
+	elif key in ["aggregate-inputs-file", "aggregate_inputs_file"]:
+		options["aggregate_inputs_file"] = normalized_value
+	elif key in ["aggregate-metadata-file", "aggregate_metadata_file"]:
+		options["aggregate_metadata_file"] = normalized_value
 
 
 func _parse_csv(value: String) -> Array:
@@ -765,6 +1017,9 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"profile_overridden": _profile_overridden(options),
 		"scenario_probes": str(options.get("scenario_probes", "auto")),
 		"scenario_probe_mode": _resolve_scenario_probe_mode(options),
+		"run_offset": int(options.get("run_offset", 0)),
+		"aggregate_inputs_file": str(options.get("aggregate_inputs_file", "")),
+		"aggregate_metadata_file": str(options.get("aggregate_metadata_file", "")),
 		"coverage_scope": COVERAGE_SCOPE,
 		"profile_defaults": PROFILE_DEFAULTS.duplicate(true),
 		"strategy_groups": STRATEGY_GROUPS.duplicate(true),
@@ -2894,7 +3149,13 @@ func _run_enemy_kind_probes(mode: String) -> Array:
 		game.set_wave_for_test(1)
 		_scenario_place_mixed_defense(game, SCENARIO_MIXED_DEFENSE)
 		if str(enemy_kind) == "flying":
+			_scenario_upgrade_first_tower_to_level(game, "tesla", 4, probe)
+			_scenario_upgrade_first_tower_to_level(game, "sniper", 3, probe)
 			_scenario_set_target_mode_for_tower(game, "tesla", "flying")
+			probe["anti_air_setup"] = {
+				"tesla_level": _scenario_first_tower_level(game, "tesla"),
+				"sniper_level": _scenario_first_tower_level(game, "sniper"),
+			}
 		var result := _run_direct_enemy_probe(game, str(enemy_kind), 12)
 		_merge_probe_result(probe, result)
 		_apply_probe_expectations(probe, 0.35, 0.15)
@@ -2995,6 +3256,34 @@ func _scenario_set_target_mode_for_tower(game: Node, tower_type: String, target_
 	for index in range(towers.size()):
 		if str(towers[index].get("type", "")) == tower_type:
 			game.set_tower_target_mode(index, target_mode)
+
+
+func _scenario_upgrade_first_tower_to_level(game: Node, tower_type: String, target_level: int, probe: Dictionary) -> void:
+	for _attempt in range(max(0, target_level - 1)):
+		var tower_index := _scenario_first_tower_index(game, tower_type)
+		if tower_index < 0:
+			return
+		var tower: Dictionary = _tower_record_at(game, tower_index)
+		if int(tower.get("level", 1)) >= target_level:
+			return
+		game.selected_tower_index = tower_index
+		if not _upgrade_selected_with_branch_if_needed(game, probe, {}, false):
+			return
+
+
+func _scenario_first_tower_index(game: Node, tower_type: String) -> int:
+	var towers: Array = game.serialize_run_state().get("towers", [])
+	for index in range(towers.size()):
+		if str(towers[index].get("type", "")) == tower_type:
+			return index
+	return -1
+
+
+func _scenario_first_tower_level(game: Node, tower_type: String) -> int:
+	var index := _scenario_first_tower_index(game, tower_type)
+	if index < 0:
+		return 0
+	return int(_tower_record_at(game, index).get("level", 0))
 
 
 func _scenario_next_build_site(game: Node, tower_type: String) -> Vector2:
@@ -4000,7 +4289,7 @@ func _append_economy_metrics(lines: Array, metrics: Dictionary) -> void:
 	if by_wave.is_empty():
 		lines.append("- None recorded.")
 		return
-	lines.append("| Wave | Runs | Avg money | Avg spend | Avg lives | Avg tech | Avg towers |")
+	lines.append("| Wave | Runs | Avg money delta | Avg spend delta | Avg lives delta | Avg tech delta | Avg tower delta |")
 	lines.append("| ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
 	for wave_key in _sorted_numeric_string_keys(by_wave):
 		var row: Dictionary = by_wave[wave_key]

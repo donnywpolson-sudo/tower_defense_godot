@@ -1,7 +1,7 @@
 extends SceneTree
 
 const MAIN_SCENE_PATH := "res://scenes/main.tscn"
-const SCREENSHOT_DIR := "res://logs/godot/visual_review"
+const SCREENSHOT_DIR := "res://logs/godot/visual_review/generated"
 const VIEWPORTS := [
 	{"label": "pinned_1180x600", "size": Vector2i(1180, 600)},
 	{"label": "bottom_dock_1180x820", "size": Vector2i(1180, 820)},

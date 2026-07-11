@@ -2,6 +2,20 @@
 
 ## 1. Project-Specific Guidance
 
+### Runtime And Remote Guards
+
+- Default to `GPT-5.6 Luna` with `High` reasoning for this project.
+- Escalate model and reasoning only when task necessity, complexity, risk, or expected payoff justifies it.
+- Use `GPT-5.6 Terra` at `Medium` or `High` for narrow, routine, low-risk, supporting, or mechanical work.
+- Use `GPT-5.6 Sol` with `High` reasoning for normal substantive repo work, including implementation, design, debugging, validation, and review.
+- Escalate Sol to `Extra High` or `Max` for difficult cross-system work, high-risk changes, unclear failures, or decisions with meaningful project impact.
+- Use `Ultra` only for broad tasks that divide into independent workstreams and justify the extra cost.
+- When the correct tier is unclear, choose the higher-capability model/reasoning level. Do not use Terra for code changes, validation failures, architecture/design decisions, multi-file debugging, balance decisions, repo safety issues, or anything likely to require careful judgment.
+- Before substantive work, briefly state the selected model/reasoning tier or any mismatch if the requested tier is unavailable.
+- When multi-agent delegation is available, route only independent bounded subtasks out of the root agent. Keep final synthesis, material decisions, repo safety checks, and approval gates with the root agent.
+- This repository must upload to `https://github.com/donnywpolson-sudo/tower_defense_godot.git`.
+- Do not push to any other remote. If `origin` points elsewhere, stop and ask for explicit approval before changing remotes or pushing.
+
 ### Project Facts
 
 * Stack: Godot 4.7, GDScript, Godot native 2D rendering.
@@ -85,6 +99,7 @@ C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/go
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_wave_schedule.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_wave_schedule_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_speed_wave_stress.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_speed_wave_stress_validation.gd
 C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_independence.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_independence_validation.gd
+C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/godot/godot_export_platform.log --path C:\Users\donny\Desktop\tower_defense_godot --script res://scripts/tools/run_export_platform_validation.gd
 ```
 
 * Run a Godot validation script when changing GDScript, scenes, project settings, assets, audio, or data-loading behavior.
@@ -164,13 +179,27 @@ C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/go
 
 ### Final Response Format
 
+* Output language has three levels. Default for this repo is `Level 1: Minimal / Plain English`.
+* `Level 1`: shortest clear answer. Use plain English. Include only: result, real problems, and next action if needed.
+* `Level 2`: normal answer. Include what changed, checked files/commands, problems, and one useful next step.
+* `Level 3`: audit or planning answer. Include findings, evidence, risk, exact next action, and copy-paste prompt when useful.
+* For messy user notes, first translate the request into one clear objective before acting.
+* For copy-paste help, give one fenced prompt or command block. Do not give vague suggestions.
 * Be concise and outcome-focused.
-* Start with the concrete result when work completed: files touched, checks run, and anything left open.
+* Start with a concise opening outcome when there is a completed result to report. Include the concrete result, files touched, and checks run there instead of using a `Done` section. Omit the opening outcome only when nothing completed.
 * Use concise prose for simple one-shot tasks.
-* Use `Problems` and `Suggestions` by default for multi-step work, validation failures, handoff updates, risky changes, or residual risk.
-* Mention successful validation briefly. Mention unresolved failed checks, generated-artifact risks, or material caveats under `Problems`.
-* When using structured output, use only these sections:
-  * `Problems`: blockers, validation failures, conflicts, missing evidence, or residual risk.
-  * `Suggestions`: exactly one next recommended action, or `None.` when the request is complete.
-* Do not add routine sections such as `Done`, `Tests`, `Validation`, `Notes`, `Changed`, or `Next Steps` unless the user explicitly asks for that format.
+* For normal implementation, status, and handoff runs, use only these real final sections in this order when structured output is needed:
+  * `Problems`: write `None. Proceed status: yes.` when clear. Otherwise list only real problems or caveats as `Low`, `Medium`, or `Severe`, with concrete evidence where practical. End with `Proceed status: yes.`, `Proceed status: yes with medium problems.`, or `Proceed status: no.`
+  * `Suggestions`: write `None.` only when the request is complete and no useful continuation remains. Otherwise give exactly one next action: one human decision, one bounded executable phase, or one fenced paste-ready prompt.
+* Mention successful validation briefly in the opening outcome. Mention only unresolved failed checks, generated-artifact risks, or material caveats under `Problems`.
+* Do not add extra final sections such as `Tests`, `Validation`, `Notes`, `Changed`, or `Next Steps` unless the user explicitly asks for that format.
+* If the user asks for an audit, review, or prompt template with a specific structure, use the requested structure while preserving all repo safety rules.
 * Required app directives, git directives, and memory citations may appear after the repo-local final sections, but keep them minimal.
+* For `Suggestions`, use `None.` only for true terminal one-shot work. If any nontrivial, risky, broad, asset/audio import, generated-artifact, cleanup, mutating, or fresh-thread follow-up remains, prefer one fenced paste-ready prompt.
+* Use a human decision only when the agent cannot safely choose.
+* Use a bounded executable phase only when follow-up is ready to run. For expensive, broad, asset/audio import, generated-artifact, cleanup, or mutating work, include command family, scope limit, timeout or stop budget, artifacts, forbidden patterns, expected generated files, and stop condition.
+* A paste-ready prompt must state whether the next agent should plan only or execute, name the target objective, require repo path and `git status --short` inspection, require reconciliation against `CODEX_HANDOFF.md` when it exists and current evidence, and include exact bounded scope, forbidden actions, artifacts, timeout or stop budget, stop condition, and validation expectations.
+* If execution is not already safely bounded, the paste-ready prompt must request one implementable `<proposed_plan>` and explicitly say not to mutate files or run broad validation, asset/audio import, cleanup, or other mutating commands yet.
+* When `CODEX_HANDOFF.md` was updated or fresh-thread continuation is likely, start the paste-ready prompt with `Continue from CODEX_HANDOFF.md.`
+* Do not use vague suggestions such as `continue implementation`, `run next phase`, or `improve the game`; convert them into `None.`, one human decision, one bounded executable phase, or one fenced paste-ready prompt.
+* When `CODEX_HANDOFF.md` is updated, final `Suggestions` must match its exact next recommended step.

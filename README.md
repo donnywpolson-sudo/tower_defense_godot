@@ -48,9 +48,19 @@ For bigger ideas, ask Codex to make a short plan first.
 
 To create a Codex-ready balance report:
 
-1. Double-click `TOWER_DEFENSE_AI_SIMULATION.bat`.
-2. Wait for Notepad to open.
-3. Copy the contents into Codex.
+1. Run `_ai_audit_workflow\RUN_AUDIT.ps1`.
+2. Press Enter for the default Light audit plus one bounded safe improvement, or choose an audit-only/deep option.
+3. Review `_ai_audit_workflow\_internal\current\status.json`, `findings.json`, and `improvement_queue.json`.
+
+The default path audits the game, diagnoses evidence-backed bugs or gameplay
+gaps, asks Codex to implement the next scoped improvement, and checks the
+result with `git diff --check`. It refuses to apply changes in a dirty
+worktree unless `-AllowDirtyApply` is explicitly supplied.
+
+If the repo is dirty when the audit runs, results are diagnostics only by
+default: the workflow writes evidence but does not create apply-ready queue
+items. Use `-AllowDirtyQueue` only when intentionally queuing from the current
+dirty worktree. This does not bypass the separate `-AllowDirtyApply` safety gate.
 
 The generated AI simulation files are saved under `.godot\ai_simulation` with a
 `YYYY_MM_DD_HHMM` timestamp, for example:

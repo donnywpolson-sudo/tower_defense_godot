@@ -2,6 +2,7 @@ extends SceneTree
 
 const RUNNER_SCRIPT := "res://scripts/tools/run_ai_simulation_batch.gd"
 const OUTPUT_BASE := "res://.godot/ai_simulation_validation"
+const CHILD_LOG_DIR := "res://logs/godot"
 
 var _errors: Array = []
 var _run_id := ""
@@ -36,6 +37,10 @@ func _run_validation() -> void:
 	_expect_json_value(medium, ["config", "evidence_tier"], "medium", "medium evidence tier")
 	_expect_json_value(medium, ["config", "profile_overridden"], false, "medium profile override")
 	_expect_not_contains(medium.get("prompt", ""), "This is smoke/custom diagnostic evidence and is not balance-actionable.", "medium prompt smoke warning")
+	_expect_contains(medium.get("markdown", ""), "| Wave | Runs | Avg money delta | Avg spend delta | Avg lives delta | Avg tech delta | Avg tower delta |", "economy delta labels markdown")
+	_expect_not_contains(medium.get("markdown", ""), "| Wave | Runs | Avg money | Avg spend | Avg lives | Avg tech | Avg towers |", "stale economy labels markdown")
+	_expect_contains(medium.get("prompt", ""), "| Wave | Runs | Avg money delta | Avg spend delta | Avg lives delta | Avg tech delta | Avg tower delta |", "economy delta labels prompt")
+	_expect_not_contains(medium.get("prompt", ""), "| Wave | Runs | Avg money | Avg spend | Avg lives | Avg tech | Avg towers |", "stale economy labels prompt")
 
 	var known_gap := _run_fixture("known_gap", ["--metadata-fixture=known_gap", "--runs=14", "--max-waves=2", "--report-label=metadata_known_gap", "--compare-previous=false"])
 	_expect_contains(known_gap.get("prompt", ""), "Do Not Implement From This Prompt Unless Explicitly Requested", "known gap prompt heading")
@@ -78,7 +83,7 @@ func _run_validation() -> void:
 
 func _run_fixture(name: String, user_args: Array) -> Dictionary:
 	var output_dir := "%s/%s/%s" % [OUTPUT_BASE, _run_id, name]
-	var args := ["--headless", "--no-header", "--path", ProjectSettings.globalize_path("res://"), "--script", RUNNER_SCRIPT, "--"]
+	var args := ["--headless", "--no-header", "--log-file", _child_log_path(name), "--path", ProjectSettings.globalize_path("res://"), "--script", RUNNER_SCRIPT, "--"]
 	for arg in user_args:
 		args.append(str(arg))
 	args.append("--output-dir=%s" % output_dir)
@@ -103,6 +108,12 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 		"markdown": FileAccess.get_file_as_string(markdown_path),
 		"prompt": FileAccess.get_file_as_string(prompt_path),
 	}
+
+
+func _child_log_path(name: String) -> String:
+	var log_dir := ProjectSettings.globalize_path(CHILD_LOG_DIR)
+	DirAccess.make_dir_recursive_absolute(log_dir)
+	return "%s/ai_prompt_metadata_%s_%s.log" % [log_dir, _run_id, name]
 
 
 func _latest_file(output_dir: String, prefix: String, suffix: String) -> String:
