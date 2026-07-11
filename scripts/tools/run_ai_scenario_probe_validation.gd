@@ -33,7 +33,7 @@ func _run_validation() -> void:
 	var full := _run_fixture("full", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_full", "--compare-previous=false", "--scenario-probes=full"])
 	_expect_json_value(full, ["schema_version"], 6, "schema version")
 	_expect_json_value(full, ["scenario_probes", "mode"], "full", "full mode")
-	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"], "full tower probes")
+	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"], "full tower probes")
 	_expect_probe_ids(full, "enemy_kind_probes", ["armored", "commander", "fast", "flying", "normal", "shield", "swarm", "tank"], "full enemy probes")
 	_expect_probe_waves(full, "scheduled_wave_probes", [5, 8, 10, 12, 15, 16, 20, 24, 25, 28, 30], "full scheduled waves")
 	_expect_all_enabled_branches(full)
@@ -142,7 +142,7 @@ func _expect_branch_subset(fixture: Dictionary, tower_types: Array, label: Strin
 
 
 func _expect_all_enabled_branches(fixture: Dictionary) -> void:
-	var expected_count := 18
+	var expected_count := 21
 	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("branch_probes", [])
 	if probes.size() != expected_count:
 		_errors.append("full branch probe count expected %s, got %s." % [expected_count, probes.size()])

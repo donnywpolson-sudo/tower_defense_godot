@@ -5,10 +5,24 @@ signal status_changed(status: Dictionary)
 const ARCHER_ID := "archer"
 const ENEMY_KIND := "normal"
 const CANONICAL_ENEMY_KINDS := ["normal", "fast", "tank", "swarm", "shield", "flying", "armored", "commander"]
-const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
+const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"]
 const SLICE_SPAWN_LIMIT := 3
 const PROJECTILE_HIT_DISTANCE := 8.0
 const RECOMMENDED_BUILD_SITE := Vector2(300, 243)
+const POISON_MAX_STACKS := 3
+const POISON_DURATION := 3.0
+const POISON_TICK_INTERVAL := 0.5
+const POISON_DAMAGE_RATIO := 0.10
+const POISON_REGEN_MULTIPLIER := 0.50
+const PLAGUE_MIST_SPREAD_RADIUS := 72.0
+const PLAGUE_MIST_SPREAD_TARGETS := 2
+const PLAGUE_MIST_SPREAD_DAMAGE_RATIO := 0.55
+const WILDFIRE_BURN_DURATION := 1.4
+const WILDFIRE_BURN_TICK_INTERVAL := 0.5
+const WILDFIRE_BURN_DAMAGE_RATIO := 0.06
+const WILDFIRE_BLOOM_RADIUS := 72.0
+const WILDFIRE_BLOOM_TARGETS := 2
+const WILDFIRE_BLOOM_DAMAGE_RATIO := 0.60
 const SHOP_BUTTON_SIZE := Vector2(78, 25)
 const SHOP_BUTTON_GAP := 4.0
 const BOTTOM_LAYOUT_MIN_HEIGHT := 780.0
@@ -952,6 +966,8 @@ func _basic_slice_tower_range(tower_type: String, level: int = 1) -> float:
 		base_range += 90.0
 	if tower_type == "frost":
 		base_range += 22.0
+	if tower_type == "poison":
+		base_range += 4.0
 	if tower_type == "machine_gun":
 		base_range -= 10.0
 	if tower_type == "tesla":
@@ -971,6 +987,8 @@ func _basic_slice_tower_damage(tower_type: String, level: int = 1) -> float:
 		damage = 46.0
 	elif tower_type == "frost":
 		damage = 27.0
+	elif tower_type == "poison":
+		damage = 20.0
 	elif tower_type == "tesla":
 		damage = 34.0
 	if level <= 1:
@@ -988,6 +1006,8 @@ func _basic_slice_tower_fire_rate(tower_type: String, level: int = 1) -> float:
 		fire_rate = 0.72
 	elif tower_type == "frost":
 		fire_rate = 0.68
+	elif tower_type == "poison":
+		fire_rate = 0.62
 	elif tower_type == "tesla":
 		fire_rate = 0.45
 	if level <= 1:
@@ -1322,6 +1342,16 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 		"commander": bool(modifier.get("commander", false)),
 		"damage_taken_multiplier": 1.0,
 		"regen_scale": 0.0,
+		"poison_stacks": 0,
+		"poison_timer": 0.0,
+		"poison_tick_timer": 0.0,
+		"poison_damage": 0.0,
+		"poison_regen_multiplier": 1.0,
+		"poison_source_tower_index": -1,
+		"wildfire_burn_timer": 0.0,
+		"wildfire_burn_tick_timer": 0.0,
+		"wildfire_burn_damage": 0.0,
+		"wildfire_burn_source_tower_index": -1,
 		"slow_timer": 0.0,
 		"slow_multiplier": 1.0,
 		"death_spawns": 0,
@@ -1604,6 +1634,16 @@ func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
 	child["death_burst_damage_fraction"] = 0.0
 	child["death_burst_radius"] = 0.0
 	child["damage_taken_multiplier"] = 1.0
+	child["poison_stacks"] = 0
+	child["poison_timer"] = 0.0
+	child["poison_tick_timer"] = 0.0
+	child["poison_damage"] = 0.0
+	child["poison_regen_multiplier"] = 1.0
+	child["poison_source_tower_index"] = -1
+	child["wildfire_burn_timer"] = 0.0
+	child["wildfire_burn_tick_timer"] = 0.0
+	child["wildfire_burn_damage"] = 0.0
+	child["wildfire_burn_source_tower_index"] = -1
 	child["boss"] = false
 	child["boss_kind"] = ""
 	child["slow_timer"] = 0.0
@@ -1614,6 +1654,8 @@ func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
 
 
 func _update_enemy(enemy: Dictionary, delta: float) -> void:
+	_tick_poison(enemy, delta)
+	_tick_wildfire_burn(enemy, delta)
 	var target_index: int = int(enemy["target_index"])
 	if target_index >= path_points.size():
 		enemy["reached_end"] = true
@@ -1637,7 +1679,71 @@ func _update_enemy(enemy: Dictionary, delta: float) -> void:
 	var regen_scale: float = float(enemy.get("regen_scale", 0.0))
 	if regen_scale > 0.0 and float(enemy.get("hp", 0.0)) > 0.0:
 		var max_hp: float = float(enemy.get("max_hp", 0.0))
-		enemy["hp"] = min(max_hp, float(enemy.get("hp", 0.0)) + max_hp * regen_scale * delta)
+		var regen_multiplier: float = clamp(float(enemy.get("poison_regen_multiplier", 1.0)), 0.0, 1.0)
+		enemy["hp"] = min(max_hp, float(enemy.get("hp", 0.0)) + max_hp * regen_scale * regen_multiplier * delta)
+
+
+func _tick_poison(enemy: Dictionary, delta: float) -> void:
+	var stacks: int = int(enemy.get("poison_stacks", 0))
+	if stacks <= 0:
+		enemy["poison_stacks"] = 0
+		enemy["poison_timer"] = 0.0
+		enemy["poison_tick_timer"] = 0.0
+		enemy["poison_damage"] = 0.0
+		enemy["poison_source_tower_index"] = -1
+		enemy["poison_regen_multiplier"] = 1.0
+		return
+	var poison_timer: float = max(0.0, float(enemy.get("poison_timer", 0.0)) - delta)
+	var tick_timer: float = float(enemy.get("poison_tick_timer", 0.0)) - delta
+	enemy["poison_timer"] = poison_timer
+	if poison_timer <= 0.0:
+		enemy["poison_stacks"] = 0
+		enemy["poison_tick_timer"] = 0.0
+		enemy["poison_damage"] = 0.0
+		enemy["poison_regen_multiplier"] = 1.0
+		return
+	if tick_timer <= 0.0:
+		tick_timer += POISON_TICK_INTERVAL
+		var damage: float = max(0.0, float(enemy.get("poison_damage", 0.0))) * float(stacks)
+		damage *= float(enemy.get("damage_taken_multiplier", 1.0))
+		var source_index: int = int(enemy.get("poison_source_tower_index", -1))
+		if source_index >= 0 and source_index < towers.size():
+			damage *= _poison_damage_multiplier(enemy, towers[source_index])
+		enemy["hp"] = float(enemy.get("hp", 0.0)) - damage
+		if source_index >= 0 and source_index < towers.size():
+			var source_tower: Dictionary = towers[source_index]
+			source_tower["total_damage"] = float(source_tower.get("total_damage", 0.0)) + damage
+			source_tower["mastery_xp"] = float(source_tower.get("mastery_xp", 0.0)) + damage * 0.02
+	enemy["poison_tick_timer"] = tick_timer
+
+
+func _poison_damage_multiplier(enemy: Dictionary, source_tower: Dictionary) -> float:
+	if str(source_tower.get("selected_branch", "")) != "venom_cask" or not bool(enemy.get("boss", false)):
+		return 1.0
+	var level: int = int(source_tower.get("level", 1))
+	return 1.0 + min(0.18, 0.06 + float(max(0, level - 3)) * 0.06)
+
+
+func _tick_wildfire_burn(enemy: Dictionary, delta: float) -> void:
+	var burn_timer: float = max(0.0, float(enemy.get("wildfire_burn_timer", 0.0)) - delta)
+	var burn_tick_timer: float = float(enemy.get("wildfire_burn_tick_timer", 0.0)) - delta
+	enemy["wildfire_burn_timer"] = burn_timer
+	if burn_timer <= 0.0:
+		enemy["wildfire_burn_tick_timer"] = 0.0
+		enemy["wildfire_burn_damage"] = 0.0
+		enemy["wildfire_burn_source_tower_index"] = -1
+		return
+	if burn_tick_timer <= 0.0:
+		burn_tick_timer += WILDFIRE_BURN_TICK_INTERVAL
+		var damage: float = max(0.0, float(enemy.get("wildfire_burn_damage", 0.0)))
+		damage *= float(enemy.get("damage_taken_multiplier", 1.0))
+		enemy["hp"] = float(enemy.get("hp", 0.0)) - damage
+		var source_index: int = int(enemy.get("wildfire_burn_source_tower_index", -1))
+		if source_index >= 0 and source_index < towers.size():
+			var source_tower: Dictionary = towers[source_index]
+			source_tower["total_damage"] = float(source_tower.get("total_damage", 0.0)) + damage
+			source_tower["mastery_xp"] = float(source_tower.get("mastery_xp", 0.0)) + damage * 0.02
+	enemy["wildfire_burn_tick_timer"] = burn_tick_timer
 
 
 func _update_towers(delta: float) -> void:
@@ -1813,6 +1919,16 @@ func make_test_enemy(id: String, position: Vector2, progress: float, hp: float =
 		"max_shield_hits": 0,
 		"tags": [],
 		"commander": false,
+		"poison_stacks": 0,
+		"poison_timer": 0.0,
+		"poison_tick_timer": 0.0,
+		"poison_damage": 0.0,
+		"poison_regen_multiplier": 1.0,
+		"poison_source_tower_index": -1,
+		"wildfire_burn_timer": 0.0,
+		"wildfire_burn_tick_timer": 0.0,
+		"wildfire_burn_damage": 0.0,
+		"wildfire_burn_source_tower_index": -1,
 		"slow_timer": 0.0,
 		"slow_multiplier": 1.0,
 	}
@@ -1933,9 +2049,78 @@ func _hit_projectile_target(projectile: Dictionary) -> float:
 	var tower: Dictionary = projectile.get("tower", {})
 	if str(projectile.get("tower_type", tower.get("type", ""))) == "frost":
 		_apply_frost_slow(target, int(projectile.get("tower_level", tower.get("level", 1))))
+	elif str(projectile.get("tower_type", tower.get("type", ""))) == "poison":
+		_apply_poison(target, damage, tower, int(projectile.get("tower_level", tower.get("level", 1))))
 	tower["total_damage"] = float(tower.get("total_damage", 0.0)) + damage
 	tower["mastery_xp"] = float(tower.get("mastery_xp", 0.0)) + damage * 0.02
 	return damage
+
+
+func _apply_poison(target: Dictionary, damage: float, tower: Dictionary, level: int, allow_branch_effect: bool = true) -> void:
+	var stacks: int = min(POISON_MAX_STACKS, int(target.get("poison_stacks", 0)) + 1)
+	target["poison_stacks"] = stacks
+	target["poison_timer"] = max(float(target.get("poison_timer", 0.0)), POISON_DURATION + float(max(0, level - 1)) * 0.1)
+	target["poison_tick_timer"] = min(float(target.get("poison_tick_timer", POISON_TICK_INTERVAL)), POISON_TICK_INTERVAL)
+	target["poison_damage"] = max(float(target.get("poison_damage", 0.0)), damage * POISON_DAMAGE_RATIO)
+	target["poison_regen_multiplier"] = POISON_REGEN_MULTIPLIER
+	target["poison_source_tower_index"] = towers.find(tower)
+	if not allow_branch_effect or str(tower.get("type", "")) != "poison" or level < 3:
+		return
+	var branch_id := str(tower.get("selected_branch", ""))
+	if branch_id == "plague_mist":
+		_spread_plague_mist(target, damage, tower, level)
+	elif branch_id == "wildfire":
+		_apply_wildfire_bloom(target, damage, tower, level)
+
+
+func _spread_plague_mist(source: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance := source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= PLAGUE_MIST_SPREAD_RADIUS:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var applied := 0
+	while applied < PLAGUE_MIST_SPREAD_TARGETS and not candidates.is_empty():
+		var nearest_index := 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		_apply_poison(candidate, damage * PLAGUE_MIST_SPREAD_DAMAGE_RATIO, tower, level, false)
+		candidates.remove_at(nearest_index)
+		applied += 1
+
+
+func _apply_wildfire_bloom(source: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	_apply_wildfire_burn(source, damage, tower, level)
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance := source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= WILDFIRE_BLOOM_RADIUS:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var applied := 0
+	while applied < WILDFIRE_BLOOM_TARGETS and not candidates.is_empty():
+		var nearest_index := 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		_apply_wildfire_burn(candidate, damage * WILDFIRE_BLOOM_DAMAGE_RATIO, tower, level)
+		candidates.remove_at(nearest_index)
+		applied += 1
+
+
+func _apply_wildfire_burn(target: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	target["wildfire_burn_timer"] = max(float(target.get("wildfire_burn_timer", 0.0)), WILDFIRE_BURN_DURATION + float(max(0, level - 3)) * 0.1)
+	target["wildfire_burn_tick_timer"] = min(float(target.get("wildfire_burn_tick_timer", WILDFIRE_BURN_TICK_INTERVAL)), WILDFIRE_BURN_TICK_INTERVAL)
+	target["wildfire_burn_damage"] = max(float(target.get("wildfire_burn_damage", 0.0)), damage * WILDFIRE_BURN_DAMAGE_RATIO)
+	target["wildfire_burn_source_tower_index"] = towers.find(tower)
 
 
 func _apply_frost_slow(target: Dictionary, level: int) -> void:
@@ -2470,6 +2655,16 @@ func _serialize_enemies() -> Array:
 			"commander": bool(enemy.get("commander", false)),
 			"damage_taken_multiplier": float(enemy.get("damage_taken_multiplier", 1.0)),
 			"regen_scale": float(enemy.get("regen_scale", 0.0)),
+			"poison_stacks": int(enemy.get("poison_stacks", 0)),
+			"poison_timer": float(enemy.get("poison_timer", 0.0)),
+			"poison_tick_timer": float(enemy.get("poison_tick_timer", 0.0)),
+			"poison_damage": float(enemy.get("poison_damage", 0.0)),
+			"poison_regen_multiplier": float(enemy.get("poison_regen_multiplier", 1.0)),
+			"poison_source_tower_index": int(enemy.get("poison_source_tower_index", -1)),
+			"wildfire_burn_timer": float(enemy.get("wildfire_burn_timer", 0.0)),
+			"wildfire_burn_tick_timer": float(enemy.get("wildfire_burn_tick_timer", 0.0)),
+			"wildfire_burn_damage": float(enemy.get("wildfire_burn_damage", 0.0)),
+			"wildfire_burn_source_tower_index": int(enemy.get("wildfire_burn_source_tower_index", -1)),
 			"slow_timer": float(enemy.get("slow_timer", 0.0)),
 			"slow_multiplier": float(enemy.get("slow_multiplier", 1.0)),
 			"death_spawns": int(enemy.get("death_spawns", 0)),
@@ -2509,6 +2704,16 @@ func _enemy_from_state(record: Dictionary) -> Dictionary:
 		"commander": bool(record.get("commander", false)),
 		"damage_taken_multiplier": float(record.get("damage_taken_multiplier", 1.0)),
 		"regen_scale": float(record.get("regen_scale", 0.0)),
+		"poison_stacks": int(record.get("poison_stacks", 0)),
+		"poison_timer": float(record.get("poison_timer", 0.0)),
+		"poison_tick_timer": float(record.get("poison_tick_timer", 0.0)),
+		"poison_damage": float(record.get("poison_damage", 0.0)),
+		"poison_regen_multiplier": float(record.get("poison_regen_multiplier", 1.0)),
+		"poison_source_tower_index": int(record.get("poison_source_tower_index", -1)),
+		"wildfire_burn_timer": float(record.get("wildfire_burn_timer", 0.0)),
+		"wildfire_burn_tick_timer": float(record.get("wildfire_burn_tick_timer", 0.0)),
+		"wildfire_burn_damage": float(record.get("wildfire_burn_damage", 0.0)),
+		"wildfire_burn_source_tower_index": int(record.get("wildfire_burn_source_tower_index", -1)),
 		"slow_timer": float(record.get("slow_timer", 0.0)),
 		"slow_multiplier": float(record.get("slow_multiplier", 1.0)),
 		"death_spawns": int(record.get("death_spawns", 0)),
@@ -3347,6 +3552,19 @@ func _check_enemy_invariants(failures: Array) -> void:
 			failures.append("enemy %s shield_hits exceeds max_shield_hits" % index)
 		_require_nonnegative_float(failures, "enemy %s damage_taken_multiplier" % index, float(enemy.get("damage_taken_multiplier", 1.0)))
 		_require_nonnegative_float(failures, "enemy %s regen_scale" % index, float(enemy.get("regen_scale", 0.0)))
+		_require_nonnegative_int(failures, "enemy %s poison_stacks" % index, int(enemy.get("poison_stacks", 0)))
+		if int(enemy.get("poison_stacks", 0)) > POISON_MAX_STACKS:
+			failures.append("enemy %s poison_stacks exceeds max" % index)
+		_require_nonnegative_float(failures, "enemy %s poison_timer" % index, float(enemy.get("poison_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s poison_tick_timer" % index, float(enemy.get("poison_tick_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s poison_damage" % index, float(enemy.get("poison_damage", 0.0)))
+		var poison_regen_multiplier := float(enemy.get("poison_regen_multiplier", 1.0))
+		_require_nonnegative_float(failures, "enemy %s poison_regen_multiplier" % index, poison_regen_multiplier)
+		if poison_regen_multiplier > 1.0:
+			failures.append("enemy %s poison_regen_multiplier above 1.0" % index)
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_timer" % index, float(enemy.get("wildfire_burn_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_tick_timer" % index, float(enemy.get("wildfire_burn_tick_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_damage" % index, float(enemy.get("wildfire_burn_damage", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s slow_timer" % index, float(enemy.get("slow_timer", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s slow_multiplier" % index, float(enemy.get("slow_multiplier", 1.0)))
 		_require_nonnegative_int(failures, "enemy %s death_spawns" % index, int(enemy.get("death_spawns", 0)))

@@ -92,6 +92,69 @@ func _check_projectile_logic(game: Node, result: Dictionary) -> void:
 	game.update_projectile_for_test(reapply_projectile, 0.02)
 	_record_check(result, "frost_reapply_after_expiry_uses_new_level", is_equal_approx(float(frost_target.get("slow_multiplier", 1.0)), 0.76), {"slow_timer": frost_target.get("slow_timer", 0.0), "slow_multiplier": frost_target.get("slow_multiplier", 1.0)})
 
+	var poison_tower: Dictionary = game.make_test_tower("first", "poison", 2)
+	poison_tower["damage"] = 20.0
+	var poison_target: Dictionary = game.make_test_enemy("poison_target", Vector2(200, 100), 0.0, 200.0)
+	game.enemies = [poison_target]
+	var poison_projectile: Dictionary = game.make_test_projectile(poison_tower, poison_target, Vector2(193, 100))
+	game.update_projectile_for_test(poison_projectile, 0.02)
+	_record_check(result, "poison_projectile_hits", poison_projectile["dead"] == true, {"dead": poison_projectile["dead"]})
+	_record_check(result, "poison_applies_stack", int(poison_target.get("poison_stacks", 0)) == 1, poison_target)
+	_record_check(result, "poison_applies_anti_regen", is_equal_approx(float(poison_target.get("poison_regen_multiplier", 1.0)), 0.5), poison_target)
+	var poison_hp_after_hit: float = float(poison_target["hp"])
+	game.update_enemy_for_test(poison_target, 0.5)
+	_record_check(result, "poison_ticks_damage", float(poison_target["hp"]) < poison_hp_after_hit, {"before": poison_hp_after_hit, "after": poison_target["hp"]})
+	game.update_enemy_for_test(poison_target, 3.1)
+	_record_check(result, "poison_expires_cleanly", int(poison_target.get("poison_stacks", 0)) == 0 and is_equal_approx(float(poison_target.get("poison_regen_multiplier", 1.0)), 1.0), poison_target)
+
+	var plague_tower: Dictionary = game.make_test_tower("first", "poison", 3)
+	plague_tower["damage"] = 20.0
+	plague_tower["selected_branch"] = "plague_mist"
+	var plague_target: Dictionary = game.make_test_enemy("plague_target", Vector2(200, 100), 0.0, 200.0)
+	var plague_near: Dictionary = game.make_test_enemy("plague_near", Vector2(240, 100), 0.0, 200.0)
+	var plague_second: Dictionary = game.make_test_enemy("plague_second", Vector2(200, 145), 0.0, 200.0)
+	var plague_far: Dictionary = game.make_test_enemy("plague_far", Vector2(300, 100), 0.0, 200.0)
+	game.towers = [plague_tower]
+	game.enemies = [plague_target, plague_near, plague_second, plague_far]
+	var plague_projectile: Dictionary = game.make_test_projectile(plague_tower, plague_target, Vector2(193, 100))
+	game.update_projectile_for_test(plague_projectile, 0.02)
+	_record_check(result, "plague_mist_spreads_to_nearby_targets", int(plague_near.get("poison_stacks", 0)) == 1 and int(plague_second.get("poison_stacks", 0)) == 1, {"near": plague_near, "second": plague_second})
+	_record_check(result, "plague_mist_respects_spread_radius", int(plague_far.get("poison_stacks", 0)) == 0, plague_far)
+
+	var venom_tower: Dictionary = game.make_test_tower("first", "poison", 3)
+	venom_tower["damage"] = 20.0
+	venom_tower["selected_branch"] = "venom_cask"
+	var venom_boss: Dictionary = game.make_test_enemy("venom_boss", Vector2(200, 100), 0.0, 200.0)
+	venom_boss["boss"] = true
+	var venom_normal: Dictionary = game.make_test_enemy("venom_normal", Vector2(240, 100), 0.0, 200.0)
+	game.towers = [venom_tower]
+	game.enemies = [venom_boss, venom_normal]
+	var venom_boss_projectile: Dictionary = game.make_test_projectile(venom_tower, venom_boss, Vector2(193, 100))
+	var venom_normal_projectile: Dictionary = game.make_test_projectile(venom_tower, venom_normal, Vector2(233, 100))
+	game.update_projectile_for_test(venom_boss_projectile, 0.02)
+	game.update_projectile_for_test(venom_normal_projectile, 0.02)
+	var boss_hp_after_hit: float = float(venom_boss["hp"])
+	var normal_hp_after_hit: float = float(venom_normal["hp"])
+	game.update_enemy_for_test(venom_boss, 0.5)
+	game.update_enemy_for_test(venom_normal, 0.5)
+	_record_check(result, "venom_cask_scales_boss_poison", (boss_hp_after_hit - float(venom_boss["hp"])) > (normal_hp_after_hit - float(venom_normal["hp"])), {"boss_damage": boss_hp_after_hit - float(venom_boss["hp"]), "normal_damage": normal_hp_after_hit - float(venom_normal["hp"])})
+
+	var wildfire_tower: Dictionary = game.make_test_tower("first", "poison", 3)
+	wildfire_tower["damage"] = 20.0
+	wildfire_tower["selected_branch"] = "wildfire"
+	var wildfire_target: Dictionary = game.make_test_enemy("wildfire_target", Vector2(200, 100), 0.0, 200.0)
+	var wildfire_near: Dictionary = game.make_test_enemy("wildfire_near", Vector2(245, 100), 0.0, 200.0)
+	var wildfire_far: Dictionary = game.make_test_enemy("wildfire_far", Vector2(310, 100), 0.0, 200.0)
+	game.towers = [wildfire_tower]
+	game.enemies = [wildfire_target, wildfire_near, wildfire_far]
+	var wildfire_projectile: Dictionary = game.make_test_projectile(wildfire_tower, wildfire_target, Vector2(193, 100))
+	game.update_projectile_for_test(wildfire_projectile, 0.02)
+	_record_check(result, "wildfire_bloom_ignites_primary", float(wildfire_target.get("wildfire_burn_timer", 0.0)) > 0.0, wildfire_target)
+	_record_check(result, "wildfire_bloom_ignites_nearby_targets", float(wildfire_near.get("wildfire_burn_timer", 0.0)) > 0.0 and is_equal_approx(float(wildfire_far.get("wildfire_burn_timer", 0.0)), 0.0), {"near": wildfire_near, "far": wildfire_far})
+	var wildfire_hp_before_tick: float = float(wildfire_near["hp"])
+	game.update_enemy_for_test(wildfire_near, 0.5)
+	_record_check(result, "wildfire_burn_ticks_damage", float(wildfire_near["hp"]) < wildfire_hp_before_tick, {"before": wildfire_hp_before_tick, "after": wildfire_near["hp"]})
+
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
 	result["checks"].append({

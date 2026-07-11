@@ -85,6 +85,22 @@ func _check_save_load_and_run_state(progress: Node, game: Node, save_path: Strin
 		game.process_step(0.05)
 
 	var run_state: Dictionary = game.serialize_run_state()
+	var poison_enemy: Dictionary = game.create_enemy("normal", 1, Vector2(180, 100), 1)
+	poison_enemy["hp"] = 200.0
+	poison_enemy["max_hp"] = 200.0
+	poison_enemy["poison_stacks"] = 2
+	poison_enemy["poison_timer"] = 2.5
+	poison_enemy["poison_tick_timer"] = 0.25
+	poison_enemy["poison_damage"] = 3.0
+	poison_enemy["poison_regen_multiplier"] = 0.5
+	poison_enemy["poison_source_tower_index"] = 0
+	poison_enemy["wildfire_burn_timer"] = 1.2
+	poison_enemy["wildfire_burn_tick_timer"] = 0.25
+	poison_enemy["wildfire_burn_damage"] = 1.5
+	poison_enemy["wildfire_burn_source_tower_index"] = 0
+	game.enemies = [poison_enemy]
+	run_state = game.serialize_run_state()
+	_record_check(result, "run_state_preserves_poison_fields", int(run_state["enemies"][0].get("poison_stacks", 0)) == 2 and is_equal_approx(float(run_state["enemies"][0].get("poison_damage", 0.0)), 3.0) and is_equal_approx(float(run_state["enemies"][0].get("wildfire_burn_damage", 0.0)), 1.5), run_state["enemies"][0])
 	_record_check(result, "run_state_has_tower", run_state["towers"].size() == 1, run_state)
 	_record_check(result, "temp_save_path_is_new", not FileAccess.file_exists(save_path), save_path)
 	var saved: bool = progress.save_to_path(save_path, run_state, false)
@@ -111,6 +127,7 @@ func _check_save_load_and_run_state(progress: Node, game: Node, save_path: Strin
 	_record_check(result, "restored_money_matches", restored["money"] == original["money"], {"restored": restored, "original": original})
 	_record_check(result, "restored_wave_state_matches", restored["wave_active"] == original["wave_active"] and restored["spawned_this_wave"] == original["spawned_this_wave"], {"restored": restored, "original": original})
 	_record_check(result, "restored_entity_counts_match", restored["tower_count"] == original["tower_count"] and restored["enemy_count"] == original["enemy_count"] and restored["projectile_count"] == original["projectile_count"], {"restored": restored, "original": original})
+	_record_check(result, "restored_poison_fields_match", int(restored_game.enemies[0].get("poison_stacks", 0)) == 2 and is_equal_approx(float(restored_game.enemies[0].get("poison_damage", 0.0)), 3.0) and is_equal_approx(float(restored_game.enemies[0].get("wildfire_burn_damage", 0.0)), 1.5), restored_game.enemies[0])
 	restored_game.process_step(0.05)
 	_record_check(result, "restored_run_survives_process_step", restored_game.snapshot()["lives"] > 0, restored_game.snapshot())
 

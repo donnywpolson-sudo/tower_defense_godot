@@ -32,12 +32,12 @@ release-health certificate and it does not replace current audit artifacts.
 
 1. Resilience validation now snapshots and restores `_internal/current`, so its
    deliberate failure case cannot leave the live audit queue invalidated.
-2. Frost is correctly treated as an enabled slice tower by the simulation
-   harness. The current diagnostic packet recorded 92 Frost placements, 64 by
-   normal bots, and 34 upgrades. Poison, Support, and Garrison remain the only
-   unsupported shop families.
+2. Frost and Poison are correctly treated as enabled slice towers by the
+   simulation harness. Poison's shared toxin-stack DoT is covered by projectile,
+   persistence, shop, and simulation probes. Support and Barracks remain the
+   only unsupported shop families.
 3. Metadata and full scenario-probe validations lock the enabled/unsupported
-   tower contract, including Frost's 18 full branch probes.
+   tower contract, including Poison's three canonical branch probes.
 4. Scheduled boss and commander pressure is now spawned before regular wave
    units. Boss rules apply canonical per-wave modifiers, counters and enemy
    flags persist through save/load, and scenario metrics report spawned counts.
@@ -59,21 +59,23 @@ uses runtime snapshot counters instead of a hard-coded zero count.
 boss/commander spawn gap, but balance conclusions still require an uninterrupted
 clean-baseline run.
 
-### P2 - Port Poison as the next tower family
+### P2 - Port Poison as the next tower family (implemented)
 
-**Why:** Poison is canonical but unavailable in the slice. It adds damage over
+**Why:** Poison was canonical but unavailable in the slice. It adds damage over
 time and a natural tank/boss counterplay role, increasing meaningful build
 choices without duplicating Frost's control role.
 
 **Scope:** Enable Poison in the slice only after it has a distinct damage-over-
 time state, projectile application, runtime-invariant coverage, shop/upgrade
-panel wiring, and focused tests. Do not enable Support or Garrison in the same
+panel wiring, and focused tests. Do not enable Support or Barracks in the same
 change.
 
-**Acceptance:** Poison can be selected, placed, upgraded, saved/restored, and
-its DoT stacks/expiry are covered by targeted projectile and persistence tests.
-The audit harness then moves Poison from unsupported to enabled in a separate
-follow-up change.
+**Acceptance:** Met: Poison can be selected, placed, upgraded, saved/restored,
+and its capped stacks, periodic damage, regeneration suppression, and expiry are
+covered by targeted projectile, persistence, and simulation tests. The branch
+mechanics are also covered: Plague Mist spreads to the two nearest enemies in
+its radius, Venom Cask scales poison ticks against bosses, and Wildfire applies
+short burn blooms to the primary and nearby targets.
 
 ### P3 - Reproduce tank-wave pressure before balance tuning
 
@@ -100,7 +102,7 @@ only if the warning repeats in current output or normal gameplay.
 
 ## Deferred Until Explicitly Scoped
 
-- Support and Garrison tower families.
+- Support and Barracks tower families.
 - Reward-card choices, mutation, mastery, and paragon runtime behavior.
 - Cost/damage/economy tuning from smoke/custom packets.
 - Export, non-Windows platform, localization, and accessibility claims.

@@ -31,8 +31,8 @@ const PROFILE_DEFAULTS := {
 	"overnight": {"runs": OVERNIGHT_RUNS, "max_waves": OVERNIGHT_MAX_WAVES, "seed_count": 12, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "full_research", "full_action_log": false, "compare_previous": true},
 }
 
-const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
-const UNSUPPORTED_TOWER_TYPES := ["poison", "support", "barracks"]
+const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"]
+const UNSUPPORTED_TOWER_TYPES := ["support", "barracks"]
 const DEFAULT_STRATEGIES := ["balanced_builder", "tower_specialist", "upgrade_rusher", "wide_builder", "target_mode_tester", "edge_case_explorer", "speed_stress"]
 const STRATEGY_GROUPS := {
 	"default": DEFAULT_STRATEGIES,
@@ -585,7 +585,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 	var fixture := str(options.get("metadata_fixture", "")).to_lower()
 	var issues: Array = []
 	if fixture == "known_gap":
-		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "poison"}))
+		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "support"}))
 	elif fixture == "balance_empty":
 		pass
 	elif fixture not in ["smoke", "medium", "schema4_previous", "label_only_previous"]:
