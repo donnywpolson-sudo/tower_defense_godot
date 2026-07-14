@@ -4,14 +4,9 @@
 
 ### Runtime And Remote Guards
 
-- Default to `GPT-5.6 Luna` with `High` reasoning for this project.
-- Escalate model and reasoning only when task necessity, complexity, risk, or expected payoff justifies it.
-- Use `GPT-5.6 Terra` at `Medium` or `High` for narrow, routine, low-risk, supporting, or mechanical work.
-- Use `GPT-5.6 Sol` with `High` reasoning for normal substantive repo work, including implementation, design, debugging, validation, and review.
-- Escalate Sol to `Extra High` or `Max` for difficult cross-system work, high-risk changes, unclear failures, or decisions with meaningful project impact.
-- Use `Ultra` only for broad tasks that divide into independent workstreams and justify the extra cost.
-- When the correct tier is unclear, choose the higher-capability model/reasoning level. Do not use Terra for code changes, validation failures, architecture/design decisions, multi-file debugging, balance decisions, repo safety issues, or anything likely to require careful judgment.
-- Before substantive work, briefly state the selected model/reasoning tier or any mismatch if the requested tier is unavailable.
+- Pin this project to `gpt-5.6-luna` with `high` reasoning for both normal and plan modes whenever model and reasoning settings are user-controllable.
+- Do not automatically switch to another model or reasoning level. Only an explicit user request may override this project pin.
+- If the pinned profile is unavailable or the active setting is explicitly shown as different, state the mismatch before substantive work.
 - When multi-agent delegation is available, route only independent bounded subtasks out of the root agent. Keep final synthesis, material decisions, repo safety checks, and approval gates with the root agent.
 - This repository must upload to `https://github.com/donnywpolson-sudo/tower_defense_godot.git`.
 - Do not push to any other remote. If `origin` points elsewhere, stop and ask for explicit approval before changing remotes or pushing.
