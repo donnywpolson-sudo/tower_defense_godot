@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "goal_id": "frost_balance",
+  "objective": "Move the Shatter death-burst ratio from deterministic evidence to a validated canonical balance decision, or stop with a concrete blocker.",
+  "mutation_policy": {
+    "mode": "autonomous_allowlisted",
+    "automatic": true,
+    "allowed_files": ["data/game_data.json"],
+    "allowed_json_paths": ["towers/branch_definitions/frost/shatter/runtime_effects/death_burst_damage_ratio"],
+    "allowed_values": [0.18, 0.16],
+    "forbidden_surfaces": [
+      "scripts/game/vertical_slice_game.gd",
+      "scripts/tools/run_ai_simulation_batch.gd",
+      "scripts/tools/run_split_frost_counterfactual_validation.gd",
+      "scripts/tools/run_split_frost_shatter_ablation_evidence_report.gd",
+      "gameplay code outside the selected Frost data field",
+      "other tower values",
+      "staging, commits, and pushes"
+    ]
+  },
+  "protected_files": [
+    "scripts/game/vertical_slice_game.gd",
+    "scripts/tools/run_ai_simulation_batch.gd",
+    "scripts/tools/run_split_frost_counterfactual_validation.gd",
+    "scripts/tools/run_split_frost_shatter_ablation_evidence_report.gd",
+    "logs/godot/split_frost_broader_paired_replay_2026_07_14.json",
+    "logs/godot/split_frost_candidate_evidence_2026_07_14.json",
+    "logs/godot/split_frost_cost_matched_paired_replay_2026_07_14.json",
+    "logs/godot/split_frost_cost_matched_evidence_2026_07_14.json"
+  ],
+  "stop_policy": {
+    "max_stage_attempts": 1,
+    "terminal_statuses": ["complete", "blocked", "needs_approval"],
+    "fail_closed": true
+  },
+  "stages": [
+    {
+      "id": "ablation_replay",
+      "type": "run_godot",
+      "reuse_if_artifact_exists": true,
+      "artifact": "logs/godot/split_frost_shatter_burst_ablation_2026_07_14.json",
+      "script": "res://scripts/tools/run_split_frost_counterfactual_validation.gd",
+      "arguments": ["--shatter-burst-ratio-ablation"],
+      "log": "logs/godot/pursue_goal/frost_balance/ablation_replay.log",
+      "timeout_seconds": 1800,
+      "expected_token": "SPLIT_FROST_SHATTER_ABLATION_VALIDATION_OK"
+    },
+    {
+      "id": "ablation_evidence_report",
+      "type": "run_godot",
+      "reuse_if_artifact_exists": true,
+      "artifact": "logs/godot/split_frost_shatter_burst_ablation_evidence_2026_07_14.json",
+      "script": "res://scripts/tools/run_split_frost_shatter_ablation_evidence_report.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/frost_balance/ablation_evidence_report.log",
+      "timeout_seconds": 300,
+      "expected_token": "SPLIT_FROST_ABLATION_EVIDENCE_REPORT_GENERATED"
+    },
+    {
+      "id": "candidate_gate",
+      "type": "assert_json",
+      "file": "logs/godot/split_frost_shatter_burst_ablation_evidence_2026_07_14.json",
+      "assertions": [
+        { "path": "evidence_only", "equals": true },
+        { "path": "source_validation_passed", "equals": true },
+        { "path": "case_count", "equals": 96 },
+        { "path": "runtime_invariant_failure_count", "equals": 0 },
+        { "path": "recommendation_status", "equals": "candidate_recommended" },
+        { "path": "recommended_ratio", "in": [0.18, 0.16] },
+        { "path": "arms/0.18/validation_passed", "equals": true },
+        { "path": "arms/0.18/structural_all_passed", "equals": true },
+        { "path": "arms/0.18/candidate_qualifies", "equals": true },
+        { "path": "arms/0.18/raw_gate_passed", "equals": true },
+        { "path": "arms/0.18/normalized_gate_passed", "equals": true },
+        { "path": "arms/0.18/setup_valid_count", "equals": 32 },
+        { "path": "arms/0.18/branch_ready_count", "equals": 16 },
+        { "path": "arms/0.18/cost_control_valid_count", "equals": 8 },
+        { "path": "arms/0.18/determinism_failure_count", "equals": 0 },
+        { "path": "arms/0.18/runtime_invariant_failure_count", "equals": 0 },
+        { "path": "arms/0.18/raw_maps", "contains": "Split Road" },
+        { "path": "arms/0.18/raw_maps", "contains": "Spiral Road" },
+        { "path": "arms/0.18/normalized_excess", "less_than_path": "arms/0.20/normalized_excess" }
+      ]
+    },
+    {
+      "id": "apply_selected_candidate",
+      "type": "mutate_json",
+      "file": "data/game_data.json",
+      "target_path": "towers/branch_definitions/frost/shatter/runtime_effects/death_burst_damage_ratio",
+      "source_file": "logs/godot/split_frost_shatter_burst_ablation_evidence_2026_07_14.json",
+      "source_path": "recommended_ratio",
+      "expected_current_value": 0.2,
+      "allowed_new_values": [0.18, 0.16],
+      "description": "Apply only the selected Shatter death-burst ratio after all evidence gates pass."
+    },
+    {
+      "id": "data_validation",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_data_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/frost_balance/data_validation.log",
+      "timeout_seconds": 300,
+      "expected_token": "DATA_VALIDATION_OK"
+    },
+    {
+      "id": "workflow_contract_validation",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_ai_workflow_contract_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/frost_balance/workflow_contract_validation.log",
+      "timeout_seconds": 900,
+      "expected_token": "AI_WORKFLOW_CONTRACT_VALIDATION_OK"
+    },
+    { "id": "protected_files_unchanged", "type": "protected_hashes" },
+    { "id": "diff_check", "type": "git_diff_check" },
+    { "id": "process_cleanup", "type": "process_clean" }
+  ]
+}

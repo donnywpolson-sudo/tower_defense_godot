@@ -1,0 +1,4281 @@
+{
+	"arms": {
+		"0.16": {
+			"branch_ready_count": 16,
+			"candidate_qualifies": true,
+			"case_count": 32,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.91039623358327,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.91039623358327,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 0,
+					"normalized_excess": 0.0,
+					"normalized_gate_passed": false,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.564895614633035,
+									"left": 6.17718518518518,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -429.503999999998,
+									"left": 5003.52,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.56489561463303,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.564895614633035,
+									"left": 6.17718518518518,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -429.503999999998,
+									"left": 5003.52,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.56489561463303,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.56489561463303,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"cost_control_count": 8,
+			"cost_control_valid_count": 8,
+			"determinism_check_count": 16,
+			"determinism_failure_count": 0,
+			"entries": [
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.910396233583273,
+							"left": 6.89749807407407,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -707.485439999998,
+							"left": 5586.97344,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.91039623358327,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.910396233583273,
+							"left": 6.89749807407407,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -707.485439999998,
+							"left": 5586.97344,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.91039623358327,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.910396233583273,
+							"left": 6.89749807407407,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -707.485439999998,
+							"left": 5586.97344,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.91039623358327,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.910396233583273,
+							"left": 6.89749807407407,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -707.485439999998,
+							"left": 5586.97344,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.91039623358327,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.564895614633035,
+							"left": 6.17718518518518,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -429.503999999998,
+							"left": 5003.52,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.56489561463303,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.564895614633035,
+							"left": 6.17718518518518,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -429.503999999998,
+							"left": 5003.52,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.56489561463303,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.16,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				}
+			],
+			"entry_count": 8,
+			"lower_normalized_excess_than_baseline": true,
+			"normalized_advantage_repeat_count": 6,
+			"normalized_advantage_repeat_total": 6,
+			"normalized_excess": 0.795229360599857,
+			"normalized_gate_passed": true,
+			"paired_comparison_count": 32,
+			"ratio": 0.16,
+			"raw_conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.91039623358327,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.910396233583273,
+									"left": 6.89749807407407,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -707.485439999998,
+									"left": 5586.97344,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.91039623358327,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.91039623358327,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.564895614633035,
+									"left": 6.17718518518518,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -429.503999999998,
+									"left": 5003.52,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.56489561463303,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.564895614633035,
+									"left": 6.17718518518518,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -429.503999999998,
+									"left": 5003.52,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.56489561463303,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.16,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.56489561463303,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"raw_gate_passed": true,
+			"raw_maps": [
+				"Spiral Road",
+				"Split Road"
+			],
+			"runtime_invariant_failure_count": 0,
+			"setup_valid_count": 32,
+			"structural_all_passed": true,
+			"validation_errors": [],
+			"validation_passed": true
+		},
+		"0.18": {
+			"branch_ready_count": 16,
+			"candidate_qualifies": true,
+			"case_count": 32,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.948460036052411,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.948460036052411,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 0,
+					"normalized_excess": 0.0,
+					"normalized_gate_passed": false,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.589665985003406,
+									"left": 6.20195555555556,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -449.567999999998,
+									"left": 5023.584,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.58966598500341,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.589665985003406,
+									"left": 6.20195555555556,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -449.567999999998,
+									"left": 5023.584,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.58966598500341,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.58966598500341,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"cost_control_count": 8,
+			"cost_control_valid_count": 8,
+			"determinism_check_count": 16,
+			"determinism_failure_count": 0,
+			"entries": [
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.948460036052411,
+							"left": 6.93556187654321,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -738.317119999999,
+							"left": 5617.80512,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.948460036052411,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.948460036052411,
+							"left": 6.93556187654321,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -738.317119999999,
+							"left": 5617.80512,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.948460036052411,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.948460036052411,
+							"left": 6.93556187654321,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -738.317119999999,
+							"left": 5617.80512,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.948460036052411,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.948460036052411,
+							"left": 6.93556187654321,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -738.317119999999,
+							"left": 5617.80512,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.948460036052411,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.589665985003406,
+							"left": 6.20195555555556,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -449.567999999998,
+							"left": 5023.584,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.58966598500341,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.589665985003406,
+							"left": 6.20195555555556,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -449.567999999998,
+							"left": 5023.584,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.58966598500341,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.18,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				}
+			],
+			"entry_count": 8,
+			"lower_normalized_excess_than_baseline": true,
+			"normalized_advantage_repeat_count": 6,
+			"normalized_advantage_repeat_total": 6,
+			"normalized_excess": 0.828862019036077,
+			"normalized_gate_passed": true,
+			"paired_comparison_count": 32,
+			"ratio": 0.18,
+			"raw_conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.948460036052411,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.948460036052411,
+									"left": 6.93556187654321,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -738.317119999999,
+									"left": 5617.80512,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.948460036052411,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.948460036052411,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.589665985003406,
+									"left": 6.20195555555556,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -449.567999999998,
+									"left": 5023.584,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.58966598500341,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.589665985003406,
+									"left": 6.20195555555556,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -449.567999999998,
+									"left": 5023.584,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.58966598500341,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.18,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.58966598500341,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"raw_gate_passed": true,
+			"raw_maps": [
+				"Spiral Road",
+				"Split Road"
+			],
+			"runtime_invariant_failure_count": 0,
+			"setup_valid_count": 32,
+			"structural_all_passed": true,
+			"validation_errors": [],
+			"validation_passed": true
+		},
+		"0.20": {
+			"branch_ready_count": 16,
+			"case_count": 32,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.98652383852155,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.98652383852155,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"normalized_gap": -0.0907905173066705,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 0,
+					"normalized_excess": 0.0,
+					"normalized_gate_passed": false,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.61443635537378,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.61443635537378,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.61443635537378,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"cost_control_count": 8,
+			"cost_control_valid_count": 8,
+			"determinism_check_count": 16,
+			"determinism_failure_count": 0,
+			"entries": [
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.986523838521546,
+							"left": 6.97362567901235,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -769.148799999999,
+							"left": 5648.6368,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.98652383852155,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.986523838521546,
+							"left": 6.97362567901235,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -769.148799999999,
+							"left": 5648.6368,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.98652383852155,
+					"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.986523838521546,
+							"left": 6.97362567901235,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -769.148799999999,
+							"left": 5648.6368,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.98652383852155,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Spiral Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.986523838521546,
+							"left": 6.97362567901235,
+							"right": 5.9871018404908
+						},
+						"leaks": {
+							"delta": 1.0,
+							"left": 24.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -1.0,
+							"left": 1.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -769.148799999999,
+							"left": 5648.6368,
+							"right": 4879.488
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.98652383852155,
+					"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "active",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"damage_per_spend": {
+							"delta": 0.0907905173066741,
+							"left": 5.07954567901235,
+							"right": 5.17033619631902
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 25.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 0.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": 99.3920000000007,
+							"left": 4114.432,
+							"right": 4213.824
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": false,
+					"normalized_gap": -0.0907905173066705,
+					"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": false,
+						"direction_key": "0|0|0",
+						"metrics": []
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.614436355373776,
+							"left": 6.22672592592593,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -469.631999999998,
+							"left": 5043.648,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.61443635537378,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 1,
+					"topology_match": true,
+					"wave": 8
+				},
+				{
+					"actual_control_spend": 815,
+					"branch_spend_delta": 5,
+					"build_variant": "mixed",
+					"control_selected_branch": "deadeye",
+					"cost_match_valid": true,
+					"enemy_kind": "normal",
+					"layout": "default",
+					"map": "Split Road",
+					"metrics": {
+						"completed": {
+							"left": true,
+							"right": false,
+							"same": false
+						},
+						"damage_per_spend": {
+							"delta": -0.614436355373776,
+							"left": 6.22672592592593,
+							"right": 5.61228957055215
+						},
+						"leaks": {
+							"delta": 7.0,
+							"left": 18.0,
+							"right": 25.0
+						},
+						"lives": {
+							"delta": -7.0,
+							"left": 7.0,
+							"right": 0.0
+						},
+						"total_damage": {
+							"delta": -469.631999999998,
+							"left": 5043.648,
+							"right": 4574.016
+						},
+						"total_spend": {
+							"delta": 5.0,
+							"left": 810.0,
+							"right": 815.0
+						}
+					},
+					"normalized_advantage": true,
+					"normalized_gap": 0.61443635537378,
+					"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+					"ratio": 0.2,
+					"raw_survival": {
+						"advantage": true,
+						"direction_key": "1|1|1",
+						"metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						]
+					},
+					"repeat": 2,
+					"topology_match": true,
+					"wave": 8
+				}
+			],
+			"entry_count": 8,
+			"normalized_advantage_repeat_count": 6,
+			"normalized_advantage_repeat_total": 6,
+			"normalized_excess": 0.862494677472293,
+			"normalized_gate_passed": true,
+			"paired_comparison_count": 32,
+			"ratio": 0.2,
+			"raw_conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.98652383852155,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.98652383852155,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.98652383852155,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.61443635537378,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_selected_branch": "deadeye",
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"normalized_gap": 0.61443635537378,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"ratio": 0.2,
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_excess": 0.61443635537378,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"wave": 8
+				}
+			],
+			"raw_gate_passed": true,
+			"raw_maps": [
+				"Spiral Road",
+				"Split Road"
+			],
+			"runtime_invariant_failure_count": 0,
+			"setup_valid_count": 32,
+			"structural_all_passed": true,
+			"validation_errors": [],
+			"validation_passed": true
+		}
+	},
+	"baseline_ratio": 0.2,
+	"candidate_ratios": [
+		0.18,
+		0.16
+	],
+	"case_count": 96,
+	"data_edit_authorized": false,
+	"decision": "Evidence-only candidate ranking; no canonical Frost value was changed.",
+	"evidence_only": true,
+	"expected_case_count": 96,
+	"recommendation_reasons": [
+		"Ratio 0.18 is the smallest candidate reduction that preserves the declared Shatter survival gate and lowers normalized excess."
+	],
+	"recommendation_status": "candidate_recommended",
+	"recommended_ratio": 0.18,
+	"report_schema_version": 1,
+	"report_type": "split_frost_shatter_burst_ablation_evidence_only",
+	"runtime_invariant_failure_count": 0,
+	"source_artifact": "res://logs/godot/split_frost_shatter_burst_ablation_2026_07_14.json",
+	"source_validation_errors": [],
+	"source_validation_passed": true,
+	"tuning_authorized": false
+}

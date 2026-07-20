@@ -1,0 +1,3670 @@
+{
+	"candidate_entries": [
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|4|tank|default|mixed|leak_advantage,life_advantage",
+			"enemy_kind": "tank",
+			"family_key": "glacier|Classic Road|4|tank|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 5.04691358024691,
+					"delta": 3.96605345272011,
+					"no_frost": 9.01296703296703,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 28.0,
+					"delta": -28.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": -1.0,
+					"no_frost": 16.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": 1.0,
+					"no_frost": 9.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.34,
+					"delta": 0.66,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 142.0,
+					"delta": -142.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 4088.0,
+					"delta": 12.8999999999969,
+					"no_frost": 4100.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat1",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 1,
+			"wave": 4
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|4|tank|default|mixed|leak_advantage,life_advantage",
+			"enemy_kind": "tank",
+			"family_key": "glacier|Classic Road|4|tank|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 5.04691358024691,
+					"delta": 3.96605345272011,
+					"no_frost": 9.01296703296703,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 28.0,
+					"delta": -28.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": -1.0,
+					"no_frost": 16.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": 1.0,
+					"no_frost": 9.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.34,
+					"delta": 0.66,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 142.0,
+					"delta": -142.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 4088.0,
+					"delta": 12.8999999999969,
+					"no_frost": 4100.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat2",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 2,
+			"wave": 4
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.61234567901235,
+					"delta": 3.98963234296567,
+					"no_frost": 10.601978021978,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 29.0,
+					"delta": -29.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1360.0,
+					"delta": -1360.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": 8.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": -8.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.34,
+					"delta": 0.66,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 128.0,
+					"delta": -128.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5356.0,
+					"delta": -532.100000000002,
+					"no_frost": 4823.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "shatter|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.47192049382716,
+					"delta": 4.13005752815086,
+					"no_frost": 10.601978021978,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1470.1756,
+					"delta": -1470.1756,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": 8.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": -8.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 96.0,
+					"delta": -96.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 123.0,
+					"delta": -123.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5242.2556,
+					"delta": -418.355600000003,
+					"no_frost": 4823.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.61234567901235,
+					"delta": 3.98963234296567,
+					"no_frost": 10.601978021978,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 29.0,
+					"delta": -29.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1360.0,
+					"delta": -1360.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": 8.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": -8.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.34,
+					"delta": 0.66,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 128.0,
+					"delta": -128.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5356.0,
+					"delta": -532.100000000002,
+					"no_frost": 4823.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "shatter|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.47192049382716,
+					"delta": 4.13005752815086,
+					"no_frost": 10.601978021978,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1470.1756,
+					"delta": -1470.1756,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 17.0,
+					"delta": 8.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 8.0,
+					"delta": -8.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 96.0,
+					"delta": -96.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 123.0,
+					"delta": -123.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5242.2556,
+					"delta": -418.355600000003,
+					"no_frost": 4823.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"condition_key": "glacier|Classic Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 7.61358024691358,
+					"delta": 5.39279337946004,
+					"no_frost": 13.0063736263736,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 12.0,
+					"delta": -12.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1240.0,
+					"delta": -1240.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.42,
+					"delta": 0.58,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 24.0,
+					"delta": -24.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 6167.0,
+					"delta": -249.100000000001,
+					"no_frost": 5917.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"condition_key": "glacier|Classic Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 7.61358024691358,
+					"delta": 5.39279337946004,
+					"no_frost": 13.0063736263736,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 12.0,
+					"delta": -12.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1240.0,
+					"delta": -1240.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.42,
+					"delta": 0.58,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 24.0,
+					"delta": -24.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 6167.0,
+					"delta": -249.100000000001,
+					"no_frost": 5917.9,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.91111111111111,
+					"delta": 4.70273504273504,
+					"no_frost": 11.6138461538461,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 14.0,
+					"delta": 11.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 11.0,
+					"delta": -11.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.42,
+					"delta": 0.58,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5598.0,
+					"delta": -313.700000000003,
+					"no_frost": 5284.3,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "shatter|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 7.38907222222222,
+					"delta": 4.22477393162393,
+					"no_frost": 11.6138461538461,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1547.1485,
+					"delta": -1547.1485,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 14.0,
+					"delta": 11.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 11.0,
+					"delta": -11.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5985.1485,
+					"delta": -700.848500000002,
+					"no_frost": 5284.3,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"condition_key": "glacier|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.91111111111111,
+					"delta": 4.70273504273504,
+					"no_frost": 11.6138461538461,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 14.0,
+					"delta": 11.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 11.0,
+					"delta": -11.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.42,
+					"delta": 0.58,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5598.0,
+					"delta": -313.700000000003,
+					"no_frost": 5284.3,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "shatter|Classic Road|9|swarm|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Classic Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 7.38907222222222,
+					"delta": 4.22477393162393,
+					"no_frost": 11.6138461538461,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1547.1485,
+					"delta": -1547.1485,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 14.0,
+					"delta": 11.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 11.0,
+					"delta": -11.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5985.1485,
+					"delta": -700.848500000002,
+					"no_frost": 5284.3,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Split Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Split Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.22672592592593,
+					"delta": 3.68891363451364,
+					"no_frost": 9.91563956043956,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 936.0,
+					"delta": -936.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 18.0,
+					"delta": 7.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 33.0,
+					"delta": -33.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 34.0,
+					"delta": -34.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5043.648,
+					"delta": -532.031999999998,
+					"no_frost": 4511.616,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Split Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Split Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.22672592592593,
+					"delta": 3.68891363451364,
+					"no_frost": 9.91563956043956,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 936.0,
+					"delta": -936.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 18.0,
+					"delta": 7.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 7.0,
+					"delta": -7.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 33.0,
+					"delta": -33.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 34.0,
+					"delta": -34.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5043.648,
+					"delta": -532.031999999998,
+					"no_frost": 4511.616,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 8
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"condition_key": "glacier|Split Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Split Road|9|swarm|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Split Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 7.28024691358025,
+					"delta": 5.69425858092524,
+					"no_frost": 12.9745054945055,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 21.0,
+					"delta": -21.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 16.0,
+					"delta": -3.0,
+					"no_frost": 13.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 9.0,
+					"delta": 3.0,
+					"no_frost": 12.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.26,
+					"delta": 0.74,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 52.0,
+					"delta": -52.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5897.0,
+					"delta": 6.39999999999873,
+					"no_frost": 5903.4,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 1,
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"condition_key": "glacier|Split Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+			"enemy_kind": "swarm",
+			"family_key": "glacier|Split Road|9|swarm|leak_advantage,life_advantage",
+			"layout": "default",
+			"map": "Split Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": true,
+					"same": true
+				},
+				"damage_per_spend": {
+					"branch": 7.28024691358025,
+					"delta": 5.69425858092524,
+					"no_frost": 12.9745054945055,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 21.0,
+					"delta": -21.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1160.0,
+					"delta": -1160.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 16.0,
+					"delta": -3.0,
+					"no_frost": 13.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 9.0,
+					"delta": 3.0,
+					"no_frost": 12.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.0,
+					"delta": 0.0,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.26,
+					"delta": 0.74,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 52.0,
+					"delta": -52.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5897.0,
+					"delta": 6.39999999999873,
+					"no_frost": 5903.4,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat": 2,
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Spiral Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Spiral Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.97362567901235,
+					"delta": 3.75052377153711,
+					"no_frost": 10.7241494505495,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1541.5968,
+					"delta": -1541.5968,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 108.0,
+					"delta": -108.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 134.0,
+					"delta": -134.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5648.6368,
+					"delta": -769.148799999999,
+					"no_frost": 4879.488,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Spiral Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "default",
+			"map": "Spiral Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.97362567901235,
+					"delta": 3.75052377153711,
+					"no_frost": 10.7241494505495,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1541.5968,
+					"delta": -1541.5968,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 108.0,
+					"delta": -108.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 134.0,
+					"delta": -134.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5648.6368,
+					"delta": -769.148799999999,
+					"no_frost": 4879.488,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Spiral Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Spiral Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.97362567901235,
+					"delta": 3.75052377153711,
+					"no_frost": 10.7241494505495,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1541.5968,
+					"delta": -1541.5968,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 108.0,
+					"delta": -108.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 134.0,
+					"delta": -134.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5648.6368,
+					"delta": -769.148799999999,
+					"no_frost": 4879.488,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 1,
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+			"enemy_kind": "normal",
+			"family_key": "shatter|Spiral Road|8|normal|completion_advantage,survival_advantage",
+			"layout": "active",
+			"map": "Spiral Road",
+			"metrics": {
+				"completion": {
+					"branch": true,
+					"delta": null,
+					"no_frost": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"branch": 6.97362567901235,
+					"delta": 3.75052377153711,
+					"no_frost": 10.7241494505495,
+					"same": null
+				},
+				"freeze_observations": {
+					"branch": 0.0,
+					"delta": 0.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"frost_total_damage": {
+					"branch": 1541.5968,
+					"delta": -1541.5968,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"leaks": {
+					"branch": 24.0,
+					"delta": 1.0,
+					"no_frost": 25.0,
+					"same": null
+				},
+				"lives": {
+					"branch": 1.0,
+					"delta": -1.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"max_shatter_vulnerability": {
+					"branch": 1.22,
+					"delta": -0.22,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"min_slow_multiplier": {
+					"branch": 0.5,
+					"delta": 0.5,
+					"no_frost": 1.0,
+					"same": null
+				},
+				"shatter_observations": {
+					"branch": 108.0,
+					"delta": -108.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"slow_observations": {
+					"branch": 134.0,
+					"delta": -134.0,
+					"no_frost": 0.0,
+					"same": null
+				},
+				"total_damage": {
+					"branch": 5648.6368,
+					"delta": -769.148799999999,
+					"no_frost": 4879.488,
+					"same": null
+				},
+				"total_spend": {
+					"branch": 810.0,
+					"delta": -355.0,
+					"no_frost": 455.0,
+					"same": null
+				}
+			},
+			"pair_key": "map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat": 2,
+			"wave": 8
+		}
+	],
+	"condition_families": [
+		{
+			"branch": "glacier",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"condition_count": 1,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"layout": "default",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "tank",
+			"map": "Classic Road",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"wave": 4
+		},
+		{
+			"branch": "glacier",
+			"candidate_count": 4,
+			"classification": "mixed",
+			"condition_count": 2,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"layout": "default",
+					"repeats": 2
+				},
+				{
+					"build_variant": "mixed",
+					"layout": "active",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "swarm",
+			"map": "Classic Road",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"condition_count": 1,
+			"conditions": [
+				{
+					"build_variant": "rotated_lane_priority",
+					"layout": "default",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "swarm",
+			"map": "Classic Road",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"condition_count": 1,
+			"conditions": [
+				{
+					"build_variant": "rotated_lane_priority",
+					"layout": "default",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "swarm",
+			"map": "Split Road",
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"candidate_count": 4,
+			"classification": "mixed",
+			"condition_count": 2,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"layout": "default",
+					"repeats": 2
+				},
+				{
+					"build_variant": "mixed",
+					"layout": "active",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "swarm",
+			"map": "Classic Road",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"candidate_count": 4,
+			"classification": "mixed",
+			"condition_count": 2,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"layout": "default",
+					"repeats": 2
+				},
+				{
+					"build_variant": "mixed",
+					"layout": "active",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "normal",
+			"map": "Spiral Road",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"condition_count": 1,
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"layout": "default",
+					"repeats": 2
+				}
+			],
+			"enemy_kind": "normal",
+			"map": "Split Road",
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"wave": 8
+		}
+	],
+	"coverage": {
+		"all_candidates_represented_exactly_once": true,
+		"candidate_entries": 20,
+		"condition_groups": 10,
+		"expected_candidate_entries": 20,
+		"matched_no_frost_controls": true,
+		"repeat_complete": true,
+		"repeat_complete_condition_groups": 10
+	},
+	"deterministic_frost_tuning_gate": {
+		"branch_results": {
+			"glacier": {
+				"branch": "glacier",
+				"cost_neutral_gate_passed": false,
+				"gate_passed": false,
+				"normalized_rejection_reasons": [
+					"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+				],
+				"pressure_groups": [
+					{
+						"branch": "glacier",
+						"candidate_entry_count": 2,
+						"condition_count": 1,
+						"condition_results": [
+							{
+								"build_variant": "mixed",
+								"condition_key": "glacier|Classic Road|4|tank|default|mixed|leak_advantage,life_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "tank",
+								"layout": "default",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat1",
+									"map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": false,
+								"raw_survival_gate_passed": false,
+								"reasons": [
+									"leak_advantage",
+									"life_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									},
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									}
+								],
+								"survival_metric_entry_count": 0,
+								"wave": 4
+							}
+						],
+						"cost_neutral_gate_passed": false,
+						"enemy_kind": "tank",
+						"gate_passed": false,
+						"normalized_condition_count": 0,
+						"normalized_rejection_reasons": [],
+						"qualifying_build_layout_conditions": [],
+						"qualifying_maps": [],
+						"raw_gate_passed": false,
+						"raw_survival_condition_count": 0,
+						"rejection_reasons": [
+							"A candidate condition has missing or contradictory survival direction across repeats.",
+							"Fewer than two maps support the same enemy-family pressure.",
+							"Fewer than two distinct build/layout conditions support the same enemy-family pressure."
+						]
+					},
+					{
+						"branch": "glacier",
+						"candidate_entry_count": 8,
+						"condition_count": 4,
+						"condition_results": [
+							{
+								"build_variant": "mixed",
+								"condition_key": "glacier|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "default",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat1",
+									"map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 9
+							},
+							{
+								"build_variant": "rotated_lane_priority",
+								"condition_key": "glacier|Classic Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "default",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+									"map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": false,
+								"raw_survival_gate_passed": false,
+								"reasons": [
+									"leak_advantage",
+									"life_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									},
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									}
+								],
+								"survival_metric_entry_count": 0,
+								"wave": 9
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "glacier|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "active",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat1",
+									"map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 9
+							},
+							{
+								"build_variant": "rotated_lane_priority",
+								"condition_key": "glacier|Split Road|9|swarm|default|rotated_lane_priority|leak_advantage,life_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "default",
+								"map": "Split Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+									"map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": false,
+								"raw_survival_gate_passed": false,
+								"reasons": [
+									"leak_advantage",
+									"life_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									},
+									{
+										"advantage": false,
+										"advantage_metrics": [],
+										"direction_key": "0|-1|-1",
+										"directions": {
+											"completion": 0,
+											"leaks": -1,
+											"lives": -1
+										},
+										"disadvantage_metrics": [
+											"lives",
+											"leaks"
+										]
+									}
+								],
+								"survival_metric_entry_count": 0,
+								"wave": 9
+							}
+						],
+						"cost_neutral_gate_passed": false,
+						"enemy_kind": "swarm",
+						"gate_passed": false,
+						"normalized_condition_count": 0,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+						],
+						"qualifying_build_layout_conditions": [
+							"default|mixed",
+							"active|mixed"
+						],
+						"qualifying_maps": [
+							"Classic Road"
+						],
+						"raw_gate_passed": false,
+						"raw_survival_condition_count": 2,
+						"rejection_reasons": [
+							"A candidate condition has missing or contradictory survival direction across repeats.",
+							"Fewer than two maps support the same enemy-family pressure."
+						]
+					}
+				],
+				"qualifying_conditions": [],
+				"qualifying_maps": [],
+				"qualifying_pressure_groups": [],
+				"raw_gate_passed": false,
+				"raw_qualifying_conditions": [],
+				"raw_qualifying_maps": [],
+				"raw_qualifying_pressure_groups": [],
+				"rejection_reasons": [
+					"A candidate condition has missing or contradictory survival direction across repeats.",
+					"Fewer than two maps support the same enemy-family pressure.",
+					"Fewer than two distinct build/layout conditions support the same enemy-family pressure."
+				]
+			},
+			"shatter": {
+				"branch": "shatter",
+				"cost_neutral_gate_passed": false,
+				"gate_passed": false,
+				"normalized_rejection_reasons": [
+					"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+				],
+				"pressure_groups": [
+					{
+						"branch": "shatter",
+						"candidate_entry_count": 4,
+						"condition_count": 2,
+						"condition_results": [
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Classic Road|9|swarm|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "default",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat1",
+									"map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 9
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Classic Road|9|swarm|active|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "swarm",
+								"layout": "active",
+								"map": "Classic Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat1",
+									"map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 9
+							}
+						],
+						"cost_neutral_gate_passed": false,
+						"enemy_kind": "swarm",
+						"gate_passed": false,
+						"normalized_condition_count": 0,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+						],
+						"qualifying_build_layout_conditions": [
+							"default|mixed",
+							"active|mixed"
+						],
+						"qualifying_maps": [
+							"Classic Road"
+						],
+						"raw_gate_passed": false,
+						"raw_survival_condition_count": 2,
+						"rejection_reasons": [
+							"Fewer than two maps support the same enemy-family pressure."
+						]
+					},
+					{
+						"branch": "shatter",
+						"candidate_entry_count": 6,
+						"condition_count": 3,
+						"condition_results": [
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "default",
+								"map": "Split Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+									"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "default",
+								"map": "Spiral Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+									"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "active",
+								"map": "Spiral Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+									"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							}
+						],
+						"cost_neutral_gate_passed": false,
+						"enemy_kind": "normal",
+						"gate_passed": false,
+						"normalized_condition_count": 0,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+						],
+						"qualifying_build_layout_conditions": [
+							"default|mixed",
+							"active|mixed"
+						],
+						"qualifying_maps": [
+							"Split Road",
+							"Spiral Road"
+						],
+						"raw_gate_passed": true,
+						"raw_survival_condition_count": 3,
+						"rejection_reasons": []
+					}
+				],
+				"qualifying_conditions": [],
+				"qualifying_maps": [],
+				"qualifying_pressure_groups": [],
+				"raw_gate_passed": true,
+				"raw_qualifying_conditions": [
+					{
+						"build_variant": "mixed",
+						"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+						"direction_consistent": true,
+						"enemy_kind": "normal",
+						"layout": "default",
+						"map": "Split Road",
+						"normalized_advantage_repeat_count": 0,
+						"normalized_damage_advantage_all_repeats": false,
+						"normalized_damage_advantage_repeat_count": 0,
+						"normalized_gate_passed": false,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage did not hold in every repeat."
+						],
+						"pair_keys": [
+							"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+							"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+						],
+						"raw_gate_passed": true,
+						"raw_survival_gate_passed": true,
+						"reasons": [
+							"completion_advantage",
+							"survival_advantage"
+						],
+						"repeat_complete": true,
+						"repeat_indices": [
+							1,
+							2
+						],
+						"repeat_profiles": [
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							},
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							}
+						],
+						"survival_metric_entry_count": 2,
+						"wave": 8
+					},
+					{
+						"build_variant": "mixed",
+						"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+						"direction_consistent": true,
+						"enemy_kind": "normal",
+						"layout": "default",
+						"map": "Spiral Road",
+						"normalized_advantage_repeat_count": 0,
+						"normalized_damage_advantage_all_repeats": false,
+						"normalized_damage_advantage_repeat_count": 0,
+						"normalized_gate_passed": false,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage did not hold in every repeat."
+						],
+						"pair_keys": [
+							"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+							"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+						],
+						"raw_gate_passed": true,
+						"raw_survival_gate_passed": true,
+						"reasons": [
+							"completion_advantage",
+							"survival_advantage"
+						],
+						"repeat_complete": true,
+						"repeat_indices": [
+							1,
+							2
+						],
+						"repeat_profiles": [
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							},
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							}
+						],
+						"survival_metric_entry_count": 2,
+						"wave": 8
+					},
+					{
+						"build_variant": "mixed",
+						"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+						"direction_consistent": true,
+						"enemy_kind": "normal",
+						"layout": "active",
+						"map": "Spiral Road",
+						"normalized_advantage_repeat_count": 0,
+						"normalized_damage_advantage_all_repeats": false,
+						"normalized_damage_advantage_repeat_count": 0,
+						"normalized_gate_passed": false,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage did not hold in every repeat."
+						],
+						"pair_keys": [
+							"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+							"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2"
+						],
+						"raw_gate_passed": true,
+						"raw_survival_gate_passed": true,
+						"reasons": [
+							"completion_advantage",
+							"survival_advantage"
+						],
+						"repeat_complete": true,
+						"repeat_indices": [
+							1,
+							2
+						],
+						"repeat_profiles": [
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							},
+							{
+								"advantage": true,
+								"advantage_metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								],
+								"direction_key": "1|1|1",
+								"directions": {
+									"completion": 1,
+									"leaks": 1,
+									"lives": 1
+								},
+								"disadvantage_metrics": []
+							}
+						],
+						"survival_metric_entry_count": 2,
+						"wave": 8
+					}
+				],
+				"raw_qualifying_maps": [
+					"Split Road",
+					"Spiral Road"
+				],
+				"raw_qualifying_pressure_groups": [
+					{
+						"branch": "shatter",
+						"candidate_entry_count": 6,
+						"condition_count": 3,
+						"condition_results": [
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "default",
+								"map": "Split Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+									"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "default",
+								"map": "Spiral Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+									"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							},
+							{
+								"build_variant": "mixed",
+								"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+								"direction_consistent": true,
+								"enemy_kind": "normal",
+								"layout": "active",
+								"map": "Spiral Road",
+								"normalized_advantage_repeat_count": 0,
+								"normalized_damage_advantage_all_repeats": false,
+								"normalized_damage_advantage_repeat_count": 0,
+								"normalized_gate_passed": false,
+								"normalized_rejection_reasons": [
+									"Spend-normalized damage advantage did not hold in every repeat."
+								],
+								"pair_keys": [
+									"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+									"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2"
+								],
+								"raw_gate_passed": true,
+								"raw_survival_gate_passed": true,
+								"reasons": [
+									"completion_advantage",
+									"survival_advantage"
+								],
+								"repeat_complete": true,
+								"repeat_indices": [
+									1,
+									2
+								],
+								"repeat_profiles": [
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									},
+									{
+										"advantage": true,
+										"advantage_metrics": [
+											"completion",
+											"lives",
+											"leaks"
+										],
+										"direction_key": "1|1|1",
+										"directions": {
+											"completion": 1,
+											"leaks": 1,
+											"lives": 1
+										},
+										"disadvantage_metrics": []
+									}
+								],
+								"survival_metric_entry_count": 2,
+								"wave": 8
+							}
+						],
+						"cost_neutral_gate_passed": false,
+						"enemy_kind": "normal",
+						"gate_passed": false,
+						"normalized_condition_count": 0,
+						"normalized_rejection_reasons": [
+							"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+						],
+						"qualifying_build_layout_conditions": [
+							"default|mixed",
+							"active|mixed"
+						],
+						"qualifying_maps": [
+							"Split Road",
+							"Spiral Road"
+						],
+						"raw_gate_passed": true,
+						"raw_survival_condition_count": 3,
+						"rejection_reasons": []
+					}
+				],
+				"rejection_reasons": [
+					"Fewer than two maps support the same enemy-family pressure."
+				]
+			}
+		},
+		"cost_neutral_gate_passed": false,
+		"decision_note": "This report emits authorization state only; it never changes Frost values.",
+		"gate_passed": false,
+		"normalized_advantage_repeat_count": 0,
+		"normalized_advantage_repeat_total": 6,
+		"normalized_rejection_reasons": [
+			"Spend-normalized damage advantage failed in one or more required repeats or conditions."
+		],
+		"qualifying_branches": [],
+		"qualifying_conditions": [],
+		"qualifying_maps": [],
+		"raw_gate_passed": true,
+		"raw_qualifying_branches": [
+			"shatter"
+		],
+		"raw_qualifying_conditions": [
+			{
+				"build_variant": "mixed",
+				"condition_key": "shatter|Split Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+				"direction_consistent": true,
+				"enemy_kind": "normal",
+				"layout": "default",
+				"map": "Split Road",
+				"normalized_advantage_repeat_count": 0,
+				"normalized_damage_advantage_all_repeats": false,
+				"normalized_damage_advantage_repeat_count": 0,
+				"normalized_gate_passed": false,
+				"normalized_rejection_reasons": [
+					"Spend-normalized damage advantage did not hold in every repeat."
+				],
+				"pair_keys": [
+					"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+					"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+				],
+				"raw_gate_passed": true,
+				"raw_survival_gate_passed": true,
+				"reasons": [
+					"completion_advantage",
+					"survival_advantage"
+				],
+				"repeat_complete": true,
+				"repeat_indices": [
+					1,
+					2
+				],
+				"repeat_profiles": [
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					},
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					}
+				],
+				"survival_metric_entry_count": 2,
+				"wave": 8
+			},
+			{
+				"build_variant": "mixed",
+				"condition_key": "shatter|Spiral Road|8|normal|default|mixed|completion_advantage,survival_advantage",
+				"direction_consistent": true,
+				"enemy_kind": "normal",
+				"layout": "default",
+				"map": "Spiral Road",
+				"normalized_advantage_repeat_count": 0,
+				"normalized_damage_advantage_all_repeats": false,
+				"normalized_damage_advantage_repeat_count": 0,
+				"normalized_gate_passed": false,
+				"normalized_rejection_reasons": [
+					"Spend-normalized damage advantage did not hold in every repeat."
+				],
+				"pair_keys": [
+					"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+					"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+				],
+				"raw_gate_passed": true,
+				"raw_survival_gate_passed": true,
+				"reasons": [
+					"completion_advantage",
+					"survival_advantage"
+				],
+				"repeat_complete": true,
+				"repeat_indices": [
+					1,
+					2
+				],
+				"repeat_profiles": [
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					},
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					}
+				],
+				"survival_metric_entry_count": 2,
+				"wave": 8
+			},
+			{
+				"build_variant": "mixed",
+				"condition_key": "shatter|Spiral Road|8|normal|active|mixed|completion_advantage,survival_advantage",
+				"direction_consistent": true,
+				"enemy_kind": "normal",
+				"layout": "active",
+				"map": "Spiral Road",
+				"normalized_advantage_repeat_count": 0,
+				"normalized_damage_advantage_all_repeats": false,
+				"normalized_damage_advantage_repeat_count": 0,
+				"normalized_gate_passed": false,
+				"normalized_rejection_reasons": [
+					"Spend-normalized damage advantage did not hold in every repeat."
+				],
+				"pair_keys": [
+					"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+					"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2"
+				],
+				"raw_gate_passed": true,
+				"raw_survival_gate_passed": true,
+				"reasons": [
+					"completion_advantage",
+					"survival_advantage"
+				],
+				"repeat_complete": true,
+				"repeat_indices": [
+					1,
+					2
+				],
+				"repeat_profiles": [
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					},
+					{
+						"advantage": true,
+						"advantage_metrics": [
+							"completion",
+							"lives",
+							"leaks"
+						],
+						"direction_key": "1|1|1",
+						"directions": {
+							"completion": 1,
+							"leaks": 1,
+							"lives": 1
+						},
+						"disadvantage_metrics": []
+					}
+				],
+				"survival_metric_entry_count": 2,
+				"wave": 8
+			}
+		],
+		"raw_qualifying_maps": [
+			"Split Road",
+			"Spiral Road"
+		],
+		"rejection_reasons": [
+			"No raw qualifying branch met the cost-neutral normalized-damage threshold."
+		],
+		"requirements": {
+			"minimum_distinct_build_layout_conditions": 2,
+			"minimum_maps": 2,
+			"normalized_damage_must_pass_every_repeat_and_condition": true,
+			"required_repeats": [
+				1,
+				2
+			],
+			"required_survival_metrics": [
+				"completion",
+				"lives",
+				"leaks"
+			],
+			"spend_normalized_damage_is_gate_threshold": true,
+			"spend_normalized_damage_is_reported": true
+		},
+		"structural_checks": {
+			"all_passed": true,
+			"branch_case_count": 512,
+			"branch_ready_all": true,
+			"branch_ready_count": 512,
+			"case_count": 768,
+			"determinism_check_count": 384,
+			"determinism_failure_count": 0,
+			"deterministic_all_match": true,
+			"matched_controls": true,
+			"rejection_reasons": [],
+			"runtime_clean": true,
+			"runtime_invariant_failure_count": 0,
+			"setup_valid_all": true,
+			"setup_valid_count": 768
+		},
+		"tuning_authorized": false
+	},
+	"evidence_only": true,
+	"report_schema_version": 1,
+	"report_type": "candidate_frost_evidence_only",
+	"signal_groups": [
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"enemy_kind": "tank",
+			"layout": "default",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat1",
+				"map_classic_road_wave_4_default_mixed_glacier_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 4
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "swarm",
+			"layout": "active",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat1",
+				"map_classic_road_wave_9_active_mixed_glacier_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "swarm",
+			"layout": "default",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat1",
+				"map_classic_road_wave_9_default_mixed_glacier_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"enemy_kind": "swarm",
+			"layout": "default",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+				"map_classic_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "glacier",
+			"build_variant": "rotated_lane_priority",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"enemy_kind": "swarm",
+			"layout": "default",
+			"map": "Split Road",
+			"pair_keys": [
+				"map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat1",
+				"map_split_road_wave_9_default_rotated_lane_priority_glacier_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"leak_advantage",
+				"life_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "swarm",
+			"layout": "active",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat1",
+				"map_classic_road_wave_9_active_mixed_shatter_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "swarm",
+			"layout": "default",
+			"map": "Classic Road",
+			"pair_keys": [
+				"map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat1",
+				"map_classic_road_wave_9_default_mixed_shatter_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 9
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "normal",
+			"layout": "active",
+			"map": "Spiral Road",
+			"pair_keys": [
+				"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat1",
+				"map_spiral_road_wave_8_active_mixed_shatter_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "mixed",
+			"enemy_kind": "normal",
+			"layout": "default",
+			"map": "Spiral Road",
+			"pair_keys": [
+				"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+				"map_spiral_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 8
+		},
+		{
+			"branch": "shatter",
+			"build_variant": "mixed",
+			"candidate_count": 2,
+			"classification": "repeated",
+			"enemy_kind": "normal",
+			"layout": "default",
+			"map": "Split Road",
+			"pair_keys": [
+				"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat1",
+				"map_split_road_wave_8_default_mixed_shatter_vs_no_frost_repeat2"
+			],
+			"reasons": [
+				"completion_advantage",
+				"survival_advantage"
+			],
+			"repeat_indices": [
+				1,
+				2
+			],
+			"wave": 8
+		}
+	],
+	"source_artifact": "res://logs/godot/split_frost_broader_paired_replay_2026_07_14.json",
+	"source_schema_version": 3.0,
+	"summary": {
+		"by_branch": {
+			"glacier": 10,
+			"shatter": 10
+		},
+		"by_enemy_kind": {
+			"normal": 6,
+			"swarm": 12,
+			"tank": 2
+		},
+		"by_map": {
+			"Classic Road": 12,
+			"Spiral Road": 4,
+			"Split Road": 4
+		},
+		"by_reason": {
+			"completion_advantage": 14,
+			"leak_advantage": 6,
+			"life_advantage": 6,
+			"survival_advantage": 14
+		},
+		"condition_classifications": {
+			"mixed": 6,
+			"repeated": 4
+		},
+		"isolated_condition_families": 0,
+		"mixed_condition_families": 3
+	},
+	"tuning_authorized": false,
+	"validation_errors": [],
+	"validation_passed": true
+}

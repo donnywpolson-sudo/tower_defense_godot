@@ -78,7 +78,10 @@ func _check_projectile_logic(game: Node, result: Dictionary) -> void:
 	_record_check(result, "frost_applies_damage", frost_target["hp"] == 56.0, {"hp": frost_target["hp"], "expected": 56.0})
 	var frost_state_after_hit := {"slow_timer": frost_target.get("slow_timer", 0.0), "slow_multiplier": frost_target.get("slow_multiplier", 1.0)}
 	_record_check(result, "frost_applies_slow_timer", is_equal_approx(float(frost_state_after_hit["slow_timer"]), 1.55), frost_state_after_hit)
-	_record_check(result, "frost_level_two_slow_multiplier", is_equal_approx(float(frost_state_after_hit["slow_multiplier"]), 0.72), frost_state_after_hit)
+	_record_check(result, "frost_level_two_slow_multiplier", is_equal_approx(float(frost_state_after_hit["slow_multiplier"]), 0.58), frost_state_after_hit)
+	var frost_rehit_projectile: Dictionary = game.make_test_projectile(frost_tower, frost_target, frost_target["position"] + Vector2(-7, 0))
+	game.update_projectile_for_test(frost_rehit_projectile, 0.02)
+	_record_check(result, "frost_rehits_deepen_chill", is_equal_approx(float(frost_target.get("slow_multiplier", 1.0)), 0.54), {"slow_timer": frost_target.get("slow_timer", 0.0), "slow_multiplier": frost_target.get("slow_multiplier", 1.0)})
 	frost_target["speed"] = 62.0
 	var before_position: Vector2 = frost_target["position"]
 	game.update_enemy_for_test(frost_target, 0.50)
@@ -90,7 +93,7 @@ func _check_projectile_logic(game: Node, result: Dictionary) -> void:
 	level_one_frost["damage"] = 0.0
 	var reapply_projectile: Dictionary = game.make_test_projectile(level_one_frost, frost_target, frost_target["position"] + Vector2(-7, 0))
 	game.update_projectile_for_test(reapply_projectile, 0.02)
-	_record_check(result, "frost_reapply_after_expiry_uses_new_level", is_equal_approx(float(frost_target.get("slow_multiplier", 1.0)), 0.76), {"slow_timer": frost_target.get("slow_timer", 0.0), "slow_multiplier": frost_target.get("slow_multiplier", 1.0)})
+	_record_check(result, "frost_reapply_after_expiry_uses_new_level", is_equal_approx(float(frost_target.get("slow_multiplier", 1.0)), 0.62), {"slow_timer": frost_target.get("slow_timer", 0.0), "slow_multiplier": frost_target.get("slow_multiplier", 1.0)})
 
 	var poison_tower: Dictionary = game.make_test_tower("first", "poison", 2)
 	poison_tower["damage"] = 20.0
@@ -157,11 +160,4 @@ func _check_projectile_logic(game: Node, result: Dictionary) -> void:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)

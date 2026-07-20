@@ -17,6 +17,7 @@ Godot is now the canonical project path for runtime code, data loading, validati
 
 - `PLACEHOLDER_SMOKE_OK`
 - `DATA_VALIDATION_OK`
+- `BALANCE_SANITY_VALIDATION_OK`
 - `VERTICAL_SLICE_SMOKE_OK`
 - `TARGETING_VALIDATION_OK`
 - `PROJECTILE_VALIDATION_OK`
@@ -24,14 +25,30 @@ Godot is now the canonical project path for runtime code, data loading, validati
 - `UPGRADE_PANEL_VALIDATION_OK`
 - `ASSET_AUDIO_VALIDATION_OK`
 - `PERSISTENCE_VALIDATION_OK`
+- `SAVE_LOAD_TORTURE_VALIDATION_OK`
+- `DEBUG_COMMANDS_VALIDATION_OK`
+- `DEBUG_OVERLAY_VALIDATION_OK`
+- `GOLDEN_SCENARIO_VALIDATION_OK`
 - `ENEMY_KIND_VALIDATION_OK`
 - `WAVE_SCHEDULE_VALIDATION_OK`
 - `SPEED_WAVE_STRESS_VALIDATION_OK`
 - `INDEPENDENCE_VALIDATION_OK`
 
+The authoritative audit validation matrix is `_ai_audit_workflow/_internal/config.json`.
+Workflow-only validators whose scripts are not part of the tracked project are
+kept outside the matrix and remain local diagnostics until intentionally tracked.
+
 Known non-fatal local warning:
 
 - Godot headless may emit `Failed to read the root certificate store` on this Windows machine.
+
+## Generated Artifact Policy
+
+- `.godot/` contains Godot caches, validation packets, and approved local export outputs. It is ignored and regenerable, but may only be cleared or archived with the editor/game closed and separate explicit approval.
+- Run-scoped audit outputs under `logs/godot/ai_simulation/`, `logs/godot/pursue_goal/`, and `logs/godot/visual_review/generated/` are ignored generated artifacts.
+- Root-level JSON/Markdown evidence under `logs/godot/` remains visible for deliberate review; it is not blanket-ignored or deleted by hygiene work.
+- `_ai_audit_workflow/_internal/current/` is mutable latest-run state, not committed-baseline evidence; its local ignore policy remains in that directory.
+- Source data, scenes, scripts, assets, licenses, manifests, `.uid` sidecars, and `export_presets.cfg` remain protected and are not blanket-ignored or removed.
 
 ## Remaining Gameplay Parity Gaps
 

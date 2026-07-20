@@ -52,6 +52,18 @@ func _initialize() -> void:
 	_record_check(result, "start_wave_advances_to_wave_3", _click_start_wave_button(game), game.snapshot())
 	var wave_three: Dictionary = game.snapshot()
 	_record_check(result, "wave_3_schedule_loaded", wave_three["wave"] == 3 and wave_three["wave_active"] == true and wave_three["spawn_limit"] == 19 and wave_three["enemy_family"] == "fast" and is_equal_approx(float(wave_three["spawn_interval"]), 0.584), wave_three)
+	for _step in range(2600):
+		if game.snapshot().get("wave_complete", false) or game.snapshot().get("game_over", false):
+			break
+		game.process_step(0.05)
+	var wave_three_complete: Dictionary = game.snapshot()
+	var reward_choice: Dictionary = game.reward_card_choice_snapshot()
+	_record_check(result, "wave_3_reward_cards_pending", wave_three_complete["wave_complete"] == true and bool(reward_choice.get("pending", false)), reward_choice)
+	var reward_rects: Array = game.get_reward_card_rects()
+	_record_check(result, "reward_card_buttons_match_choices", reward_rects.size() == reward_choice.get("choices", []).size() and reward_rects.size() > 0, reward_rects)
+	var selected_reward: bool = game.handle_reward_card_click(reward_rects[0]["rect"].get_center()) if not reward_rects.is_empty() else false
+	_record_check(result, "click_reward_card_selects_choice", selected_reward, game.reward_card_choice_snapshot())
+	_record_check(result, "reward_card_selection_clears_pending", not bool(game.reward_card_choice_snapshot().get("pending", true)), game.snapshot())
 	_check_lives_never_go_negative(game, result)
 
 	if result["ok"]:
@@ -67,14 +79,7 @@ func _initialize() -> void:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)
 
 
 func _click_start_wave_button(game: Node) -> bool:

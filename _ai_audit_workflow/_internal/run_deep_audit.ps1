@@ -1,6 +1,6 @@
 param(
-    [ValidateSet('Light', 'Deep')]
-    [string] $Tier = 'Light',
+    [ValidateSet('Light', 'Smoke', 'Medium', 'Deep', 'Overnight')]
+    [string] $Tier = 'Medium',
     [switch] $SkipSimulation,
     [switch] $SkipValidations,
     [switch] $SkipPlayableSurface,
@@ -11,6 +11,7 @@ param(
 
 $repoRoot = Assert-TowerDefenseRepo
 $config = Read-WorkflowConfig
+$Tier = Resolve-AuditTier -Tier $Tier
 $stateDir = Ensure-WorkflowState -Config $config
 $startedAt = Get-Date
 $runId = Get-Date -Format 'yyyy_MM_dd_HHmmss'
@@ -42,7 +43,10 @@ function Add-Finding {
         [string] $Evidence,
         [string] $Action,
         [bool] $EvidenceBacked,
-        [bool] $EligibleForFix
+        [bool] $EligibleForFix,
+        $Reproduction = $null,
+        [string] $RecommendedValidation = 'Run the narrow validator for the affected subsystem and reproduce the exact packet evidence.',
+        [string] $NoCodeChangeIf = 'Do not edit unless the current code reproduces the finding and the targeted validation fails for the same reason.'
     )
     $script:findings.Add([pscustomobject]@{
         id = $Id
@@ -54,6 +58,12 @@ function Add-Finding {
         recommendedAction = $Action
         evidenceBacked = $EvidenceBacked
         eligibleForFix = $EligibleForFix
+        confidence = if ($Classification -eq 'bug' -or $Classification -eq 'validation') { 'high' } else { 'medium' }
+        falsePositiveClass = 'requires deterministic replay'
+        reproduction = $Reproduction
+        recommendedValidation = $RecommendedValidation
+        allowedFiles = @()
+        noCodeChangeIf = $NoCodeChangeIf
         status = 'open'
     })
 }
@@ -65,27 +75,14 @@ function Add-Gap {
 
 function Stop-NewGodotProcesses {
     param([int[]] $PreExistingIds)
-    $current = @(Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.ProcessName -like '*Godot*' })
-    foreach ($process in $current) {
-        if ($PreExistingIds -notcontains [int]$process.Id) {
-            try {
-                Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-            } catch {
-            }
-        }
-    }
-}
-
-function Get-ReportText {
-    $path = Join-Path $repoRoot $config.auditReport
-    if (Test-Path -LiteralPath $path) {
-        return Get-Content -Raw -LiteralPath $path
-    }
-    return ''
+    Write-Host 'Process cleanup: each launched validation/simulation process owns its timeout cleanup; no broad Godot-name matching performed.'
 }
 
 function Test-ValidationPassed {
-    param([Parameter(Mandatory)][string] $Name)
+    param(
+        [Parameter(Mandatory)][string] $Name,
+        [datetime] $FreshAfter = $startedAt
+    )
     foreach ($result in $script:validationResults) {
         if ([string]$result.name -eq $Name -and [string]$result.status -eq 'passed') {
             return $true
@@ -95,7 +92,7 @@ function Test-ValidationPassed {
         if ([string]$validation.name -eq $Name) {
             $logPath = Join-Path $repoRoot ([string]$validation.log)
             $expected = [string]$validation.expected
-            if ((Test-Path -LiteralPath $logPath) -and (Get-Content -Raw -LiteralPath $logPath).Contains($expected)) {
+            if ((Test-Path -LiteralPath $logPath) -and (Test-GodotLogExpectedToken -LogPath $logPath -Expected $expected -FreshAfter $FreshAfter).passed) {
                 return $true
             }
         }
@@ -106,12 +103,13 @@ function Test-ValidationPassed {
 function Test-ValidationLogContains {
     param(
         [Parameter(Mandatory)][string] $Name,
-        [Parameter(Mandatory)][string] $Pattern
+        [Parameter(Mandatory)][string] $Pattern,
+        [datetime] $FreshAfter = $startedAt
     )
     foreach ($validation in $config.validations) {
         if ([string]$validation.name -eq $Name) {
             $logPath = Join-Path $repoRoot ([string]$validation.log)
-            if (-not (Test-Path -LiteralPath $logPath)) {
+            if (-not (Test-Path -LiteralPath $logPath) -or (Get-Item -LiteralPath $logPath).LastWriteTime -lt $FreshAfter) {
                 return $false
             }
             return ((Get-Content -Raw -LiteralPath $logPath) -match $Pattern)
@@ -121,21 +119,38 @@ function Test-ValidationLogContains {
 }
 
 function Add-ReportDerivedFindings {
-    param([string] $ReportText)
-    if ($ReportText.Trim().Length -eq 0) {
-        Add-Gap -Area 'Audit report' -Detail "Root audit report is missing: $($config.auditReport)" -RecommendedEvidence 'Run a bounded audit or restore the report.'
+    param($Packet)
+    if ($null -eq $Packet -or -not $Packet.complete) {
+        Add-Gap -Area 'Audit report' -Detail 'No current packet report was available; the stale root synthesis was intentionally ignored.' -RecommendedEvidence 'Run a fresh audit that produces a complete packet.'
         return
     }
-
-    if (($ReportText -match 'Prompt metadata validator fails' -or $ReportText -match 'AI_PROMPT_METADATA_VALIDATION_FAILED') -and -not (Test-ValidationPassed -Name 'ai_prompt_metadata_validation')) {
-        Add-Finding -Id 'report-prompt-metadata-validator' -Area 'Audit validation' -Score 55 -Title 'Prompt metadata validator/report contract mismatch is recorded in the current audit report' -Classification 'partially proven' -Evidence "$($config.auditReport) records AI_PROMPT_METADATA_VALIDATION_FAILED / prompt metadata label drift." -Action 'Inspect the prompt metadata validator and generated report strings, then fix only the verified contract mismatch.' -EvidenceBacked $true -EligibleForFix $true
+    $json = Read-JsonFileOrNull -Path $Packet.json.FullName
+    if ($null -eq $json) {
+        Add-Gap -Area 'Audit report' -Detail "Current packet JSON could not be parsed: $($Packet.json.FullName)" -RecommendedEvidence 'Run a fresh bounded audit.'
+        return
+    }
+    $issueRows = @($json.issues)
+    $seen = @{}
+    foreach ($issue in $issueRows) {
+        $category = [string](Get-ObjectProperty -Object $issue -Name 'category' -Default '')
+        if ($category.Trim().Length -eq 0) { continue }
+        $label = [string](Get-ObjectProperty -Object $issue -Name 'label' -Default (Get-ObjectProperty -Object $issue -Name 'id' -Default 'issue'))
+        $message = [string](Get-ObjectProperty -Object $issue -Name 'message' -Default 'Packet issue')
+        $dedupeKey = "$category|$label|$message"
+        if ($seen.ContainsKey($dedupeKey)) { continue }
+        $seen[$dedupeKey] = $true
+        $severity = [string](Get-ObjectProperty -Object $issue -Name 'severity' -Default 'info')
+        $score = switch ($severity.ToLowerInvariant()) { 'high' { 95 } 'medium' { 75 } 'low' { 55 } default { 25 } }
+        $safeLabel = (($category + '-' + $label) -replace '[^A-Za-z0-9]+', '-').Trim('-').ToLowerInvariant()
+        $strongEvidence = $category -in @('bug', 'validation')
+        Add-Finding -Id "packet-$($Packet.packetId)-$safeLabel" -Area 'Current packet' -Score $score -Title $message -Classification $category -Evidence "Packet $($Packet.packetId), category=$category, label=$label, severity=$severity. Source: $($Packet.json.FullName)." -Action 'Replay the cited seed/action trace and inspect the current code/data before changing anything. If reproduced, make the smallest scoped fix; otherwise record a no-code-change disposition.' -EvidenceBacked $strongEvidence -EligibleForFix $false -Reproduction (Get-ObjectProperty -Object $issue -Name 'reproduction' -Default $null) -RecommendedValidation (Get-ObjectProperty -Object $issue -Name 'recommended_validation' -Default 'Run the narrow validator for the affected subsystem and reproduce the exact packet evidence.') -NoCodeChangeIf (Get-ObjectProperty -Object $issue -Name 'no_code_change_if' -Default 'Do not edit unless the current code reproduces the finding and the targeted validation fails for the same reason.')
     }
 }
 
 function Add-SimulationDerivedFindings {
     param($Packet)
     if ($null -eq $Packet -or -not $Packet.complete) {
-        Add-Gap -Area 'AI simulation packet' -Detail 'No complete AI simulation packet was available for this workflow state.' -RecommendedEvidence 'Run Light or Deep audit to produce a fresh packet.'
+        Add-Gap -Area 'AI simulation packet' -Detail 'No complete AI simulation packet was available for this workflow state.' -RecommendedEvidence 'Run a fresh configured profile audit to produce a complete packet.'
         return
     }
 
@@ -151,7 +166,7 @@ function Add-SimulationDerivedFindings {
     $validationCount = [int](Get-ObjectProperty -Object $issueCounts -Name 'validation' -Default 0)
     $highSeverity = [int](Get-ObjectProperty -Object $severityCounts -Name 'high' -Default 0)
     if ($bugCount -gt 0 -or $validationCount -gt 0 -or $highSeverity -gt 0) {
-        Add-Finding -Id 'simulation-runtime-or-validation-issues' -Area 'Runtime / validation' -Score 45 -Title 'Latest AI simulation packet reports implementation-relevant issue counts' -Classification 'partially proven' -Evidence "Packet $($Packet.json.FullName) has bug=$bugCount, validation=$validationCount, high severity=$highSeverity." -Action 'Inspect exact issue rows in the latest packet and fix only the smallest verified runtime or validation defect.' -EvidenceBacked $true -EligibleForFix $true
+        Add-Gap -Area 'Packet issue review' -Detail "Current packet $($Packet.packetId) reports bug=$bugCount, validation=$validationCount, high severity=$highSeverity; exact issue rows remain report-only until reproduced." -RecommendedEvidence 'Use the packet seed and action trace/snapshot to reproduce each issue before any code change.'
     }
 }
 
@@ -195,8 +210,9 @@ function Invoke-Validation {
     $args.Add($repoRoot)
     $args.Add('--script')
     $args.Add($scriptPath)
+    $validationStartedAt = Get-Date
     Invoke-RepoProcess -Label "validation $($Validation.name)" -FilePath $config.godotExe -ArgumentList @($args.ToArray()) -WorkingDirectory $repoRoot -TimeoutSeconds 900
-    $token = Test-GodotLogExpectedToken -LogPath $logPath -Expected $expected
+    $token = Test-GodotLogExpectedToken -LogPath $logPath -Expected $expected -FreshAfter $validationStartedAt
     if (-not [bool]$token.passed) {
         throw "Validation $($Validation.name) exited 0 but did not write expected token. $($token.detail)"
     }
@@ -264,6 +280,23 @@ function Invoke-SimulationAttempt {
     }
 }
 
+function Test-ValidationIncludedInTier {
+    param([Parameter(Mandatory)][string] $Name)
+    if ($Tier -ne 'Smoke') {
+        return $true
+    }
+    return $Name -in @(
+        'data_validation',
+        'vertical_slice_smoke',
+        'persistence_validation',
+        'ai_prompt_metadata_validation',
+        'ai_scenario_probe_validation',
+        'ai_probe_replay_validation',
+        'ai_audit_recommendation_validation',
+        'workflow_contract_validation'
+    )
+}
+
 function Update-AggregationAttemptHistory {
     param(
         [Parameter(Mandatory)] $Packet,
@@ -306,85 +339,8 @@ function Invoke-SimulationWithResilience {
         Write-StepSummary -Step "$Tier simulation attempt 2" -Status 'failed' -Detail "exit=$($retry.exitCode), timedOut=$($retry.timedOut), stdout=$($retry.stdoutPath), stderr=$($retry.stderrPath)"
     }
 
-    $fallback = Get-ObjectProperty -Object $simulationConfig -Name 'lightFallback' -Default $null
-    $fallbackEnabled = $Tier -eq 'Light' -and $null -ne $fallback -and [bool](Get-ObjectProperty -Object $fallback -Name 'enabled' -Default $false)
-    if (-not $fallbackEnabled) {
-        $script:simulationMode = 'unrecoverable_failure'
-        throw "$Tier simulation failed after $($retryCount + 1) full-run attempt(s); no chunk fallback is configured. Attempt diagnostics are under logs/godot/ai_simulation/$runId."
-    }
-
-    $chunkCount = [int](Get-ObjectProperty -Object $fallback -Name 'chunkCount' -Default 2)
-    $chunkRuns = [int](Get-ObjectProperty -Object $fallback -Name 'chunkRuns' -Default 120)
-    if ($chunkCount -ne 2 -or $chunkRuns -ne 120) {
-        $script:simulationMode = 'unrecoverable_failure'
-        throw "Light fallback configuration must be exactly two chunks of 120 runs; got chunkCount=$chunkCount, chunkRuns=$chunkRuns."
-    }
-    $chunkArgsBase = @((Get-ObjectProperty -Object $fallback -Name 'args' -Default @()))
-    $chunkJsonPaths = New-Object System.Collections.Generic.List[string]
-    for ($chunkIndex = 0; $chunkIndex -lt $chunkCount; $chunkIndex++) {
-        $chunkStartedAt = Get-Date
-        $chunkArgs = New-Object System.Collections.Generic.List[string]
-        foreach ($argument in $chunkArgsBase) {
-            $chunkArgs.Add([string]$argument)
-        }
-        $chunkArgs.Add("--run-offset=$($chunkIndex * $chunkRuns)")
-        $chunkArgs.Add("--report-label=light_chunk_$($chunkIndex + 1)_$runId")
-        $chunkResult = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments @($chunkArgs.ToArray()) -AttemptLabel ("chunk_{0}" -f ($chunkIndex + 1)) -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
-        $script:simulationAttempts.Add($chunkResult)
-        if (-not $chunkResult.succeeded) {
-            $script:simulationMode = 'unrecoverable_failure'
-            throw "Light simulation chunk $($chunkIndex + 1) failed with exit=$($chunkResult.exitCode), timedOut=$($chunkResult.timedOut). Attempt diagnostics are under logs/godot/ai_simulation/$runId."
-        }
-        $chunkPacket = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $chunkStartedAt
-        if (-not $chunkPacket.complete) {
-            throw "Light simulation chunk $($chunkIndex + 1) completed without a fresh report packet."
-        }
-        $chunkJsonPaths.Add($chunkPacket.json.FullName)
-    }
-
-    $aggregateMetadataPath = Join-Path (Join-Path (Join-Path $repoRoot 'logs\godot\ai_simulation') $runId) 'aggregation_metadata.json'
-    ConvertTo-JsonFile -Value ([pscustomobject]@{
-        mode = 'chunked_fallback'
-        fallback_status = 'completed'
-        chunk_count = $chunkCount
-        chunk_runs = @($chunkRuns, $chunkRuns)
-        source_reports = @($chunkJsonPaths.ToArray())
-        attempt_history = @($script:simulationAttempts.ToArray())
-    }) -Path $aggregateMetadataPath
-    $aggregateStartedAt = Get-Date
-    $aggregateArgs = @(
-        '--test',
-        "--profile=medium",
-        "--runs=$($chunkCount * $chunkRuns)",
-        '--max-waves=6',
-        '--seed-count=5',
-        '--strategy-group=standard_research',
-        '--scenario-probes=auto',
-        '--output-dir=res://.godot/ai_simulation',
-        '--aggregate-metadata-file',
-        $aggregateMetadataPath,
-        "--report-label=light_chunked_fallback_$runId"
-    )
-    $aggregateResult = Invoke-SimulationAttempt -LauncherPath $LauncherPath -Arguments $aggregateArgs -AttemptLabel 'aggregate' -TimeoutSeconds ([int]$TierConfig.timeoutSeconds)
-    $script:simulationAttempts.Add($aggregateResult)
-    ConvertTo-JsonFile -Value ([pscustomobject]@{
-        mode = 'chunked_fallback'
-        fallback_status = if ($aggregateResult.succeeded) { 'completed' } else { 'failed' }
-        chunk_count = $chunkCount
-        chunk_runs = @($chunkRuns, $chunkRuns)
-        source_reports = @($chunkJsonPaths.ToArray())
-        attempt_history = @($script:simulationAttempts.ToArray())
-    }) -Path $aggregateMetadataPath
-    if (-not $aggregateResult.succeeded) {
-        $script:simulationMode = 'unrecoverable_failure'
-        throw "Light chunk aggregation failed with exit=$($aggregateResult.exitCode), timedOut=$($aggregateResult.timedOut)."
-    }
-    $aggregatePacket = Get-LatestSimulationPacket -RepoRoot $repoRoot -Config $config -EarliestWriteTime $aggregateStartedAt
-    if (-not $aggregatePacket.complete) {
-        throw 'Light chunk aggregation completed without a fresh canonical report packet.'
-    }
-    Update-AggregationAttemptHistory -Packet $aggregatePacket -Attempts @($script:simulationAttempts.ToArray())
-    return [pscustomobject]@{ mode = 'chunked_fallback'; packet = $aggregatePacket }
+    $script:simulationMode = 'unrecoverable_failure'
+    throw "$Tier simulation failed after $($retryCount + 1) full-run attempt(s); no fallback or mixed-packet aggregation is permitted. Attempt diagnostics are under logs/godot/ai_simulation/$runId."
 }
 
 function Write-WorkflowState {
@@ -442,9 +398,11 @@ function Write-WorkflowState {
             auditReport = $config.auditReport
             simulationPacket = [pscustomobject]@{
                 complete = if ($null -ne $Packet) { [bool]$Packet.complete } else { $false }
+                packetId = if ($null -ne $Packet) { [string]$Packet.packetId } else { $null }
                 json = if ($null -ne $Packet -and $null -ne $Packet.json) { $Packet.json.FullName } else { $null }
                 report = if ($null -ne $Packet -and $null -ne $Packet.report) { $Packet.report.FullName } else { $null }
                 prompt = if ($null -ne $Packet -and $null -ne $Packet.prompt) { $Packet.prompt.FullName } else { $null }
+                manifest = if ($null -ne $Packet -and $null -ne $Packet.manifest) { $Packet.manifest.FullName } else { $null }
             }
             visualReview = $VisualEvidence
             artifactFreshAfter = $startedAt.ToString('s')
@@ -504,12 +462,10 @@ try {
         if (-not $packet.complete) {
             throw "Simulation completed but did not write a complete fresh packet under $($config.simulationDir)."
         }
-        $simulationCheckStatus = if ($simulationMode -eq 'chunked_fallback') { 'passed with fallback' } elseif ($simulationMode -eq 'recovered_after_retry') { 'recovered after retry' } else { 'passed' }
+        $simulationCheckStatus = if ($simulationMode -eq 'recovered_after_retry') { 'recovered after retry' } else { 'passed' }
         Add-Check -Name 'simulation' -Status $simulationCheckStatus -Detail "${Tier}: $($tierConfig.description); mode=$simulationMode"
-        if ($simulationMode -eq 'chunked_fallback') {
-            Add-Gap -Area 'AI simulation resilience' -Detail 'The full Light process required chunked fallback; the aggregate packet is valid but was not produced by one uninterrupted process.' -RecommendedEvidence 'Repeat a normal Light audit after the process environment is stable.'
-        } elseif ($simulationMode -eq 'recovered_after_retry') {
-            Add-Gap -Area 'AI simulation resilience' -Detail 'The first full Light process failed, but the one permitted retry completed successfully.' -RecommendedEvidence 'Review attempt diagnostics under logs/godot/ai_simulation before treating this as a stable baseline.'
+        if ($simulationMode -eq 'recovered_after_retry') {
+            Add-Gap -Area 'AI simulation resilience' -Detail 'The first configured profile process failed, but the one permitted retry completed successfully.' -RecommendedEvidence 'Review attempt diagnostics under logs/godot/ai_simulation before treating this as a stable baseline.'
         }
         Write-StepSummary -Step "$Tier simulation" -Status $simulationCheckStatus -LogPath $config.playtestLog -Detail "$($tierConfig.description); mode=$simulationMode; attempt artifacts under logs/godot/ai_simulation/$runId"
     }
@@ -519,6 +475,10 @@ try {
         Write-StepSummary -Step 'focused validation matrix' -Status 'skipped' -Detail 'Skipped by parameter.'
     } else {
         foreach ($validation in $config.validations) {
+            if (-not (Test-ValidationIncludedInTier -Name ([string]$validation.name))) {
+                $validationResults.Add([pscustomobject]@{ name = $validation.name; status = 'skipped'; reason = 'profile_excluded'; log = [string]$validation.log; expected = [string]$validation.expected })
+                continue
+            }
             if ($SkipPlayableSurface -and [string]$validation.name -eq 'playable_surface_validation') {
                 $validationResults.Add([pscustomobject]@{ name = $validation.name; status = 'skipped'; log = [string]$validation.log; expected = [string]$validation.expected })
                 continue
@@ -528,8 +488,9 @@ try {
             }
             Invoke-Validation -Validation $validation
         }
-        Add-Check -Name 'focused_validation_matrix' -Status 'passed' -Detail "$($validationResults.Count)/$($config.validations.Count) validation rows recorded"
-        Write-StepSummary -Step 'focused validation matrix' -Status 'passed' -Detail "$($validationResults.Count) validation rows recorded; logs are under logs/godot/"
+        $passedValidationCount = @($validationResults | Where-Object { $_.status -eq 'passed' }).Count
+        Add-Check -Name 'focused_validation_matrix' -Status 'passed' -Detail "$passedValidationCount/$($validationResults.Count) selected validation rows passed; profile=$Tier"
+        Write-StepSummary -Step 'focused validation matrix' -Status 'passed' -Detail "$passedValidationCount selected validations passed; profile=$Tier; logs are under logs/godot/"
     }
 
     Invoke-RepoCommand -Label 'git diff --check' -Command {
@@ -541,8 +502,7 @@ try {
     Stop-NewGodotProcesses -PreExistingIds $preExistingGodotProcessIds
     Add-Check -Name 'post_audit_godot_process_cleanup' -Status 'passed' -Detail 'Stopped any Godot process started by this audit that remained after validations.'
 
-    $reportText = Get-ReportText
-    Add-ReportDerivedFindings -ReportText $reportText
+    Add-ReportDerivedFindings -Packet $packet
     Add-SimulationDerivedFindings -Packet $packet
     $visualEvidence = Get-VisualReviewEvidence -RepoRoot $repoRoot -Config $config -EarliestWriteTime $visualStartedAt
     if ([int]$visualEvidence.count -eq 0) {

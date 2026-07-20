@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "goal_id": "branch_matrix_wave7plus",
+  "objective": "Run a report-only, cost-matched branch matrix across all supported towers and branches through canonical waves 7-20, classify strategic overlap risks, and stop before any mutation.",
+  "mutation_policy": {
+    "mode": "report_only_fail_closed",
+    "automatic": false,
+    "allowed_files": [],
+    "allowed_json_paths": [],
+    "allowed_values": [],
+    "forbidden_surfaces": [
+      "data/game_data.json",
+      "scripts/game/vertical_slice_game.gd",
+      "tower values",
+      "branch values",
+      "enemy or wave schedule values",
+      "staging, commits, and pushes"
+    ]
+  },
+  "protected_files": [
+    "data/game_data.json",
+    "scripts/game/vertical_slice_game.gd",
+    "scripts/tools/run_tower_branch_matrix_validation.gd",
+    "_ai_audit_workflow/goals/branch_matrix_wave7plus.json",
+    "_ai_audit_workflow/_internal/pursue_goal.ps1"
+  ],
+  "stop_policy": {
+    "wall_clock_budget_minutes": 60,
+    "max_stage_attempts": 1,
+    "terminal_statuses": ["complete", "blocked", "needs_approval"],
+    "fail_closed": true
+  },
+  "stages": [
+    {
+      "id": "branch_matrix",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_tower_branch_matrix_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/branch_matrix_wave7plus/branch_matrix.log",
+      "timeout_seconds": 3600,
+      "expected_token": "TOWER_BRANCH_MATRIX_VALIDATION_OK"
+    },
+    {
+      "id": "matrix_gate",
+      "type": "assert_json",
+      "file": "logs/godot/tower_branch_matrix_wave7plus_2026_07_14.json",
+      "assertions": [
+        { "path": "evidence_only", "equals": true },
+        { "path": "no_canonical_mutation", "equals": true },
+        { "path": "mutation_authorized", "equals": false },
+        { "path": "matrix_definition/case_count", "equals": 168 },
+        { "path": "matrix_definition/start_wave", "equals": 7 },
+        { "path": "matrix_definition/end_wave", "equals": 20 },
+        { "path": "gate/all_passed", "equals": true },
+        { "path": "gate/structural_all_passed", "equals": true },
+        { "path": "gate/coverage_all_passed", "equals": true },
+        { "path": "gate/determinism_all_passed", "equals": true },
+        { "path": "gate/actual_case_count", "equals": 168 },
+        { "path": "gate/expected_total_spend", "equals": 1255 },
+        { "path": "gate/observed_tower_count", "equals": 7 },
+        { "path": "gate/observed_branch_count", "equals": 21 },
+        { "path": "gate/observed_map_count", "equals": 4 },
+        { "path": "gate/observed_wave_count", "equals": 14 }
+      ]
+    },
+    {
+      "id": "data_validation",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_data_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/branch_matrix_wave7plus/data_validation.log",
+      "timeout_seconds": 180,
+      "expected_token": "DATA_VALIDATION_OK"
+    },
+    {
+      "id": "workflow_contract_validation",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_ai_workflow_contract_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/branch_matrix_wave7plus/workflow_contract_validation.log",
+      "timeout_seconds": 600,
+      "expected_token": "AI_WORKFLOW_CONTRACT_VALIDATION_OK"
+    },
+    {
+      "id": "recommendation_contract_validation",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_ai_audit_recommendation_validation.gd",
+      "arguments": [],
+      "log": "logs/godot/pursue_goal/branch_matrix_wave7plus/recommendation_contract_validation.log",
+      "timeout_seconds": 300,
+      "expected_token": "AI_AUDIT_RECOMMENDATION_VALIDATION_OK"
+    },
+    { "id": "protected_files_unchanged", "type": "protected_hashes" },
+    { "id": "diff_check", "type": "git_diff_check" },
+    { "id": "process_cleanup", "type": "process_clean" }
+  ]
+}

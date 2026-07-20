@@ -1,9 +1,9 @@
 extends SceneTree
 
 const DEFAULT_REPORT_PATH := "res://_ai_audit_workflow/_internal/TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md"
-const FALLBACK_ARGS := "medium --scenario-probes=auto"
-const FAILED_MEDIUM_ARGS := "medium --runs=260 --max-waves=6 --seed-count=5 --scenario-probes=full --full-action-log=true --compare-previous=false --report-label=diagnostic_ai_exit"
-const WAVE_MISMATCH_ARGS := "medium --runs=120 --max-waves=8 --seed-count=3 --scenario-probes=full --full-action-log=true --compare-previous=false --strategies=balanced_builder,value_upgrader,anti_leak_targeting --report-label=wave_resolution_diagnostic"
+const FALLBACK_ARGS := "--profile=medium --scenario-probes=auto --record=flagged --report-only"
+const FAILED_MEDIUM_ARGS := "--profile=medium --runs=260 --max-waves=6 --seed-count=5 --scenario-probes=full --record=full --compare-previous=false --report-only --report-label=diagnostic_ai_exit"
+const WAVE_MISMATCH_ARGS := "--profile=medium --runs=120 --max-waves=8 --seed-count=3 --scenario-probes=full --record=full --compare-previous=false --report-only --strategies=balanced_builder,value_upgrader,anti_leak_targeting --report-label=wave_resolution_diagnostic"
 const WRAP_WIDTH := 76
 
 

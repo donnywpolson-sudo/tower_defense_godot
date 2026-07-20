@@ -7,12 +7,12 @@ release-health certificate and it does not replace current audit artifacts.
 
 | Item | Current state | Evidence |
 | --- | --- | --- |
-| Audit entrypoint | `.\_ai_audit_workflow\RUN_AUDIT.ps1` dispatches Light/Deep audit and queue generation | `_ai_audit_workflow/RUN_AUDIT.ps1` |
-| Latest workflow state | Pass with gaps; completed through chunked fallback after two interrupted full attempts | `_ai_audit_workflow/_internal/current/status.json` (`runId=2026_07_11_080218`) |
-| Failure cause | The host terminated full Godot attempts with `exit=-1`; both 120-run chunks completed and aggregated | `logs/godot/ai_simulation/2026_07_11_080218/` |
-| Apply queue | Empty and correctly blocked by the dirty-baseline gate | `_ai_audit_workflow/_internal/current/improvement_queue.json` |
-| Current diagnostic packet | Complete Light aggregate: 240 runs, with 122 scheduled and 122 spawned bosses in the special-wave metrics | `.godot/ai_simulation/ai_simulation_data_2026_07_11_0809_2.json` |
-| Diagnostic strength | Full Light evidence, but current-worktree and chunked-fallback caveats remain | `.godot/ai_simulation/ai_simulation_report_2026_07_11_0809_2.md` |
+| Audit entrypoint | `.\_ai_audit_workflow\RUN_AUDIT.ps1` dispatches Light, Smoke, Medium, Deep, and Overnight audit tiers plus queue generation; Light is a Medium compatibility alias | `_ai_audit_workflow/RUN_AUDIT.ps1` |
+| Latest workflow state | Pass with gaps; current authoritative state is dirty-worktree evidence only | `_ai_audit_workflow/_internal/current/status.json` (`runId=2026_07_18_215856`, `status=pass with gaps`) |
+| Failure cause | No workflow failure reported; the current status is `pass with gaps` | `_ai_audit_workflow/_internal/current/status.json` (`failure=`) |
+| Apply queue | Complete review-backed queue with 15 items; 0 evidence-backed and 15 review-backed | `_ai_audit_workflow/_internal/current/improvement_queue.json` (`packetComplete=true`, `count=15`, `evidenceBackedCount=0`, `reviewBackedCount=15`) |
+| Current diagnostic packet | Complete packet `2026_07_18_2043` is the current queue source; no evidence-backed items were recorded | `_ai_audit_workflow/_internal/current/improvement_queue.json` (`sourcePacketId=2026_07_18_2043`, `packetComplete=true`) |
+| Diagnostic strength | Pass with gaps; evidence is from a dirty worktree, and the queue is review-backed rather than evidence-backed | `_ai_audit_workflow/_internal/current/status.json` and `_ai_audit_workflow/_internal/current/improvement_queue.json` |
 
 ## Correlated Artifact Map
 

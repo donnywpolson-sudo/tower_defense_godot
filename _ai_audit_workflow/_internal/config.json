@@ -8,42 +8,64 @@
   "visualReviewDir": "logs\\godot\\visual_review\\generated",
   "playtestLog": "logs\\godot\\godot_ai_simulation.log",
   "scoreThresholdForQueue": 80,
+  "contractVersion": 1,
+  "reportFirstDefault": true,
+  "profileAliases": {
+    "Light": "Medium"
+  },
   "simulationResilience": {
-    "retryCount": 1,
-    "lightFallback": {
-      "enabled": true,
-      "chunkCount": 2,
-      "chunkRuns": 120,
-      "chunkRetryCount": 0,
-      "args": ["--test", "medium", "--runs=120", "--max-waves=6", "--seed-count=5", "--strategy-group=standard_research", "--scenario-probes=off"]
-    }
+    "retryCount": 1
   },
   "tiers": {
-    "Light": {
-      "args": ["--test", "medium", "--runs=240", "--max-waves=6", "--seed-count=5", "--strategy-group=standard_research", "--scenario-probes=auto", "--report-label=light_audit_5min"],
-      "runs": 240,
+    "Smoke": {
+      "args": ["--test", "smoke", "--profile=smoke", "--runs=14", "--max-waves=2", "--seed-count=2", "--strategy-group=default", "--scenario-probes=smoke", "--record=flagged", "--report-only"],
+      "runs": 14,
+      "maxWaves": 2,
+      "seedCount": 2,
+      "comparePrevious": false,
+      "strategyGroup": "default",
+      "estimatedRuntime": "under 1 min",
+      "timeoutSeconds": 300,
+      "description": "bounded smoke audit: 14 runs, 2 waves, targeted probes, report-only"
+    },
+    "Medium": {
+      "args": ["--test", "medium", "--profile=medium", "--runs=420", "--max-waves=6", "--seed-count=5", "--strategy-group=standard_research", "--scenario-probes=auto", "--record=flagged", "--report-only"],
+      "runs": 420,
       "maxWaves": 6,
       "seedCount": 5,
+      "comparePrevious": true,
       "strategyGroup": "standard_research",
-      "estimatedRuntime": "5 min",
-      "timeoutSeconds": 600,
-      "timingBasis": "Measured 60x6 in 91.84s and 120x6 in 151.12s on 2026-07-08; 240x6 estimates near 4m30s simulation plus focused validation overhead.",
-      "description": "timed light audit: 240 runs, 6 waves, 5 seeds, standard research strategies, scenario probes auto"
+      "estimatedRuntime": "bounded",
+      "timeoutSeconds": 1800,
+      "description": "standard diagnostic audit: 420 runs, 6 waves, 5 seeds, report-only"
     },
     "Deep": {
-      "args": ["--test", "deep", "--runs=15000", "--max-waves=20", "--seed-count=8", "--strategy-group=deep_research", "--scenario-probes=auto", "--report-label=deep_audit_10h"],
-      "runs": 15000,
+      "args": ["--test", "deep", "--profile=deep", "--runs=2500", "--max-waves=20", "--seed-count=8", "--strategy-group=deep_research", "--scenario-probes=auto", "--record=flagged", "--report-only"],
+      "runs": 2500,
       "maxWaves": 20,
       "seedCount": 8,
+      "comparePrevious": true,
       "strategyGroup": "deep_research",
-      "estimatedRuntime": "10 hr",
+      "estimatedRuntime": "bounded",
       "timeoutSeconds": 43200,
-      "timingBasis": "Measured 40x20 in 104.60s and 160x20 in 392.34s on 2026-07-08; 15000x20 estimates near 10h simulation plus focused validation overhead.",
-      "description": "timed deep audit: 15,000 runs, 20 waves, 8 seeds, deep research strategies, scenario probes auto"
+      "description": "deep diagnostic audit: 2,500 runs, 20 waves, 8 seeds, report-only"
+    },
+    "Overnight": {
+      "args": ["--test", "overnight", "--profile=overnight", "--runs=6000", "--max-waves=50", "--seed-count=12", "--strategy-group=full_research", "--scenario-probes=full", "--record=flagged", "--report-only"],
+      "runs": 6000,
+      "maxWaves": 50,
+      "seedCount": 12,
+      "comparePrevious": true,
+      "strategyGroup": "full_research",
+      "estimatedRuntime": "bounded",
+      "timeoutSeconds": 86400,
+      "description": "overnight diagnostic audit: 6,000 runs, 50 waves, 12 seeds, report-only"
     }
   },
   "validations": [
+    { "name": "placeholder_smoke", "script": "res://scripts/tools/run_placeholder_smoke.gd", "log": "logs/godot/godot_smoke.log", "expected": "PLACEHOLDER_SMOKE_OK", "headless": true },
     { "name": "data_validation", "script": "res://scripts/tools/run_data_validation.gd", "log": "logs/godot/godot_data_validation.log", "expected": "DATA_VALIDATION_OK", "headless": true },
+    { "name": "balance_sanity_validation", "script": "res://scripts/tools/run_balance_sanity_validation.gd", "log": "logs/godot/godot_balance_sanity.log", "expected": "BALANCE_SANITY_VALIDATION_OK", "headless": true },
     { "name": "vertical_slice_smoke", "script": "res://scripts/tools/run_vertical_slice_smoke.gd", "log": "logs/godot/godot_vertical_slice.log", "expected": "VERTICAL_SLICE_SMOKE_OK", "headless": true },
     { "name": "targeting_validation", "script": "res://scripts/tools/run_targeting_validation.gd", "log": "logs/godot/godot_targeting.log", "expected": "TARGETING_VALIDATION_OK", "headless": true },
     { "name": "projectile_validation", "script": "res://scripts/tools/run_projectile_validation.gd", "log": "logs/godot/godot_projectile.log", "expected": "PROJECTILE_VALIDATION_OK", "headless": true },
@@ -51,6 +73,10 @@
     { "name": "upgrade_panel_validation", "script": "res://scripts/tools/run_upgrade_panel_validation.gd", "log": "logs/godot/godot_upgrade_panel.log", "expected": "UPGRADE_PANEL_VALIDATION_OK", "headless": true },
     { "name": "asset_audio_validation", "script": "res://scripts/tools/run_asset_audio_validation.gd", "log": "logs/godot/godot_asset_audio.log", "expected": "ASSET_AUDIO_VALIDATION_OK", "headless": true },
     { "name": "persistence_validation", "script": "res://scripts/tools/run_persistence_validation.gd", "log": "logs/godot/godot_persistence.log", "expected": "PERSISTENCE_VALIDATION_OK", "headless": true },
+    { "name": "save_load_torture_validation", "script": "res://scripts/tools/run_save_load_torture_validation.gd", "log": "logs/godot/godot_save_load_torture.log", "expected": "SAVE_LOAD_TORTURE_VALIDATION_OK", "headless": true },
+    { "name": "debug_commands_validation", "script": "res://scripts/tools/run_debug_commands_validation.gd", "log": "logs/godot/godot_debug_commands.log", "expected": "DEBUG_COMMANDS_VALIDATION_OK", "headless": true },
+    { "name": "debug_overlay_validation", "script": "res://scripts/tools/run_debug_overlay_validation.gd", "log": "logs/godot/godot_debug_overlay.log", "expected": "DEBUG_OVERLAY_VALIDATION_OK", "headless": true },
+    { "name": "golden_scenario_validation", "script": "res://scripts/tools/run_golden_scenario_validation.gd", "log": "logs/godot/godot_golden_scenario.log", "expected": "GOLDEN_SCENARIO_VALIDATION_OK", "headless": true },
     { "name": "enemy_kind_validation", "script": "res://scripts/tools/run_enemy_kind_validation.gd", "log": "logs/godot/godot_enemy_kind.log", "expected": "ENEMY_KIND_VALIDATION_OK", "headless": true },
     { "name": "wave_schedule_validation", "script": "res://scripts/tools/run_wave_schedule_validation.gd", "log": "logs/godot/godot_wave_schedule.log", "expected": "WAVE_SCHEDULE_VALIDATION_OK", "headless": true },
     { "name": "speed_wave_stress_validation", "script": "res://scripts/tools/run_speed_wave_stress_validation.gd", "log": "logs/godot/godot_speed_wave_stress.log", "expected": "SPEED_WAVE_STRESS_VALIDATION_OK", "headless": true },

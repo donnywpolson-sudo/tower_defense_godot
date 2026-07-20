@@ -1,0 +1,2948 @@
+{
+	"action_contract": {
+		"game_speed": 4.0,
+		"placement_policy": "same deterministic candidate-site scan for every map/case",
+		"setup_lives": 25,
+		"setup_money": 5000,
+		"tower_upgrade_policy": "only frost is upgraded to level 4 in branch cases; branch selected at level 2"
+	},
+	"branch_probe": {
+		"glacier": {
+			"freeze_timer": 0.36,
+			"frozen_position_delta": 0.0,
+			"slow_multiplier": 0.42
+		},
+		"shatter": {
+			"burst_damage": 40.0,
+			"followup_damage": 12.6,
+			"shatter_timer": 1.5,
+			"slow_multiplier": 0.5,
+			"vulnerability_multiplier": 1.26
+		}
+	},
+	"cases": [
+		{
+			"branch_id_requested": "glacier",
+			"branch_selection_succeeded": true,
+			"case_id": "classic_glacier",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 69,
+			"declared_lane_count": 1,
+			"declared_path_count": 1,
+			"freeze_observations": 21,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 0,
+			"map_name": "Classic Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 0.42,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						324.0,
+						540.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						162.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						486.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 8,
+			"runtime_path_points": [
+				[
+					0.0,
+					297.0
+				],
+				[
+					189.0,
+					297.0
+				],
+				[
+					189.0,
+					135.0
+				],
+				[
+					432.0,
+					135.0
+				],
+				[
+					432.0,
+					432.0
+				],
+				[
+					702.0,
+					432.0
+				],
+				[
+					702.0,
+					216.0
+				],
+				[
+					900.0,
+					216.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 94,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1116.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 4,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 1040.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1120.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 10,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 594.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "shatter",
+			"branch_selection_succeeded": true,
+			"case_id": "classic_shatter",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 58,
+			"declared_lane_count": 1,
+			"declared_path_count": 1,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 0,
+			"map_name": "Classic Road",
+			"max_shatter_vulnerability": 1.22,
+			"min_slow_multiplier": 0.5,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						324.0,
+						540.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						162.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						486.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 8,
+			"runtime_path_points": [
+				[
+					0.0,
+					297.0
+				],
+				[
+					189.0,
+					297.0
+				],
+				[
+					189.0,
+					135.0
+				],
+				[
+					432.0,
+					135.0
+				],
+				[
+					432.0,
+					432.0
+				],
+				[
+					702.0,
+					432.0
+				],
+				[
+					702.0,
+					216.0
+				],
+				[
+					900.0,
+					216.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 42,
+			"slow_observations": 42,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1116.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 4,
+					"level": 4,
+					"selected_branch": "shatter",
+					"total_damage": 1560.7302,
+					"type": "frost"
+				},
+				{
+					"kills": 24,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1040.64,
+					"type": "tesla"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "",
+			"branch_selection_succeeded": false,
+			"case_id": "classic_no_frost",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 72,
+			"declared_lane_count": 1,
+			"declared_path_count": 1,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 0,
+			"map_name": "Classic Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 1.0,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						324.0,
+						540.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						162.0
+					],
+					"tower_type": "poison"
+				},
+				{
+					"placed": true,
+					"site": [
+						486.0,
+						486.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 8,
+			"runtime_path_points": [
+				[
+					0.0,
+					297.0
+				],
+				[
+					189.0,
+					297.0
+				],
+				[
+					189.0,
+					135.0
+				],
+				[
+					432.0,
+					135.0
+				],
+				[
+					432.0,
+					432.0
+				],
+				[
+					702.0,
+					432.0
+				],
+				[
+					702.0,
+					216.0
+				],
+				[
+					900.0,
+					216.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 0,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1116.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 1,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 794.199999999997,
+					"type": "poison"
+				},
+				{
+					"kills": 10,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1088.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 17,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "glacier",
+			"branch_selection_succeeded": true,
+			"case_id": "split_glacier",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 54,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 27,
+			"leaks": 1,
+			"lives": 24,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 1.0,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						378.0,
+						405.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 0,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "shatter",
+			"branch_selection_succeeded": true,
+			"case_id": "split_shatter",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 54,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 27,
+			"leaks": 1,
+			"lives": 24,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 1.0,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						378.0,
+						405.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 0,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "shatter",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "",
+			"branch_selection_succeeded": false,
+			"case_id": "split_no_frost",
+			"completed": true,
+			"control_site_override": [],
+			"cycles_to_resolution": 54,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [],
+			"game_over": false,
+			"kills": 27,
+			"leaks": 1,
+			"lives": 24,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 1.0,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "poison"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						378.0,
+						405.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 0,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "poison"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "glacier",
+			"branch_selection_succeeded": true,
+			"case_id": "split_glacier_active",
+			"completed": true,
+			"control_site_override": [
+				756.0,
+				405.0
+			],
+			"cycles_to_resolution": 57,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 8,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 0.34,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						756.0,
+						405.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 11,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 520.0,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "shatter",
+			"branch_selection_succeeded": true,
+			"case_id": "split_shatter_active",
+			"completed": true,
+			"control_site_override": [
+				756.0,
+				405.0
+			],
+			"cycles_to_resolution": 57,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.22,
+			"min_slow_multiplier": 0.5,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						756.0,
+						405.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 9,
+			"slow_observations": 9,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "shatter",
+					"total_damage": 572.8,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "",
+			"branch_selection_succeeded": false,
+			"case_id": "split_no_frost_active",
+			"completed": true,
+			"control_site_override": [
+				756.0,
+				405.0
+			],
+			"cycles_to_resolution": 57,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 0,
+			"frost_upgrade_results": [],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 1.0,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						756.0,
+						405.0
+					],
+					"tower_type": "poison"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 0,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 271.7,
+					"type": "poison"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		{
+			"branch_id_requested": "glacier",
+			"branch_selection_succeeded": true,
+			"case_id": "split_glacier_repeat",
+			"completed": true,
+			"control_site_override": [
+				756.0,
+				405.0
+			],
+			"cycles_to_resolution": 57,
+			"declared_lane_count": 2,
+			"declared_path_count": 2,
+			"freeze_observations": 8,
+			"frost_upgrade_results": [
+				true,
+				true,
+				true
+			],
+			"game_over": false,
+			"kills": 28,
+			"leaks": 0,
+			"lives": 25,
+			"map_index": 1,
+			"map_name": "Split Road",
+			"max_shatter_vulnerability": 1.0,
+			"min_slow_multiplier": 0.34,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						108.0
+					],
+					"tower_type": "archer"
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						540.0
+					],
+					"tower_type": "machine_gun"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						108.0
+					],
+					"tower_type": "cannon"
+				},
+				{
+					"placed": true,
+					"site": [
+						756.0,
+						405.0
+					],
+					"tower_type": "frost"
+				},
+				{
+					"placed": true,
+					"site": [
+						702.0,
+						540.0
+					],
+					"tower_type": "tesla"
+				},
+				{
+					"placed": true,
+					"site": [
+						243.0,
+						351.0
+					],
+					"tower_type": "sniper"
+				}
+			],
+			"runtime_invariant_failures": [],
+			"runtime_path_point_count": 6,
+			"runtime_path_points": [
+				[
+					0.0,
+					190.0
+				],
+				[
+					210.0,
+					190.0
+				],
+				[
+					210.0,
+					95.0
+				],
+				[
+					520.0,
+					95.0
+				],
+				[
+					520.0,
+					285.0
+				],
+				[
+					900.0,
+					285.0
+				]
+			],
+			"setup_valid": true,
+			"shatter_observations": 0,
+			"slow_observations": 11,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 520.0,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		}
+	],
+	"findings": [
+		{
+			"confidence": "high",
+			"current_code_location": "scripts/game/vertical_slice_game.gd:104-148 (lane-aware path loading and round-robin assignment)",
+			"evidence": {
+				"classic_runtime_path_point_count": 8,
+				"lane_probe": {
+					"declared_lane_count": 2,
+					"declared_path_count": 2,
+					"lane_counts": {
+						"0": 14,
+						"1": 14
+					},
+					"lane_indices": [
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1
+					],
+					"lane_start_points": {
+						"0": [
+							0.0,
+							190.0
+						],
+						"1": [
+							0.0,
+							405.0
+						]
+					},
+					"map_name": "Split Road",
+					"moved_lanes": {
+						"0": true,
+						"1": true
+					},
+					"restore_ok": true,
+					"restored_lane_indices": [
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1,
+						0,
+						1
+					],
+					"runtime_lane_count": 2,
+					"runtime_path_point_counts": [
+						6,
+						6
+					],
+					"spawn_summary": {
+						"enemy_kind": "fast",
+						"game_data_boss_count": 0,
+						"game_data_commander_count": 0,
+						"kind_counts": {
+							"fast": 28
+						},
+						"modifier": "",
+						"modifier_label": "",
+						"spawn_interval": 0.548,
+						"spawn_limit": 28,
+						"spawned_boss_count": 0,
+						"spawned_commander_count": 0,
+						"spawned_count": 28,
+						"wave": 6
+					}
+				},
+				"split_case": "split_glacier_active"
+			},
+			"false_positive_class": "none",
+			"finding_id": "split_two_lane_runtime_resolver_verified",
+			"lane": "validation",
+			"no_code_change_if": "Do not change Split Road balance until both lanes are covered by the broader placement and strategy matrix.",
+			"recommended_validation": "Keep the two-lane spawn, movement, and save/restore probe in the focused validator.",
+			"severity": "info",
+			"subject": "Split Road path fidelity"
+		},
+		{
+			"confidence": "high",
+			"current_code_location": "scripts/game/vertical_slice_game.gd:2205-2325 (data-driven Glacier freeze and Shatter vulnerability/burst dispatch)",
+			"evidence": {
+				"branch_selection_succeeded": true,
+				"comparison": {
+					"deltas": {
+						"completed": {
+							"left": true,
+							"right": true,
+							"same": true
+						},
+						"frost_total_damage": {
+							"delta": 52.8,
+							"left": 520.0,
+							"right": 572.8
+						},
+						"game_over": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"kills": {
+							"delta": 0.0,
+							"left": 28,
+							"right": 28
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 0,
+							"right": 0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 25,
+							"right": 25
+						},
+						"min_slow_multiplier": {
+							"delta": 0.16,
+							"left": 0.34,
+							"right": 0.5
+						},
+						"slow_observations": {
+							"delta": -2.0,
+							"left": 11,
+							"right": 9
+						},
+						"spawned": {
+							"delta": 0.0,
+							"left": 28,
+							"right": 28
+						}
+					},
+					"left_case": "split_glacier_active",
+					"left_map": "Split Road",
+					"left_towers": [
+						{
+							"kills": 7,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1152.0,
+							"type": "archer"
+						},
+						{
+							"kills": 2,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 840.0,
+							"type": "machine_gun"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "cannon"
+						},
+						{
+							"kills": 7,
+							"level": 4,
+							"selected_branch": "glacier",
+							"total_damage": 520.0,
+							"type": "frost"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "tesla"
+						},
+						{
+							"kills": 12,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1134.0,
+							"type": "sniper"
+						}
+					],
+					"right_case": "split_shatter_active",
+					"right_map": "Split Road",
+					"right_towers": [
+						{
+							"kills": 7,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1152.0,
+							"type": "archer"
+						},
+						{
+							"kills": 2,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 840.0,
+							"type": "machine_gun"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "cannon"
+						},
+						{
+							"kills": 7,
+							"level": 4,
+							"selected_branch": "shatter",
+							"total_damage": 572.8,
+							"type": "frost"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "tesla"
+						},
+						{
+							"kills": 12,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1134.0,
+							"type": "sniper"
+						}
+					]
+				},
+				"glacier_branch_probe": {
+					"freeze_timer": 0.36,
+					"frozen_position_delta": 0.0,
+					"slow_multiplier": 0.42
+				},
+				"glacier_vs_no_frost": {
+					"deltas": {
+						"completed": {
+							"left": true,
+							"right": true,
+							"same": true
+						},
+						"frost_total_damage": {
+							"delta": -520.0,
+							"left": 520.0,
+							"right": 0.0
+						},
+						"game_over": {
+							"left": false,
+							"right": false,
+							"same": true
+						},
+						"kills": {
+							"delta": 0.0,
+							"left": 28,
+							"right": 28
+						},
+						"leaks": {
+							"delta": 0.0,
+							"left": 0,
+							"right": 0
+						},
+						"lives": {
+							"delta": 0.0,
+							"left": 25,
+							"right": 25
+						},
+						"min_slow_multiplier": {
+							"delta": 0.66,
+							"left": 0.34,
+							"right": 1.0
+						},
+						"slow_observations": {
+							"delta": -11.0,
+							"left": 11,
+							"right": 0
+						},
+						"spawned": {
+							"delta": 0.0,
+							"left": 28,
+							"right": 28
+						}
+					},
+					"left_case": "split_glacier_active",
+					"left_map": "Split Road",
+					"left_towers": [
+						{
+							"kills": 7,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1152.0,
+							"type": "archer"
+						},
+						{
+							"kills": 2,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 840.0,
+							"type": "machine_gun"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "cannon"
+						},
+						{
+							"kills": 7,
+							"level": 4,
+							"selected_branch": "glacier",
+							"total_damage": 520.0,
+							"type": "frost"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "tesla"
+						},
+						{
+							"kills": 12,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1134.0,
+							"type": "sniper"
+						}
+					],
+					"right_case": "split_no_frost_active",
+					"right_map": "Split Road",
+					"right_towers": [
+						{
+							"kills": 7,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1152.0,
+							"type": "archer"
+						},
+						{
+							"kills": 2,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 840.0,
+							"type": "machine_gun"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "cannon"
+						},
+						{
+							"kills": 7,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 271.7,
+							"type": "poison"
+						},
+						{
+							"kills": 0,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 0.0,
+							"type": "tesla"
+						},
+						{
+							"kills": 12,
+							"level": 1,
+							"selected_branch": "",
+							"total_damage": 1134.0,
+							"type": "sniper"
+						}
+					]
+				},
+				"paired_cases": [
+					"split_active_glacier_vs_shatter"
+				],
+				"shatter_branch_probe": {
+					"burst_damage": 40.0,
+					"followup_damage": 12.6,
+					"shatter_timer": 1.5,
+					"slow_multiplier": 0.5,
+					"vulnerability_multiplier": 1.26
+				}
+			},
+			"false_positive_class": "none",
+			"finding_id": "glacier_and_shatter_runtime_effects_verified",
+			"lane": "validation",
+			"no_code_change_if": "Do not rebalance either branch until broader map, enemy-kind, and build-diversity runs measure control uptime and burst value.",
+			"recommended_validation": "Keep the direct branch probe and active-path paired matrix in the focused validator.",
+			"severity": "info",
+			"subject": "Frost branch counterplay"
+		}
+	],
+	"lane_probe": {
+		"declared_lane_count": 2,
+		"declared_path_count": 2,
+		"lane_counts": {
+			"0": 14,
+			"1": 14
+		},
+		"lane_indices": [
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1
+		],
+		"lane_start_points": {
+			"0": [
+				0.0,
+				190.0
+			],
+			"1": [
+				0.0,
+				405.0
+			]
+		},
+		"map_name": "Split Road",
+		"moved_lanes": {
+			"0": true,
+			"1": true
+		},
+		"restore_ok": true,
+		"restored_lane_indices": [
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1,
+			0,
+			1
+		],
+		"runtime_lane_count": 2,
+		"runtime_path_point_counts": [
+			6,
+			6
+		],
+		"spawn_summary": {
+			"enemy_kind": "fast",
+			"game_data_boss_count": 0,
+			"game_data_commander_count": 0,
+			"kind_counts": {
+				"fast": 28
+			},
+			"modifier": "",
+			"modifier_label": "",
+			"spawn_interval": 0.548,
+			"spawn_limit": 28,
+			"spawned_boss_count": 0,
+			"spawned_commander_count": 0,
+			"spawned_count": 28,
+			"wave": 6
+		}
+	},
+	"paired_comparisons": {
+		"classic_vs_split_glacier": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": -1040.0,
+					"left": 1040.0,
+					"right": 0.0
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": -1.0,
+					"left": 28,
+					"right": 27
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 0,
+					"right": 1
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 25,
+					"right": 24
+				},
+				"min_slow_multiplier": {
+					"delta": 0.58,
+					"left": 0.42,
+					"right": 1.0
+				},
+				"slow_observations": {
+					"delta": -94.0,
+					"left": 94,
+					"right": 0
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "classic_glacier",
+			"left_map": "Classic Road",
+			"left_towers": [
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1116.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 4,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 1040.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1120.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 10,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 594.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_glacier",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		"classic_vs_split_no_frost": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": -1.0,
+					"left": 28,
+					"right": 27
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 0,
+					"right": 1
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 25,
+					"right": 24
+				},
+				"min_slow_multiplier": {
+					"delta": 0.0,
+					"left": 1.0,
+					"right": 1.0
+				},
+				"slow_observations": {
+					"delta": 0.0,
+					"left": 0,
+					"right": 0
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "classic_no_frost",
+			"left_map": "Classic Road",
+			"left_towers": [
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1116.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 1,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 794.199999999997,
+					"type": "poison"
+				},
+				{
+					"kills": 10,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1088.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 17,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_no_frost",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "poison"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		},
+		"split_active_glacier_vs_no_frost": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": -520.0,
+					"left": 520.0,
+					"right": 0.0
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 0,
+					"right": 0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 25,
+					"right": 25
+				},
+				"min_slow_multiplier": {
+					"delta": 0.66,
+					"left": 0.34,
+					"right": 1.0
+				},
+				"slow_observations": {
+					"delta": -11.0,
+					"left": 11,
+					"right": 0
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "split_glacier_active",
+			"left_map": "Split Road",
+			"left_towers": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 520.0,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_no_frost_active",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 271.7,
+					"type": "poison"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		"split_active_glacier_vs_shatter": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": 52.8,
+					"left": 520.0,
+					"right": 572.8
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 0,
+					"right": 0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 25,
+					"right": 25
+				},
+				"min_slow_multiplier": {
+					"delta": 0.16,
+					"left": 0.34,
+					"right": 0.5
+				},
+				"slow_observations": {
+					"delta": -2.0,
+					"left": 11,
+					"right": 9
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "split_glacier_active",
+			"left_map": "Split Road",
+			"left_towers": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 520.0,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_shatter_active",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "shatter",
+					"total_damage": 572.8,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		"split_glacier_determinism": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": 520.0,
+					"left": 0.0,
+					"right": 520.0
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": 1.0,
+					"left": 27,
+					"right": 28
+				},
+				"leaks": {
+					"delta": -1.0,
+					"left": 1,
+					"right": 0
+				},
+				"lives": {
+					"delta": 1.0,
+					"left": 24,
+					"right": 25
+				},
+				"min_slow_multiplier": {
+					"delta": -0.66,
+					"left": 1.0,
+					"right": 0.34
+				},
+				"slow_observations": {
+					"delta": 11.0,
+					"left": 0,
+					"right": 11
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "split_glacier",
+			"left_map": "Split Road",
+			"left_towers": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_glacier_repeat",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 7,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1152.0,
+					"type": "archer"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 7,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 520.0,
+					"type": "frost"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 12,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1134.0,
+					"type": "sniper"
+				}
+			]
+		},
+		"split_glacier_vs_shatter": {
+			"deltas": {
+				"completed": {
+					"left": true,
+					"right": true,
+					"same": true
+				},
+				"frost_total_damage": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"game_over": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"kills": {
+					"delta": 0.0,
+					"left": 27,
+					"right": 27
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 1,
+					"right": 1
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 24,
+					"right": 24
+				},
+				"min_slow_multiplier": {
+					"delta": 0.0,
+					"left": 1.0,
+					"right": 1.0
+				},
+				"slow_observations": {
+					"delta": 0.0,
+					"left": 0,
+					"right": 0
+				},
+				"spawned": {
+					"delta": 0.0,
+					"left": 28,
+					"right": 28
+				}
+			},
+			"left_case": "split_glacier",
+			"left_map": "Split Road",
+			"left_towers": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "glacier",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			],
+			"right_case": "split_shatter",
+			"right_map": "Split Road",
+			"right_towers": [
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 1188.0,
+					"type": "archer"
+				},
+				{
+					"kills": 0,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 840.0,
+					"type": "machine_gun"
+				},
+				{
+					"kills": 2,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 0.0,
+					"type": "cannon"
+				},
+				{
+					"kills": 0,
+					"level": 4,
+					"selected_branch": "shatter",
+					"total_damage": 0.0,
+					"type": "frost"
+				},
+				{
+					"kills": 14,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 896.0,
+					"type": "tesla"
+				},
+				{
+					"kills": 9,
+					"level": 1,
+					"selected_branch": "",
+					"total_damage": 918.0,
+					"type": "sniper"
+				}
+			]
+		}
+	},
+	"schema_version": 1,
+	"seed": 336,
+	"wave": 6
+}

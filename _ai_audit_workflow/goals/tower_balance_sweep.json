@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "goal_id": "tower_balance_sweep",
+  "objective": "Produce a complete all-family tower-balance diagnostic packet, identify usable per-tower evidence, and stop before any tower value mutation until a candidate-specific gate exists.",
+  "mutation_policy": {
+    "mode": "report_only",
+    "automatic": false,
+    "allowed_files": [],
+    "allowed_json_paths": [],
+    "allowed_values": [],
+    "forbidden_surfaces": [
+      "data/game_data.json",
+      "gameplay code",
+      "AI policy code",
+      "Frost values",
+      "validator behavior",
+      "staging, commits, and pushes"
+    ]
+  },
+  "protected_files": [
+    "data/game_data.json",
+    "scripts/game/vertical_slice_game.gd",
+    "scripts/tools/run_ai_simulation_batch.gd",
+    "scripts/tools/run_split_frost_counterfactual_validation.gd",
+    "scripts/tools/run_split_frost_shatter_ablation_evidence_report.gd",
+    "logs/godot/split_frost_broader_paired_replay_2026_07_14.json",
+    "logs/godot/split_frost_candidate_evidence_2026_07_14.json",
+    "logs/godot/split_frost_cost_matched_paired_replay_2026_07_14.json",
+    "logs/godot/split_frost_cost_matched_evidence_2026_07_14.json"
+  ],
+  "stop_policy": {
+    "max_stage_attempts": 1,
+    "terminal_statuses": ["complete", "blocked", "needs_approval"],
+    "fail_closed": true
+  },
+  "stages": [
+    {
+      "id": "all_family_diagnostic",
+      "type": "run_godot",
+      "script": "res://scripts/tools/run_ai_simulation_batch.gd",
+      "arguments": [
+        "--profile=medium",
+        "--runs=420",
+        "--max-waves=6",
+        "--seed-count=5",
+        "--strategy-group=standard_research",
+        "--map-set=all",
+        "--coverage=full",
+        "--scenario-probes=auto",
+        "--record=flagged",
+        "--report-label=tower_balance_sweep_2026_07_14",
+        "--output-dir=res://.godot/ai_simulation/tower_balance_sweep_2026_07_14",
+        "--report-only"
+      ],
+      "log": "logs/godot/pursue_goal/tower_balance_sweep/diagnostic.log",
+      "timeout_seconds": 1800,
+      "expected_token": "AI_SIMULATION_BATCH_OK"
+    },
+    {
+      "id": "packet_coverage_gate",
+      "type": "assert_latest_json",
+      "directory": ".godot/ai_simulation/tower_balance_sweep_2026_07_14",
+      "prefix": "ai_simulation_data_",
+      "suffix": ".json",
+      "assertions": [
+        { "path": "schema_version", "equals": 7 },
+        { "path": "config/profile", "equals": "medium" },
+        { "path": "config/runs", "equals": 420 },
+        { "path": "config/max_waves", "equals": 6 },
+        { "path": "config/seed_count", "equals": 5 },
+        { "path": "config/map_set", "equals": "all" },
+        { "path": "config/evidence_tier", "equals": "medium" },
+        { "path": "config/report_only", "equals": true },
+        { "path": "config/completion_mode", "equals": "off" },
+        { "path": "config/focus_tower", "equals": "" },
+        { "path": "config/enabled_tower_types", "contains": "archer" },
+        { "path": "config/enabled_tower_types", "contains": "machine_gun" },
+        { "path": "config/enabled_tower_types", "contains": "cannon" },
+        { "path": "config/enabled_tower_types", "contains": "frost" },
+        { "path": "config/enabled_tower_types", "contains": "poison" },
+        { "path": "config/enabled_tower_types", "contains": "sniper" },
+        { "path": "config/enabled_tower_types", "contains": "tesla" },
+        { "path": "config/unsupported_tower_types", "contains": "support" },
+        { "path": "config/unsupported_tower_types", "contains": "barracks" },
+        { "path": "packet_identity/map_names", "contains": "Classic Road" },
+        { "path": "packet_identity/map_names", "contains": "Split Road" },
+        { "path": "packet_identity/map_names", "contains": "Zigzag Road" },
+        { "path": "packet_identity/map_names", "contains": "Spiral Road" },
+        { "path": "summary/total_runs", "equals": 420 },
+        { "path": "summary/failed_runs", "equals": 0 },
+        { "path": "tower_metrics/archer/placements", "greater_than": 0 },
+        { "path": "tower_metrics/machine_gun/placements", "greater_than": 0 },
+        { "path": "tower_metrics/cannon/placements", "greater_than": 0 },
+        { "path": "tower_metrics/frost/placements", "greater_than": 0 },
+        { "path": "tower_metrics/poison/placements", "greater_than": 0 },
+        { "path": "tower_metrics/sniper/placements", "greater_than": 0 },
+        { "path": "tower_metrics/tesla/placements", "greater_than": 0 }
+      ]
+    },
+    { "id": "protected_files_unchanged", "type": "protected_hashes" },
+    { "id": "diff_check", "type": "git_diff_check" },
+    { "id": "process_cleanup", "type": "process_clean" }
+  ]
+}

@@ -7,13 +7,14 @@ param(
 )
 
 . (Join-Path $PSScriptRoot 'common.ps1')
+. (Join-Path $PSScriptRoot 'remediation_contract.ps1')
 
 $repoRoot = Assert-TowerDefenseRepo
 $config = Read-WorkflowConfig
 $stateDir = Ensure-WorkflowState -Config $config
 $queuePath = Join-Path $stateDir 'improvement_queue.json'
 $promptPath = Join-Path $stateDir 'next_improvement_prompt.md'
-$resultPath = Join-Path $stateDir 'last_improvement_result.md'
+$resultPath = Join-Path $stateDir 'last_improvement_result.json'
 $queueValidation = Get-AuditQueueValidation -RepoRoot $repoRoot -Config $config
 if (-not $queueValidation.valid) {
     Write-Host "Refusing improvement pass: $($queueValidation.reason)"
@@ -31,6 +32,7 @@ function Set-QueueItemHandled {
     foreach ($queueItem in @($Queue.items)) {
         if ([string]$queueItem.id -eq $ItemId) {
             $queueItem.status = 'handled'
+            $queueItem.resolutionStatus = 'handled'
             if ($null -eq $queueItem.PSObject.Properties['handledAt']) {
                 $queueItem | Add-Member -NotePropertyName 'handledAt' -NotePropertyValue (Get-Date).ToString('s')
             } else {
@@ -56,21 +58,24 @@ function Set-QueueItemHandled {
     ConvertTo-JsonFile -Value $Queue -Path $queuePath
 }
 
-function Assert-ResultSummaryHasRequiredLines {
-    param([Parameter(Mandatory)][string] $Path)
-    if (-not (Test-Path -LiteralPath $Path)) {
-        throw "Codex did not write a result summary: $Path"
+function Get-RepoFileHashes {
+    param([Parameter(Mandatory)][string] $RepoRoot)
+    $hashes = @{}
+    $paths = @(git -C $RepoRoot ls-files --cached --others --exclude-standard)
+    if ((Get-SafeLastExitCode) -ne 0) { throw 'Unable to enumerate repository files.' }
+    foreach ($relative in $paths) {
+        $normalized = ([string]$relative).Replace('\','/')
+        if ($normalized.StartsWith('_ai_audit_workflow/_internal/current/')) { continue }
+        $fullPath = Join-Path $RepoRoot $relative
+        if (Test-Path -LiteralPath $fullPath -PathType Leaf) { $hashes[$normalized] = (Get-FileHash -LiteralPath $fullPath -Algorithm SHA256).Hash }
     }
-    $text = Get-Content -Raw -LiteralPath $Path
-    if ($text.Trim().Length -eq 0) {
-        throw "Codex wrote an empty result summary: $Path"
-    }
-    if ($text -notmatch '(?im)^Files changed:\s*\S') {
-        throw "Codex result summary must include an exact 'Files changed:' line before the queue item can be marked handled."
-    }
-    if ($text -notmatch '(?im)^Validation run:\s*\S') {
-        throw "Codex result summary must include an exact 'Validation run:' line before the queue item can be marked handled."
-    }
+    return $hashes
+}
+
+function Compare-RepoFileHashes {
+    param([hashtable] $Before, [hashtable] $After)
+    $allPaths = @($Before.Keys) + @($After.Keys) | Sort-Object -Unique
+    return @($allPaths | Where-Object { -not $Before.ContainsKey($_) -or -not $After.ContainsKey($_) -or $Before[$_] -ne $After[$_] })
 }
 
 function Invoke-DiffCheckOrThrow {
@@ -85,6 +90,36 @@ function Invoke-DiffCheckOrThrow {
     } finally {
         Pop-Location
     }
+}
+
+function Invoke-IndependentValidator {
+    param([Parameter(Mandatory)] $Item)
+    $validator = Assert-RemediationValidatorSpec -Item $Item -RepoRoot $repoRoot
+    $safeId = ([string]$Item.id -replace '[^A-Za-z0-9_-]', '_')
+    $logDirectory = Join-Path $repoRoot 'logs\godot\remediation'
+    if (-not (Test-Path -LiteralPath $logDirectory)) { New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null }
+    $stamp = Get-Date -Format 'yyyyMMdd_HHmmss_fff'
+    $logPath = Join-Path $logDirectory ("{0}_{1}.log" -f $safeId, $stamp)
+    $stdoutPath = [IO.Path]::ChangeExtension($logPath, '.stdout.log')
+    $stderrPath = [IO.Path]::ChangeExtension($logPath, '.stderr.log')
+    $startedAt = [DateTime]::UtcNow
+    $arguments = @('--headless','--no-header','--log-file',$logPath,'--path',$repoRoot,'--script',[string]$validator.script,'--') + @($validator.args | ForEach-Object { [string]$_ })
+    $processResult = Invoke-RepoProcess -Label ("validate-{0}" -f $safeId) -FilePath ([string]$config.godotExe) -ArgumentList $arguments -WorkingDirectory $repoRoot -TimeoutSeconds ([int]$validator.timeoutSeconds) -StdoutPath $stdoutPath -StderrPath $stderrPath -ReturnResult
+    if (-not $processResult.succeeded) { throw "Independent validator failed with exit code $($processResult.exitCode)." }
+    [void](Assert-FreshValidationToken -Paths @($logPath, $stdoutPath) -ExpectedToken ([string]$validator.expectedToken) -StartedAt $startedAt)
+    return $logPath
+}
+
+function Set-QueueItemDeferred {
+    param([Parameter(Mandatory)] $Queue, [Parameter(Mandatory)][string] $ItemId, [Parameter(Mandatory)][string] $Reason)
+    foreach ($queueItem in @($Queue.items)) {
+        if ([string]$queueItem.id -eq $ItemId) {
+            $queueItem.status = 'deferred'
+            $queueItem.resolutionStatus = 'deferred'
+            if ($null -eq $queueItem.PSObject.Properties['deferredReason']) { $queueItem | Add-Member -NotePropertyName deferredReason -NotePropertyValue $Reason } else { $queueItem.deferredReason = $Reason }
+        }
+    }
+    ConvertTo-JsonFile -Value $Queue -Path $queuePath
 }
 
 $queue = $queueValidation.queue
@@ -144,6 +179,8 @@ Title: $($item.title)
 Source run id: $sourceRunId
 Source status: $sourceStatus
 Source dirty baseline: $sourceDirtyBaseline
+Allowed files: $(@($item.allowedFiles) -join ', ')
+Independent validator: $($item.validator.script) -> $($item.validator.expectedToken)
 
 Evidence:
 $($item.evidence)
@@ -167,9 +204,9 @@ $reviewRules
 - Keep the fix scoped to this finding.
 - Use existing Godot nodes, autoloads, canonical data, and validation scripts.
 - Keep Godot logs under logs/godot/.
-- Run targeted validation for the changed system.
-- Run git diff --check before final.
-- Final response must include exact lines starting with "Files changed:" and "Validation run:" so the wrapper can verify what changed and what was checked.
+- Do not run validation yourself; the wrapper independently runs the declared validator after checking the file delta.
+- Your final response must be JSON only with exactly these fields: findingId, disposition, filesChanged, reason.
+- disposition must be fixed, no_code_change, or deferred. filesChanged must be repo-relative and empty unless disposition is fixed.
 - Do not update _ai_audit_workflow/_internal/TOWER_DEFENSE_AI_SIMULATION_AUDIT_REPORT.md unless post-fix evidence materially changes and the edit is necessary.
 "@
 
@@ -215,6 +252,10 @@ if ($RunCodex) {
         Write-StepSummary -Step 'codex fix execution' -Status 'blocked' -LogPath $queuePath -Detail "$($preStatus.Count) existing git status row(s)."
         exit 1
     }
+    [void](Assert-RemediationValidatorSpec -Item $item -RepoRoot $repoRoot)
+    $allowedFiles = @($item.allowedFiles)
+    if ($lane -eq 'evidence-backed code fix' -and $allowedFiles.Count -eq 0) { throw 'Implementation queue items require non-empty allowedFiles.' }
+    $preHashes = Get-RepoFileHashes -RepoRoot $repoRoot
 
     $promptText = Get-Content -Raw -LiteralPath $promptPath
     Write-Host ''
@@ -228,9 +269,18 @@ if ($RunCodex) {
         Write-StepSummary -Step 'codex fix execution' -Status 'failed' -LogPath $resultPath -Detail "codex exec exit code $exitCode"
         exit $exitCode
     }
-    Assert-ResultSummaryHasRequiredLines -Path $resultPath
+    $structuredResult = Read-StructuredRemediationResult -Path $resultPath -ExpectedFindingId ([string]$item.id)
+    $postCodexHashes = Get-RepoFileHashes -RepoRoot $repoRoot
+    $actualChangedFiles = @(Compare-RepoFileHashes -Before $preHashes -After $postCodexHashes)
+    $actualSorted = @(Assert-RemediationDelta -Result $structuredResult -ActualChangedFiles $actualChangedFiles -AllowedFiles $allowedFiles)
+    if ([string]$structuredResult.disposition -eq 'deferred') {
+        Set-QueueItemDeferred -Queue $queue -ItemId $item.id -Reason ([string]$structuredResult.reason)
+        Write-StepSummary -Step 'codex fix execution' -Status 'blocked' -LogPath $resultPath -Detail ([string]$structuredResult.reason)
+        exit 0
+    }
+    $validatorLog = Invoke-IndependentValidator -Item $item
     Invoke-DiffCheckOrThrow -RepoRoot $repoRoot
     $postStatus = @(Get-ShortGitStatus -RepoRoot $repoRoot)
     Set-QueueItemHandled -Queue $queue -ItemId $item.id -ResultPath $resultPath -PostGitStatus $postStatus
-    Write-StepSummary -Step 'codex fix execution' -Status 'passed' -LogPath $resultPath -Detail "codex exec completed; git diff --check passed; $($postStatus.Count) git status row(s)."
+    Write-StepSummary -Step 'codex fix execution' -Status 'passed' -LogPath $validatorLog -Detail "Structured result and declared delta verified; independent validator and git diff --check passed; $($postStatus.Count) git status row(s)."
 }

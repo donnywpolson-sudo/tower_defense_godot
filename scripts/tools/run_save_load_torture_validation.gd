@@ -9,7 +9,7 @@ func _initialize() -> void:
 	var config: Node = _root_node_or_new("GameConfig", config_script)
 	var data_loader: Node = _root_node_or_new("GameData", data_script)
 	var progress: Node = _root_node_or_new("GameProgress", progress_script)
-	var save_path := "res://.godot/save_load_torture_%s.json" % Time.get_ticks_usec()
+	var save_path := "user://save_load_torture_%s.json" % Time.get_ticks_usec()
 	var result: Dictionary = {
 		"ok": true,
 		"checks": [],
@@ -17,6 +17,7 @@ func _initialize() -> void:
 	}
 
 	_check_active_combat_file_roundtrip(progress, slice_script, save_path, result)
+	_check_temporary_artifact_recovery(progress, save_path, result)
 	_check_upgrade_selection_roundtrip(progress, slice_script, result)
 	_check_debug_skip_wave_roundtrip(progress, slice_script, result)
 	_check_game_over_roundtrip(progress, slice_script, result)
@@ -47,7 +48,7 @@ func _check_active_combat_file_roundtrip(progress: Node, slice_script: Script, s
 	var active_snapshot: Dictionary = game.snapshot()
 	_record_check(result, "active_combat_has_enemy_and_projectile", int(active_snapshot.get("enemy_count", 0)) > 0 and int(active_snapshot.get("projectile_count", 0)) > 0, active_snapshot)
 	var run_state: Dictionary = game.serialize_run_state()
-	_record_check(result, "active_combat_serializes_projectile_links", run_state.get("projectiles", []).size() > 0 and int(run_state.get("projectiles", [])[0].get("target_index", -1)) >= 0 and int(run_state.get("projectiles", [])[0].get("tower_index", -1)) >= 0, run_state.get("projectiles", []))
+	_record_check(result, "active_combat_serializes_projectile_links", run_state.get("projectiles", []).size() > 0 and int(run_state.get("projectiles", [])[0].get("target_index", -1)) >= 0 and int(run_state.get("projectiles", [])[0].get("source_tower_id", -1)) > 0 and not run_state.get("projectiles", [])[0].has("tower_index"), run_state.get("projectiles", []))
 	_record_check(result, "torture_save_path_is_new", not FileAccess.file_exists(save_path), save_path)
 	_record_check(result, "active_combat_save_creates_file", progress.save_to_path(save_path, run_state, false), {"path": save_path, "error": progress.last_save_error})
 	var progress_script := load("res://scripts/autoload/game_progress.gd")
@@ -60,6 +61,37 @@ func _check_active_combat_file_roundtrip(progress: Node, slice_script: Script, s
 	_record_check(result, "active_combat_restore_matches_counts", _snapshots_match(active_snapshot, restored.snapshot(), ["money", "lives", "wave", "wave_active", "spawned_this_wave", "tower_count", "enemy_count", "projectile_count"]), {"original": active_snapshot, "restored": restored.snapshot()})
 	restored.process_step(0.05)
 	_record_check(result, "active_combat_restored_step_keeps_invariants", restored.runtime_invariant_failures().is_empty(), restored.runtime_invariant_failures())
+
+
+func _check_temporary_artifact_recovery(progress: Node, save_path: String, result: Dictionary) -> void:
+	var temp_path: String = progress.temporary_save_path(save_path)
+	_cleanup_artifact(temp_path)
+	_record_check(result, "malformed_temp_fixture_created", _write_text(temp_path, "{\"schema_version\":1"), temp_path)
+	var malformed_saved: bool = progress.save_to_path(save_path, {"recovery_case": "malformed"}, true)
+	_record_check(result, "malformed_temp_save_recovers", malformed_saved, {"error": progress.last_save_error})
+	_record_check(result, "malformed_temp_cleanup_is_bounded", not FileAccess.file_exists(temp_path), temp_path)
+	_record_check(result, "malformed_temp_payload_loads", progress.load_from_path(save_path) and str(progress.last_run_state.get("recovery_case", "")) == "malformed", progress.last_run_state)
+
+	_record_check(result, "partial_temp_fixture_created", _write_text(temp_path, "{\"schema_version\":1,\"progression\":"), temp_path)
+	var partial_saved: bool = progress.save_to_path(save_path, {"recovery_case": "partial"}, true)
+	_record_check(result, "partial_temp_save_recovers", partial_saved, {"error": progress.last_save_error})
+	_record_check(result, "partial_temp_cleanup_is_bounded", not FileAccess.file_exists(temp_path), temp_path)
+	_record_check(result, "partial_temp_payload_loads", progress.load_from_path(save_path) and str(progress.last_run_state.get("recovery_case", "")) == "partial", progress.last_run_state)
+
+
+func _write_text(path: String, text: String) -> bool:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(text)
+	file.close()
+	return true
+
+
+func _cleanup_artifact(path: String) -> void:
+	var parent := DirAccess.open(path.get_base_dir())
+	if parent != null:
+		parent.remove(path.get_file())
 
 
 func _check_upgrade_selection_roundtrip(progress: Node, slice_script: Script, result: Dictionary) -> void:
@@ -136,6 +168,7 @@ func _snapshots_match(original: Dictionary, restored: Dictionary, keys: Array) -
 func _cleanup_save(save_path: String) -> void:
 	if FileAccess.file_exists(save_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
+	_cleanup_artifact(save_path + ".tmp")
 
 
 func _root_node_or_new(node_name: String, script: Script) -> Node:
@@ -149,11 +182,4 @@ func _root_node_or_new(node_name: String, script: Script) -> Node:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)

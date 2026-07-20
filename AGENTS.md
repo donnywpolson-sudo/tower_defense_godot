@@ -172,29 +172,26 @@ C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe --headless --log-file logs/go
 * This gate applies to broad validation batches, asset/audio imports, cleanup/archive actions, dependency changes, codegen/import operations, and commands likely to touch many files.
 * Routine targeted checks are exempt, including one existing listed Godot validation script, `git diff --check`, targeted searches, and narrow file reads.
 
+### Plain-English User-Facing Output
+
+- Write every user-facing progress update, explanation, audit summary, and final response concisely and in plain English by default. The user should not need to ask, "Tell me this entire output concisely and in plain English."
+- Lead with what the result means for the user. Translate technical findings and tool output into ordinary language instead of repeating raw logs or jargon.
+- Include only the technical details, file paths, numbers, warnings, and evidence needed to understand the result or make the next decision.
+- Do not remove important uncertainty, safety warnings, failed checks, limitations, or blockers for the sake of brevity. State them briefly and clearly.
+- If a technical term is necessary, explain it in a short plain-English phrase the first time it appears.
+
 ### Final Response Format
 
-* Output language has three levels. Default for this repo is `Level 1: Minimal / Plain English`.
-* `Level 1`: shortest clear answer. Use plain English. Include only: result, real problems, and next action if needed.
-* `Level 2`: normal answer. Include what changed, checked files/commands, problems, and one useful next step.
-* `Level 3`: audit or planning answer. Include findings, evidence, risk, exact next action, and copy-paste prompt when useful.
-* For messy user notes, first translate the request into one clear objective before acting.
-* For copy-paste help, give one fenced prompt or command block. Do not give vague suggestions.
-* Be concise and outcome-focused.
-* Start with a concise opening outcome when there is a completed result to report. Include the concrete result, files touched, and checks run there instead of using a `Done` section. Omit the opening outcome only when nothing completed.
-* Use concise prose for simple one-shot tasks.
-* For normal implementation, status, and handoff runs, use only these real final sections in this order when structured output is needed:
-  * `Problems`: write `None. Proceed status: yes.` when clear. Otherwise list only real problems or caveats as `Low`, `Medium`, or `Severe`, with concrete evidence where practical. End with `Proceed status: yes.`, `Proceed status: yes with medium problems.`, or `Proceed status: no.`
-  * `Suggestions`: write `None.` only when the request is complete and no useful continuation remains. Otherwise give exactly one next action: one human decision, one bounded executable phase, or one fenced paste-ready prompt.
-* Mention successful validation briefly in the opening outcome. Mention only unresolved failed checks, generated-artifact risks, or material caveats under `Problems`.
-* Do not add extra final sections such as `Tests`, `Validation`, `Notes`, `Changed`, or `Next Steps` unless the user explicitly asks for that format.
-* If the user asks for an audit, review, or prompt template with a specific structure, use the requested structure while preserving all repo safety rules.
-* Required app directives, git directives, and memory citations may appear after the repo-local final sections, but keep them minimal.
-* For `Suggestions`, use `None.` only for true terminal one-shot work. If any nontrivial, risky, broad, asset/audio import, generated-artifact, cleanup, mutating, or fresh-thread follow-up remains, prefer one fenced paste-ready prompt.
-* Use a human decision only when the agent cannot safely choose.
-* Use a bounded executable phase only when follow-up is ready to run. For expensive, broad, asset/audio import, generated-artifact, cleanup, or mutating work, include command family, scope limit, timeout or stop budget, artifacts, forbidden patterns, expected generated files, and stop condition.
-* A paste-ready prompt must state whether the next agent should plan only or execute, name the target objective, require repo path and `git status --short` inspection, require reconciliation against `CODEX_HANDOFF.md` when it exists and current evidence, and include exact bounded scope, forbidden actions, artifacts, timeout or stop budget, stop condition, and validation expectations.
-* If execution is not already safely bounded, the paste-ready prompt must request one implementable `<proposed_plan>` and explicitly say not to mutate files or run broad validation, asset/audio import, cleanup, or other mutating commands yet.
-* When `CODEX_HANDOFF.md` was updated or fresh-thread continuation is likely, start the paste-ready prompt with `Continue from CODEX_HANDOFF.md.`
-* Do not use vague suggestions such as `continue implementation`, `run next phase`, or `improve the game`; convert them into `None.`, one human decision, one bounded executable phase, or one fenced paste-ready prompt.
-* When `CODEX_HANDOFF.md` is updated, final `Suggestions` must match its exact next recommended step.
+- Default to `Level 1: Action Only`. The user may request another level until changed:
+  - `Level 1`: Result, real problems, and one next action.
+  - `Level 2`: Level 1 plus a brief explanation.
+  - `Level 3`: For audits, material claims, risky work, or failures. Clearly distinguish verified facts, assumptions, risks, checks, and blockers.
+- Start with the concrete outcome, files changed, and checks run.
+- Use short plain English. Omit background unless it affects the decision or next action.
+- Include `Problems` only when real problems exist. Give each a severity, evidence, and whether work may proceed.
+- End with `Next Action` and exactly one specific action. Write `None` only when the request is fully complete.
+- Use a paste-ready prompt only for fresh-thread continuation or work that is not yet safely executable.
+- Expensive, broad, or mutating next actions must satisfy the `Bounded Execution` requirements above; do not repeat those requirements here.
+- If `CODEX_HANDOFF.md` was updated, the next action must match its exact next recommended step.
+- `Next Action` must advance the latest user goal. For project continuation, reconcile it with the `PROJECT_OUTLINE.md` objective, the newest active `CODEX_HANDOFF.md` step, and current repo evidence.
+- Follow a user-requested response structure when one is provided.
