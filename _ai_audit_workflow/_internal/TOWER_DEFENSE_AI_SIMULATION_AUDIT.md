@@ -13,12 +13,9 @@ The audit is verification-first. If no confirmed implementation issue exists, ma
 ## Evidence Discovery Order
 
 1. Run `git status --short` and record whether relevant files are dirty.
-2. Prefer the newest timestamped packet in `.godot/ai_simulation/`:
-   - `ai_simulation_report_YYYY_MM_DD_HHMM.md`
-   - `ai_simulation_data_YYYY_MM_DD_HHMM.json`
-   - `ai_simulation_codex_prompt_YYYY_MM_DD_HHMM.md`
-3. If no root timestamped packet exists, use the newest complete packet under `.godot/ai_simulation/archive/` and state that fallback in the report.
-4. Add supporting evidence from existing logs and artifacts when present:
+2. Select one current packet from `.godot/ai_simulation/` by its JSON packet identity, then require the exact matching report, prompt, and manifest artifacts. The packet identity must match profile, runs, waves, seeds, strategies, scenario mode, action-log mode, canonical data hash, and Git status classification.
+3. Reject incomplete, mixed, or stale packets. Archived packets and existing logs may be cited as historical context only; they cannot satisfy a skipped validation or become the current findings source.
+4. Add supporting evidence from existing logs and artifacts when present, but require a fresh-after-start timestamp and expected success token before treating a validation as passed:
    - `logs/godot/godot_playable_surface.log`
    - `logs/godot/visual_review/*.png`
    - `logs/godot/godot_performance_budget.log`
@@ -43,7 +40,7 @@ The playable-surface command needs a rendering-capable Godot session because it 
 
 ## Required Checks
 
-1. Identify exact report, JSON, and generated prompt paths audited.
+1. Identify exact report, JSON, generated prompt, and manifest paths audited, plus the shared packet id.
 2. Verify profile, evidence tier, run count, max waves, seed settings, strategy group, full-action-log mode, schema version, and scenario-probe mode.
 3. Check whether smoke/custom evidence is marked as not balance-actionable and whether stronger same-folder evidence is surfaced.
 4. Check whether generated prompts are verification-first and allow a no-code-change outcome.

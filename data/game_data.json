@@ -376,6 +376,7 @@
     ]
   },
   "progression": {
+    "base_reward_card_choices": 3,
     "card_pool": {
       "bounty_trace": {
         "color": [
@@ -384,7 +385,8 @@
           95
         ],
         "description": "Next wave pays bonus CPU per packet.",
-        "label": "Bounty Trace"
+        "label": "Bounty Trace",
+        "effects": { "money": 25 }
       },
       "core_patch": {
         "color": [
@@ -393,7 +395,8 @@
           145
         ],
         "description": "Repair base health.",
-        "label": "HP Patch"
+        "label": "HP Patch",
+        "effects": { "lives": 3 }
       },
       "cpu_cache": {
         "color": [
@@ -402,7 +405,8 @@
           120
         ],
         "description": "Gain emergency CPU for new defenses.",
-        "label": "CPU Cache"
+        "label": "CPU Cache",
+        "effects": { "money": 60 }
       },
       "damage_patch": {
         "color": [
@@ -411,7 +415,8 @@
           110
         ],
         "description": "All towers gain permanent damage.",
-        "label": "Damage Boost"
+        "label": "Damage Boost",
+        "effects": { "damage_multiplier": 1.10 }
       },
       "field_retrofit": {
         "color": [
@@ -420,7 +425,8 @@
           255
         ],
         "description": "Prototype your best underdeveloped tower, or gain tech if none need work.",
-        "label": "Field Retrofit"
+        "label": "Field Retrofit",
+        "effects": { "research_points": 2 }
       },
       "overclock_patch": {
         "color": [
@@ -429,7 +435,8 @@
           255
         ],
         "description": "All towers fire faster this run.",
-        "label": "Overclock"
+        "label": "Overclock",
+        "effects": { "fire_rate_multiplier": 1.10 }
       },
       "pierce_patch": {
         "color": [
@@ -438,7 +445,8 @@
           135
         ],
         "description": "All towers hit shielded targets harder.",
-        "label": "Pierce"
+        "label": "Pierce",
+        "effects": { "pierce_bonus": 1 }
       },
       "range_patch": {
         "color": [
@@ -447,7 +455,8 @@
           245
         ],
         "description": "All towers gain permanent range.",
-        "label": "Range Boost"
+        "label": "Range Boost",
+        "effects": { "range_bonus": 12 }
       },
       "research_grant": {
         "color": [
@@ -456,7 +465,8 @@
           255
         ],
         "description": "Gain tech for mastery upgrades.",
-        "label": "Tech Cache"
+        "label": "Tech Cache",
+        "effects": { "research_points": 3 }
       }
     },
     "max_intel_bonus_level": 6,
@@ -946,6 +956,13 @@
             "7": "Cluster damage +8%",
             "8": "Extra blast +1",
             "9": "Splash falloff -10%"
+          },
+          "runtime_effects": {
+            "splash_radius": 72.0,
+            "splash_damage_ratio": 0.45,
+            "splash_target_count": 1,
+            "splash_target_bonus_level": 4,
+            "splash_target_bonus": 1
           }
         },
         "demolition": {
@@ -1009,6 +1026,14 @@
             "7": "Breach spill +1 target",
             "8": "Vulnerability +4%",
             "9": "Breach duration +0.4s"
+          },
+          "runtime_effects": {
+            "breach_duration": 3.0,
+            "breach_max_stacks": 3,
+            "shield_strip_level": 4,
+            "shield_strip_hits": 1,
+            "vulnerability_level": 5,
+            "vulnerability_multiplier": 1.15
           }
         },
         "terraformer": {
@@ -1134,6 +1159,11 @@
             "7": "Priority freeze +0.15s",
             "8": "Slow radius +18",
             "9": "Boss control +10%"
+          },
+          "runtime_effects": {
+            "freeze_duration": 0.3,
+            "freeze_duration_per_level": 0.08,
+            "slow_strength_bonus": 0.08
           }
         },
         "shatter": {
@@ -1195,6 +1225,14 @@
             "7": "Frozen bonus +8%",
             "8": "Death splash +1 target",
             "9": "Detonation radius +12"
+          },
+          "runtime_effects": {
+            "death_burst_damage_ratio": 0.18,
+            "death_burst_radius": 52.0,
+            "death_burst_targets": 2,
+            "vulnerability_duration": 1.5,
+            "vulnerability_multiplier": 1.18,
+            "vulnerability_per_level": 0.04
           }
         },
         "time_control": {
@@ -2213,6 +2251,21 @@
       }
     },
     "branch_unlock_level": 3,
+    "runtime_enabled_branches": {
+      "cannon": [
+        "artillery",
+        "demolition"
+      ],
+      "frost": [
+        "glacier",
+        "shatter"
+      ],
+      "poison": [
+        "plague_mist",
+        "venom_cask",
+        "wildfire"
+      ]
+    },
     "legacy_aliases": {
       "flame": [
         "cannon",
@@ -2702,8 +2755,8 @@
           225
         ],
         "descriptions": {
-          "2": "Slows enemies on hit",
-          "3": "Ice shards slow harder",
+          "2": "Slows enemies on hit; repeated hits deepen chill",
+          "3": "Ice shards deepen chill harder",
           "4": "Blizzard slows nearby enemies",
           "5": "Cryo hits briefly freeze targets"
         },
@@ -2750,7 +2803,7 @@
           "4": "Blizzard Tower",
           "5": "Cryo Engine"
         },
-        "weakness": "Lower raw damage"
+        "weakness": "Slower firing and control-dependent damage"
       },
       "gold": {
         "color": [

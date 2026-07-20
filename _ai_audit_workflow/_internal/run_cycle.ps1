@@ -1,8 +1,9 @@
 param(
-    [ValidateSet('Light', 'Deep')]
-    [string] $Tier = 'Light',
+    [ValidateSet('Light', 'Smoke', 'Medium', 'Deep', 'Overnight')]
+    [string] $Tier = 'Medium',
     [switch] $SkipAudit,
     [switch] $AllowDirtyQueue,
+    [switch] $IncludeDiagnosticCandidates,
     [string] $SimulationLauncherOverride = ''
 )
 
@@ -64,7 +65,7 @@ if ($SkipAudit) {
     }
 }
 
-& (Join-Path $PSScriptRoot 'build_improvement_queue.ps1') -AllowDirtyQueue:$AllowDirtyQueue
+& (Join-Path $PSScriptRoot 'build_improvement_queue.ps1') -AllowDirtyQueue:$AllowDirtyQueue -IncludeDiagnosticCandidates:$IncludeDiagnosticCandidates
 $exitCode = Get-SafeLastExitCode
 if ($exitCode -ne 0) {
     Write-Host 'fail'

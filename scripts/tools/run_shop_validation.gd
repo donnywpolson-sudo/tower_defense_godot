@@ -40,8 +40,8 @@ func _check_shop_flow(game: Node, result: Dictionary) -> void:
 	_record_check(result, "shop_starts_unselected", shop["selected_build_type"] == "", shop)
 	_record_check(result, "speed_controls_start_normal", shop["speed_control"]["label"] == "1x" and shop["speed_control"]["buttons"].size() == 4, shop["speed_control"])
 	var expected_order: Array = _expected_root_shop_order(game)
-	var supported: Array = ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
-	var unsupported: Array = ["poison", "support", "barracks"]
+	var supported: Array = ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"]
+	var unsupported: Array = ["support", "barracks"]
 	_record_check(result, "shop_exposes_game_data_root_roster", shop["button_count"] == expected_order.size() and _button_order(shop["buttons"]) == expected_order, shop)
 	_record_check(result, "shop_keeps_canonical_shop_order_reference", shop["canonical_shop_order"] == game.game_data.get("towers", {}).get("shop_order", []), shop)
 	_check_shop_layout(game, result)
@@ -314,11 +314,4 @@ func _rect_inside(inner: Rect2, outer: Rect2) -> bool:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)

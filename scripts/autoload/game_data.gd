@@ -41,17 +41,17 @@ func validate_game_data() -> Dictionary:
 	var shop_order: Array = _array_value(towers.get("shop_order", []))
 	var root_tower_ids: Array = _array_value(towers.get("root_tower_ids", []))
 	var target_modes: Array = _array_value(towers.get("target_modes", []))
-	_record_check(result, "shop_order_count", shop_order.size() == 8, shop_order.size())
-	_record_check(result, "root_tower_count", root_tower_ids.size() == 9, root_tower_ids.size())
-	_record_check(result, "target_mode_count", target_modes.size() == 6, target_modes.size())
+	_record_check(result, "shop_order_nonempty", not shop_order.is_empty(), shop_order.size())
+	_record_check(result, "root_towers_nonempty", not root_tower_ids.is_empty(), root_tower_ids.size())
+	_record_check(result, "target_modes_include_first", target_modes.has("first"), target_modes)
 	var upgrades: Dictionary = _record_dictionary_field(result, data, "top_level_upgrades", "upgrades")
 	var tower_upgrade_costs: Dictionary = _dictionary_value(upgrades.get("tower_upgrade_costs", {}))
-	_record_check(result, "first_upgrade_cost", tower_upgrade_costs.get("1") == 60, tower_upgrade_costs.get("1"))
+	_record_number_check(result, "first_upgrade_cost_valid", tower_upgrade_costs.get("1"), 1.0, true)
 
 	var branch_definitions: Dictionary = _dictionary_value(towers.get("branch_definitions", {}))
 	for tower_id in root_tower_ids:
 		var branches: Dictionary = _dictionary_value(branch_definitions.get(tower_id, {}))
-		_record_check(result, "branches_%s" % tower_id, branches.size() == 3, branches.size())
+		_record_check(result, "branches_%s_nonempty" % tower_id, not branches.is_empty(), branches.size())
 
 	var maps_data: Dictionary = _record_dictionary_field(result, data, "top_level_maps", "maps")
 	var maps: Array = _array_value(maps_data.get("catalog", []))
@@ -61,13 +61,13 @@ func validate_game_data() -> Dictionary:
 	var schedule: Array = _array_value(waves.get("schedule", []))
 	var modifiers: Dictionary = _dictionary_value(waves.get("modifiers", {}))
 	_record_check(result, "wave_schedule_count", schedule.size() == GameConfig.MAX_WAVE, schedule.size())
-	_record_check(result, "wave_modifier_count", modifiers.size() == 5, modifiers.size())
+	_record_check(result, "wave_modifiers_nonempty", not modifiers.is_empty(), modifiers.size())
 	var wave_one: Dictionary = _dictionary_value(schedule[0]) if not schedule.is_empty() else {}
 	_record_check(result, "wave_1_softened_count", int(wave_one.get("regular_enemy_count", 0)) == 11, wave_one)
 	_record_check(result, "wave_1_softened_interval", is_equal_approx(float(wave_one.get("spawn_interval", 0.0)), 0.66), wave_one)
 
 	var progression: Dictionary = _record_dictionary_field(result, data, "top_level_progression", "progression")
-	_record_check(result, "reward_card_count", progression.get("card_pool", {}).size() == 9, progression.get("card_pool", {}).size())
+	_record_check(result, "reward_cards_nonempty", progression.get("card_pool", {}).size() > 0, progression.get("card_pool", {}).size())
 
 	var enemies: Dictionary = _record_dictionary_field(result, data, "top_level_enemies", "enemies")
 	_record_check(result, "enemy_kind_count", enemies.get("kind_modifiers", {}).size() == 8, enemies.get("kind_modifiers", {}).size())
@@ -80,7 +80,38 @@ func validate_game_data() -> Dictionary:
 	_validate_wave_content(result, waves, enemies)
 	_validate_map_content(result, maps_data)
 	_validate_progression_content(result, progression)
+	_validate_runtime_enabled_branches(result, towers)
 	return result
+
+
+func validate_content_snapshot() -> Dictionary:
+	var data := load_game_data()
+	var towers: Dictionary = data.get("towers", {})
+	var progression: Dictionary = data.get("progression", {})
+	var waves: Dictionary = data.get("waves", {})
+	var result := {"ok": true, "checks": [], "errors": [], "warnings": []}
+	_record_check(result, "snapshot_shop_order_count", towers.get("shop_order", []).size() == 8, towers.get("shop_order", []).size())
+	_record_check(result, "snapshot_root_tower_count", towers.get("root_tower_ids", []).size() == 9, towers.get("root_tower_ids", []).size())
+	_record_check(result, "snapshot_target_mode_count", towers.get("target_modes", []).size() == 6, towers.get("target_modes", []).size())
+	_record_check(result, "snapshot_first_upgrade_cost", data.get("upgrades", {}).get("tower_upgrade_costs", {}).get("1") == 60, data.get("upgrades", {}).get("tower_upgrade_costs", {}).get("1"))
+	_record_check(result, "snapshot_reward_card_count", progression.get("card_pool", {}).size() == 9, progression.get("card_pool", {}).size())
+	_record_check(result, "snapshot_wave_modifier_count", waves.get("modifiers", {}).size() == 5, waves.get("modifiers", {}).size())
+	return result
+
+
+func _validate_runtime_enabled_branches(result: Dictionary, towers: Dictionary) -> void:
+	var enabled: Variant = towers.get("runtime_enabled_branches", {})
+	_record_check(result, "runtime_enabled_branches_dictionary", enabled is Dictionary, enabled)
+	if not enabled is Dictionary:
+		return
+	var definitions: Dictionary = _dictionary_value(towers.get("branch_definitions", {}))
+	for tower_type in enabled.keys():
+		var ids: Variant = enabled[tower_type]
+		_record_check(result, "runtime_enabled_%s_array" % tower_type, ids is Array, ids)
+		if not ids is Array:
+			continue
+		for branch_id in ids:
+			_record_check(result, "runtime_enabled_%s_%s_exists" % [tower_type, branch_id], _dictionary_value(definitions.get(tower_type, {})).has(branch_id), branch_id)
 
 
 func validate_balance_sanity() -> Dictionary:
@@ -548,16 +579,13 @@ func _max_numeric_value(values: Dictionary) -> float:
 	return result
 
 
-func _record_number_check(result: Dictionary, label: String, value: Variant, minimum: float, strict: bool) -> void:
+func _record_number_check(result: Dictionary, label: String, value: Variant, minimum: float, _strict: bool) -> void:
 	var passed := _is_number(value)
 	var number := 0.0
 	if passed:
 		number = float(value)
 		passed = not is_nan(number) and not is_inf(number)
-		if strict:
-			passed = passed and number >= minimum
-		else:
-			passed = passed and number >= minimum
+		passed = passed and number >= minimum
 	_record_check(result, label, passed, value)
 
 

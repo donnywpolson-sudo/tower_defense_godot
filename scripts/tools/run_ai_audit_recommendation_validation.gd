@@ -1,10 +1,10 @@
 extends SceneTree
 
 const RECOMMENDER := preload("res://scripts/tools/recommend_ai_audit_settings.gd")
-const FALLBACK_ARGS := "medium --scenario-probes=auto"
-const FAILED_MEDIUM_ARGS := "medium --runs=260 --max-waves=6 --seed-count=5 --scenario-probes=full --full-action-log=true --compare-previous=false --report-label=diagnostic_ai_exit"
-const WAVE_MISMATCH_ARGS := "medium --runs=120 --max-waves=8 --seed-count=3 --scenario-probes=full --full-action-log=true --compare-previous=false --strategies=balanced_builder,value_upgrader,anti_leak_targeting --report-label=wave_resolution_diagnostic"
-const ALLOWED_POSITIONAL := ["medium", "deep", "overnight"]
+const FALLBACK_ARGS := "--profile=medium --scenario-probes=auto --record=flagged --report-only"
+const FAILED_MEDIUM_ARGS := "--profile=medium --runs=260 --max-waves=6 --seed-count=5 --scenario-probes=full --record=full --compare-previous=false --report-only --report-label=diagnostic_ai_exit"
+const WAVE_MISMATCH_ARGS := "--profile=medium --runs=120 --max-waves=8 --seed-count=3 --scenario-probes=full --record=full --compare-previous=false --report-only --strategies=balanced_builder,value_upgrader,anti_leak_targeting --report-label=wave_resolution_diagnostic"
+const ALLOWED_POSITIONAL := ["smoke", "medium", "deep", "overnight"]
 const ALLOWED_FLAGS := [
 	"--runs",
 	"--max-waves",
@@ -13,6 +13,12 @@ const ALLOWED_FLAGS := [
 	"--seed-step",
 	"--scenario-probes",
 	"--full-action-log",
+	"--profile",
+	"--record",
+	"--coverage",
+	"--manifest",
+	"--compare-to",
+	"--report-only",
 	"--compare-previous",
 	"--report-label",
 	"--strategies",
@@ -81,7 +87,7 @@ func _expect_recommendation(label: String, report_text: String, expected_args: S
 func _report_text(bundle_kind: String, scorecard: String, findings: String, next_action: String) -> String:
 	var bundle := "| Item | Status | Result |\n| --- | --- | --- |\n"
 	if bundle_kind == "failed":
-		bundle += "| `.\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | failed | Noninteractive form reached 240/420 runs; no new packet was produced. |\n"
+		bundle += "| `.\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | failed | Configured Medium profile stopped before producing a complete packet. |\n"
 	else:
 		bundle += "| `.\\_ai_audit_workflow\\_internal\\TOWER_DEFENSE_AI_SIMULATION.bat medium --scenario-probes=auto` | fresh | Completed. |\n"
 	return "\n".join([
@@ -158,28 +164,26 @@ func _expect_structured_output(output: String, label: String) -> void:
 
 func _expect_batch_menu_contract() -> void:
 	var batch := FileAccess.get_file_as_string("res://_ai_audit_workflow/_internal/TOWER_DEFENSE_AI_SIMULATION.bat")
-	_expect_contains(batch, "echo   #  Tier              Est. Runtime  Runs   Waves  Seeds  Purpose", "menu table header")
-	_expect_contains(batch, "echo   0  Recommended       varies        rec.   rec.   rec.   audit recommendation", "menu recommended")
-	_expect_contains(batch, "echo   1  Strategy Smoke    5 sec         14     2      1      quick sanity check", "menu smoke")
-	_expect_contains(batch, "echo   2  Medium            5 min         420    6      5      normal research", "menu medium")
-	_expect_contains(batch, "echo   3  Deep              2 hr          2,500  20     8      deeper evidence", "menu deep")
-	_expect_contains(batch, "echo   4  Overnight         8+ hr         6,000  50     12     full research", "menu overnight")
-	_expect_contains(batch, "echo   5  Cancel            -             -      -      -      exit launcher", "menu cancel")
-	_expect_contains(batch, "EST_RUNTIME_LABEL", "runtime label state")
-	_expect_contains(batch, "Estimated runtime:", "estimated runtime summary")
+	_expect_contains(batch, "echo   #  Profile            Purpose", "menu table header")
+	_expect_contains(batch, "echo   0  Recommended         use the current contract recommendation", "menu recommended")
+	_expect_contains(batch, "echo   1  Smoke               bounded report-only sanity check", "menu smoke")
+	_expect_contains(batch, "echo   2  Medium              standard report-only audit", "menu medium")
+	_expect_contains(batch, "echo   3  Deep                deeper report-only audit", "menu deep")
+	_expect_contains(batch, "echo   4  Overnight           full report-only audit", "menu overnight")
+	_expect_contains(batch, "echo   5  Cancel              exit launcher", "menu cancel")
+	_expect_contains(batch, "EXECUTION_LABEL", "execution label state")
+	_expect_contains(batch, "Contract: config.json", "contract summary")
+	_expect_not_contains(batch, "Estimated runtime:", "estimated runtime claims removed")
 	_expect_not_contains(batch, "Timeout:", "timeout summary removed")
 	_expect_contains(batch, "set /p \"PROFILE_CHOICE=Choose a tier [0]: \"", "menu prompt")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"\" set \"PROFILE_CHOICE=0\"", "menu default")
 	_expect_not_contains(batch, "Enter 0, 1, 2, 3, 4, or 5, then press Enter:", "old menu prompt")
-	_expect_contains(batch, "set \"RECOMMENDATION_ARGS_FILE=%LOG_DIR%\\godot_ai_audit_recommendation_args.txt\"", "recommendation args file")
-	_expect_contains(batch, "> \"%RECOMMENDATION_ARGS_FILE%\" 2>nul", "recommendation args capture")
-	_expect_contains(batch, "--report-path=%AUDIT_REPORT_RES%", "recommendation report path")
-	_expect_contains(batch, "for /f \"usebackq delims=\" %%A in (\"%RECOMMENDATION_ARGS_FILE%\") do", "recommendation args readback")
+	_expect_not_contains(batch, "call :show_recommendation_if_available", "stale root recommendation auto-read")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"0\" (\n    set \"USER_ARGS= !RECOMMENDED_ARGS!\"", "choice 0 mapping")
-	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"1\" (\n    set \"USER_ARGS= --runs=14 --max-waves=2 --report-label=strategy_smoke\"", "choice 1 mapping")
-	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"2\" (\n    set \"USER_ARGS= medium\"", "choice 2 mapping")
-	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"3\" (\n    set \"USER_ARGS= deep\"", "choice 3 mapping")
-	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"4\" (\n    set \"USER_ARGS= overnight\"", "choice 4 mapping")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"1\" (\n    set \"USER_ARGS= --profile=smoke --runs=14 --max-waves=2 --report-label=strategy_smoke --record=flagged --report-only\"", "choice 1 mapping")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"2\" (\n    set \"USER_ARGS= --profile=medium --record=flagged --report-only\"", "choice 2 mapping")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"3\" (\n    set \"USER_ARGS= --profile=deep --record=flagged --report-only\"", "choice 3 mapping")
+	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"4\" (\n    set \"USER_ARGS= --profile=overnight --record=flagged --report-only\"", "choice 4 mapping")
 	_expect_contains(batch, "if \"!PROFILE_CHOICE!\"==\"5\" (\n    echo Cancelled.", "choice 5 cancel")
 	_expect_contains(batch, "goto recommend_done", "--recommend skips simulation")
 

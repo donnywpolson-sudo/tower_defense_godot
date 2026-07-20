@@ -2,13 +2,33 @@ extends Node2D
 
 signal status_changed(status: Dictionary)
 
+const MAP_PATH_UTILS = preload("res://scripts/game/map_path_utils.gd")
+const TOWER_RUNTIME_RULES = preload("res://scripts/game/tower_runtime_rules.gd")
+const RUN_STATE_CODEC = preload("res://scripts/game/run_state_codec.gd")
+const GAMEPLAY_LAYOUT = preload("res://scripts/game/gameplay_layout.gd")
+const GAMEPLAY_VIEW_MODEL = preload("res://scripts/game/gameplay_view_model.gd")
+
 const ARCHER_ID := "archer"
 const ENEMY_KIND := "normal"
 const CANONICAL_ENEMY_KINDS := ["normal", "fast", "tank", "swarm", "shield", "flying", "armored", "commander"]
-const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "frost", "sniper", "tesla"]
+const BASIC_SLICE_TOWER_IDS := ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"]
 const SLICE_SPAWN_LIMIT := 3
 const PROJECTILE_HIT_DISTANCE := 8.0
 const RECOMMENDED_BUILD_SITE := Vector2(300, 243)
+const POISON_MAX_STACKS := 3
+const POISON_DURATION := 3.0
+const POISON_TICK_INTERVAL := 0.5
+const POISON_DAMAGE_RATIO := 0.12
+const POISON_REGEN_MULTIPLIER := 0.50
+const PLAGUE_MIST_SPREAD_RADIUS := 72.0
+const PLAGUE_MIST_SPREAD_TARGETS := 2
+const PLAGUE_MIST_SPREAD_DAMAGE_RATIO := 0.55
+const WILDFIRE_BURN_DURATION := 1.4
+const WILDFIRE_BURN_TICK_INTERVAL := 0.5
+const WILDFIRE_BURN_DAMAGE_RATIO := 0.06
+const WILDFIRE_BLOOM_RADIUS := 72.0
+const WILDFIRE_BLOOM_TARGETS := 2
+const WILDFIRE_BLOOM_DAMAGE_RATIO := 0.60
 const SHOP_BUTTON_SIZE := Vector2(78, 25)
 const SHOP_BUTTON_GAP := 4.0
 const BOTTOM_LAYOUT_MIN_HEIGHT := 780.0
@@ -18,6 +38,10 @@ const BOTTOM_DOCK_GAP := 10.0
 const NO_SELECTED_TOWER := -1
 const GAME_SPEEDS := [0.0, 1.0, 2.0, 4.0]
 const GAME_SPEED_LABELS := ["Pause", "1x", "2x", "4x"]
+const REWARD_CARD_PANEL_MAX_WIDTH := 720.0
+const REWARD_CARD_PANEL_HEIGHT := 520.0
+const REWARD_CARD_PANEL_PADDING := 16.0
+const REWARD_CARD_GAP := 10.0
 const MAX_SIMULATION_STEP := 0.05
 const INVARIANT_CHECK_INTERVAL := 0.25
 const DEBUG_COMMAND_NAMES := ["give_money", "set_wave", "spawn_enemy", "kill_all_enemies", "skip_wave"]
@@ -39,6 +63,8 @@ const FOCUS_DISPLAY_NAME_OVERRIDES := {
 var game_data: Dictionary = {}
 var config: Dictionary = {}
 var map_record: Dictionary = {}
+var map_index: int = 0
+var lane_paths: Array = []
 var path_points: Array = []
 var wave_row: Dictionary = {}
 
@@ -51,11 +77,19 @@ var wave_complete: bool = false
 var game_over: bool = false
 var spawned_this_wave: int = 0
 var spawned_extra_this_wave: int = 0
+var spawned_boss_this_wave: int = 0
+var spawned_commander_this_wave: int = 0
+var spawn_lane_cursor: int = 0
 var spawn_timer: float = 0.0
 var leaks: int = 0
 var kills: int = 0
 var wave_reward_money: int = 0
 var wave_reward_research: int = 0
+var pending_reward_cards: Array = []
+var reward_card_history: Array = []
+var reward_card_pierce_bonus: int = 0
+var run_modifiers: Dictionary = TOWER_RUNTIME_RULES.default_modifiers()
+var next_tower_id: int = 1
 var selected_build_type: String = ""
 var selected_tower_index: int = NO_SELECTED_TOWER
 var game_speed: float = 1.0
@@ -75,11 +109,16 @@ func _ready() -> void:
 	set_process(true)
 
 
-func reset_slice() -> void:
+func reset_slice(requested_map_index: int = 0) -> void:
 	game_data = GameData.load_game_data()
 	config = game_data.get("config", {})
-	map_record = game_data.get("maps", {}).get("catalog", [])[0]
-	path_points = _points_from_path(map_record.get("paths", [[[]]])[0])
+	var maps: Array = game_data.get("maps", {}).get("catalog", [])
+	map_index = clamp(requested_map_index, 0, max(0, maps.size() - 1))
+	map_record = maps[map_index] if not maps.is_empty() else {}
+	lane_paths = MAP_PATH_UTILS.paths_from_map(map_record.get("paths", []))
+	if lane_paths.is_empty():
+		lane_paths = [MAP_PATH_UTILS.points_from_path(map_record.get("paths", [[[]]])[0])]
+	path_points = lane_paths[0] if not lane_paths.is_empty() else []
 	var run_defaults := _new_run_defaults()
 	money = int(run_defaults.get("money", config.get("starting_money", GameConfig.STARTING_MONEY)))
 	lives = int(run_defaults.get("lives", config.get("starting_lives", GameConfig.STARTING_LIVES)))
@@ -91,11 +130,19 @@ func reset_slice() -> void:
 	game_over = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
+	spawn_lane_cursor = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
 	wave_reward_money = 0
 	wave_reward_research = 0
+	pending_reward_cards = []
+	reward_card_history = []
+	reward_card_pierce_bonus = 0
+	run_modifiers = TOWER_RUNTIME_RULES.default_modifiers()
+	next_tower_id = 1
 	selected_build_type = ""
 	selected_tower_index = NO_SELECTED_TOWER
 	game_speed = _progress_game_speed()
@@ -107,6 +154,14 @@ func reset_slice() -> void:
 	_emit_status()
 	_check_runtime_invariants("reset_slice")
 	queue_redraw()
+
+
+func set_map_for_test(requested_map_index: int) -> bool:
+	var maps: Array = game_data.get("maps", {}).get("catalog", [])
+	if maps.is_empty() or requested_map_index < 0 or requested_map_index >= maps.size():
+		return false
+	reset_slice(requested_map_index)
+	return true
 
 
 func place_archer(site: Vector2 = RECOMMENDED_BUILD_SITE) -> bool:
@@ -125,15 +180,16 @@ func place_selected_tower(site: Vector2, tower_type: String = "") -> bool:
 	var cost: int = _shop_cost(tower_type)
 	money -= cost
 	var run_defaults := _new_run_defaults()
-	var damage_multiplier: float = float(run_defaults.get("tower_damage_multiplier", 1.0))
 	var starting_level := 1
+	var stats := TOWER_RUNTIME_RULES.resolved_stats(config, tower_type, starting_level, float(run_defaults.get("tower_damage_multiplier", 1.0)), run_modifiers)
 	var tower := {
+		"tower_id": _allocate_tower_id(),
 		"type": tower_type,
 		"position": snapped_site,
 		"level": starting_level,
-		"range": _basic_slice_tower_range(tower_type, starting_level),
-		"damage": _basic_slice_tower_damage(tower_type, starting_level) * damage_multiplier,
-		"fire_rate": _basic_slice_tower_fire_rate(tower_type, starting_level),
+		"range": stats["range"],
+		"damage": stats["damage"],
+		"fire_rate": stats["fire_rate"],
 		"cooldown": 0.0,
 		"target_mode": "first",
 		"kills": 0,
@@ -160,10 +216,6 @@ func place_selected_tower(site: Vector2, tower_type: String = "") -> bool:
 
 func can_place_tower(site: Vector2) -> bool:
 	return bool(placement_preview_snapshot(site).get("can_place", false))
-
-
-func _can_place_tower_site(site: Vector2) -> bool:
-	return _placement_site_disabled_reason(site).is_empty()
 
 
 func placement_preview_snapshot(site: Vector2, tower_type: String = "") -> Dictionary:
@@ -207,9 +259,10 @@ func _placement_site_disabled_reason(site: Vector2) -> String:
 		if site.distance_to(tower["position"]) < float(config.get("build_tile_size", 54)):
 			return "Tile occupied"
 	var blocked_distance: float = float(config.get("path_width", 54)) / 2.0 + float(config.get("build_tile_size", 54)) / 2.0
-	for index in range(path_points.size() - 1):
-		if _distance_point_to_segment(site, path_points[index], path_points[index + 1]) < blocked_distance:
-			return "Blocked by path"
+	for lane_path in lane_paths:
+		for index in range(lane_path.size() - 1):
+			if _distance_point_to_segment(site, lane_path[index], lane_path[index + 1]) < blocked_distance:
+				return "Blocked by path"
 	return ""
 
 
@@ -235,10 +288,47 @@ func start_wave() -> bool:
 	spawn_timer = 0.0
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	_clear_feedback()
 	_play_sound("sounds/ui/wave.wav", 480.0)
 	_emit_status()
 	_check_runtime_invariants("start_wave")
+	return true
+
+
+func reward_card_choice_snapshot() -> Dictionary:
+	return {
+		"pending": not pending_reward_cards.is_empty(),
+		"choices": pending_reward_cards.duplicate(true),
+		"history": reward_card_history.duplicate(true),
+	}
+
+
+func choose_reward_card(card_id: String) -> bool:
+	if game_over or pending_reward_cards.is_empty():
+		return false
+	var selected: Dictionary = {}
+	for card in pending_reward_cards:
+		if str(card.get("id", "")) == card_id:
+			selected = card
+			break
+	if selected.is_empty():
+		return false
+	var effects: Dictionary = selected.get("effects", {})
+	money += int(effects.get("money", 0))
+	lives = min(99, lives + int(effects.get("lives", 0)))
+	research_points += int(effects.get("research_points", 0))
+	reward_card_pierce_bonus += int(effects.get("pierce_bonus", 0))
+	run_modifiers = TOWER_RUNTIME_RULES.apply_reward_effects(run_modifiers, effects)
+	reward_card_pierce_bonus = int(run_modifiers.get("pierce_bonus", reward_card_pierce_bonus))
+	_recompute_all_tower_stats()
+	reward_card_history.append({"id": card_id, "wave": wave, "effects": effects.duplicate(true)})
+	pending_reward_cards = []
+	_set_feedback("reward", "Selected %s" % str(selected.get("label", card_id)))
+	_emit_status()
+	_check_runtime_invariants("choose_reward_card")
+	queue_redraw()
 	return true
 
 
@@ -253,6 +343,9 @@ func advance_to_next_wave() -> bool:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
+	spawn_lane_cursor = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -301,6 +394,21 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("restart_run"):
+		reset_slice(map_index)
+		return
+	if event.is_action_pressed("toggle_audio"):
+		_toggle_audio_setting()
+		return
+	if event.is_action_pressed("target_mode"):
+		cycle_selected_target_mode()
+		return
+	if event.is_action_pressed("upgrade_tower"):
+		upgrade_selected_tower()
+		return
+	if event.is_action_pressed("sell_tower"):
+		sell_selected_tower()
+		return
 	if event.is_action_pressed("start_wave"):
 		start_wave()
 	if event.is_action_pressed("pause_game"):
@@ -323,6 +431,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				return
 		if mouse_event.button_index == MOUSE_BUTTON_LEFT and mouse_event.pressed:
 			if handle_game_over_click(mouse_event.position):
+				return
+			if handle_reward_card_click(mouse_event.position):
 				return
 			if handle_speed_control_click(mouse_event.position):
 				return
@@ -360,6 +470,17 @@ func handle_wave_control_click(pos: Vector2) -> bool:
 	if not get_start_wave_button_rect().has_point(pos):
 		return false
 	start_wave()
+	return true
+
+
+func handle_reward_card_click(pos: Vector2) -> bool:
+	if pending_reward_cards.is_empty():
+		return false
+	for card_button in get_reward_card_rects():
+		var rect: Rect2 = card_button["rect"]
+		if rect.has_point(pos):
+			choose_reward_card(str(card_button["card_id"]))
+			return true
 	return true
 
 
@@ -500,77 +621,15 @@ func _game_data_map_size() -> Vector2:
 
 
 func _layout_metrics() -> Dictionary:
-	var viewport_size := _layout_viewport_size()
-	var game_data_map_size := _game_data_map_size()
-	var mode := "sidebar"
-	var map_scale := 1.0
-	var map_rect := Rect2(Vector2.ZERO, game_data_map_size)
-	var dock_rect := Rect2()
-	var sidebar_rect := Rect2(
-		Vector2(game_data_map_size.x, 0.0),
-		Vector2(float(config.get("ui_width", GameConfig.UI_WIDTH)), game_data_map_size.y)
+	return GAMEPLAY_LAYOUT.metrics(
+		_layout_viewport_size(),
+		_game_data_map_size(),
+		float(config.get("ui_width", GameConfig.UI_WIDTH)),
+		BOTTOM_LAYOUT_MIN_HEIGHT,
+		BOTTOM_DOCK_HEIGHT,
+		BOTTOM_DOCK_PADDING,
+		BOTTOM_DOCK_GAP
 	)
-	var build_panel_rect := Rect2(
-		sidebar_rect.position + Vector2(8.0, 96.0),
-		Vector2(sidebar_rect.size.x - 16.0, 204.0)
-	)
-	var wave_panel_rect := Rect2(
-		sidebar_rect.position + Vector2(8.0, 210.0),
-		Vector2(sidebar_rect.size.x - 16.0, 76.0)
-	)
-	var detail_panel_rect := Rect2(
-		sidebar_rect.position + Vector2(14.0, 304.0),
-		Vector2(sidebar_rect.size.x - 28.0, 190.0)
-	)
-	var upgrade_panel_rect := Rect2(
-		sidebar_rect.position + Vector2(8.0, 286.0),
-		Vector2(sidebar_rect.size.x - 16.0, 304.0)
-	)
-
-	if viewport_size.y >= BOTTOM_LAYOUT_MIN_HEIGHT:
-		mode = "bottom_dock"
-		dock_rect = Rect2(Vector2(0.0, viewport_size.y - BOTTOM_DOCK_HEIGHT), Vector2(viewport_size.x, BOTTOM_DOCK_HEIGHT))
-		var map_area := Rect2(Vector2.ZERO, Vector2(viewport_size.x, max(1.0, dock_rect.position.y)))
-		map_scale = min(map_area.size.x / game_data_map_size.x, map_area.size.y / game_data_map_size.y)
-		map_scale = max(0.001, map_scale)
-		var scaled_map_size := game_data_map_size * map_scale
-		map_rect = Rect2(
-			map_area.position + (map_area.size - scaled_map_size) * 0.5,
-			scaled_map_size
-		)
-		var panel_height: float = dock_rect.size.y - BOTTOM_DOCK_PADDING * 2.0
-		var build_width: float = min(430.0, max(390.0, viewport_size.x * 0.36))
-		var wave_width: float = min(220.0, max(180.0, viewport_size.x * 0.16))
-		build_panel_rect = Rect2(
-			dock_rect.position + Vector2(BOTTOM_DOCK_PADDING, BOTTOM_DOCK_PADDING),
-			Vector2(build_width, panel_height)
-		)
-		wave_panel_rect = Rect2(
-			Vector2(build_panel_rect.end.x + BOTTOM_DOCK_GAP, dock_rect.position.y + BOTTOM_DOCK_PADDING),
-			Vector2(wave_width, panel_height)
-		)
-		detail_panel_rect = Rect2(
-			Vector2(wave_panel_rect.end.x + BOTTOM_DOCK_GAP, dock_rect.position.y + BOTTOM_DOCK_PADDING),
-			Vector2(max(320.0, viewport_size.x - wave_panel_rect.end.x - BOTTOM_DOCK_GAP - BOTTOM_DOCK_PADDING), panel_height)
-		)
-		upgrade_panel_rect = detail_panel_rect
-		sidebar_rect = Rect2()
-
-	return {
-		"mode": mode,
-		"viewport_size": viewport_size,
-		"map_rect": map_rect,
-		"map_origin": map_rect.position,
-		"map_scale": map_scale,
-		"dock_rect": dock_rect,
-		"sidebar_rect": sidebar_rect,
-		"build_panel_rect": build_panel_rect,
-		"shop_panel_rect": build_panel_rect,
-		"wave_panel_rect": wave_panel_rect,
-		"detail_panel_rect": detail_panel_rect,
-		"run_status_panel_rect": detail_panel_rect,
-		"upgrade_panel_rect": upgrade_panel_rect,
-	}
 
 
 func get_shop_button_rects() -> Array:
@@ -658,6 +717,50 @@ func get_start_wave_button_rect() -> Rect2:
 		Vector2(x + 18.0, 218.0),
 		Vector2(float(config.get("ui_width", GameConfig.UI_WIDTH)) - 36.0, 28.0)
 	)
+
+
+func get_reward_card_panel_rect() -> Rect2:
+	if pending_reward_cards.is_empty():
+		return Rect2()
+	var viewport_size := _layout_viewport_size()
+	var panel_size := Vector2(
+		min(REWARD_CARD_PANEL_MAX_WIDTH, max(320.0, viewport_size.x - 32.0)),
+		min(REWARD_CARD_PANEL_HEIGHT, max(220.0, viewport_size.y - 32.0))
+	)
+	return Rect2((viewport_size - panel_size) * 0.5, panel_size)
+
+
+func get_reward_card_rects() -> Array:
+	var rects: Array = []
+	if pending_reward_cards.is_empty():
+		return rects
+	var panel := get_reward_card_panel_rect()
+	var content := Rect2(
+		panel.position + Vector2(REWARD_CARD_PANEL_PADDING, 74.0),
+		Vector2(panel.size.x - REWARD_CARD_PANEL_PADDING * 2.0, panel.size.y - 90.0)
+	)
+	var count := pending_reward_cards.size()
+	var columns: int = min(3, max(1, count))
+	var rows: int = int(ceil(float(count) / float(columns)))
+	var gap: float = REWARD_CARD_GAP if count > 1 else 0.0
+	var card_width: float = (content.size.x - gap * float(max(0, columns - 1))) / float(columns)
+	var card_height: float = (content.size.y - gap * float(max(0, rows - 1))) / float(rows)
+	for index in range(count):
+		var card: Dictionary = pending_reward_cards[index]
+		var column: int = index % columns
+		var row: int = int(index / columns)
+		var card_rect := Rect2(
+			Vector2(content.position.x + float(column) * (card_width + gap), content.position.y + float(row) * (card_height + gap)),
+			Vector2(card_width, card_height)
+		)
+		rects.append({
+			"rect": card_rect,
+			"card_id": str(card.get("id", "")),
+			"label": str(card.get("label", "")),
+			"description": str(card.get("description", "")),
+			"category": str(card.get("category", "progression")),
+		})
+	return rects
 
 
 func get_game_over_restart_rect() -> Rect2:
@@ -818,9 +921,67 @@ func set_game_speed(speed: float) -> bool:
 	return true
 
 
+func _toggle_audio_setting() -> bool:
+	var audio := _audio()
+	var progress := _progress()
+	var current_enabled := bool(progress.settings.get("sfx_enabled", true)) if progress != null else true
+	if audio != null:
+		current_enabled = bool(audio.sfx_enabled)
+	var enabled := not current_enabled
+	if audio != null:
+		audio.sfx_enabled = enabled
+	if progress != null:
+		progress.settings["sfx_enabled"] = enabled
+	_set_feedback("audio", "Sound on" if enabled else "Sound off")
+	return enabled
+
+
+func _allocate_tower_id() -> int:
+	var allocated := next_tower_id
+	next_tower_id += 1
+	return allocated
+
+
+func _tower_by_id(tower_id: int) -> Dictionary:
+	if tower_id <= 0:
+		return {}
+	for tower in towers:
+		if int(tower.get("tower_id", -1)) == tower_id:
+			return tower
+	return {}
+
+
+func _ensure_tower_id(tower: Dictionary) -> int:
+	var tower_id := int(tower.get("tower_id", -1))
+	if tower_id <= 0:
+		tower_id = _allocate_tower_id()
+		tower["tower_id"] = tower_id
+	return tower_id
+
+
+func _apply_resolved_tower_stats(tower: Dictionary, tower_type: String = "", level: int = -1) -> void:
+	if tower_type.is_empty():
+		tower_type = str(tower.get("type", ARCHER_ID))
+	if level < 0:
+		level = int(tower.get("level", 1))
+	var defaults := _new_run_defaults()
+	var stats := TOWER_RUNTIME_RULES.resolved_stats(config, tower_type, level, float(defaults.get("tower_damage_multiplier", 1.0)), run_modifiers)
+	tower["range"] = stats["range"]
+	tower["damage"] = stats["damage"]
+	tower["fire_rate"] = stats["fire_rate"]
+
+
+func _recompute_all_tower_stats() -> void:
+	for tower in towers:
+		_apply_resolved_tower_stats(tower)
+
+
 func choose_selected_tower_branch(branch_id: String) -> bool:
 	var tower := _selected_tower()
 	if tower.is_empty() or not _tower_needs_branch_choice(tower):
+		return false
+	if not TOWER_RUNTIME_RULES.is_branch_enabled(game_data, str(tower.get("type", "")), branch_id):
+		_set_feedback("upgrade", "That focus is not implemented")
 		return false
 	for option in _branch_options_for_tower(tower):
 		if str(option.get("id", "")) == branch_id:
@@ -850,14 +1011,10 @@ func upgrade_selected_tower() -> bool:
 	var cost: int = int(option.get("cost", 0))
 	var next_level: int = int(tower.get("level", 1)) + 1
 	var tower_type: String = str(tower.get("type", ARCHER_ID))
-	var run_defaults := _new_run_defaults()
-	var damage_multiplier: float = float(run_defaults.get("tower_damage_multiplier", 1.0))
 	money -= cost
 	tower["level"] = next_level
 	tower["money_spent"] = int(tower.get("money_spent", 0)) + cost
-	tower["range"] = _basic_slice_tower_range(tower_type, next_level)
-	tower["damage"] = _basic_slice_tower_damage(tower_type, next_level) * damage_multiplier
-	tower["fire_rate"] = _basic_slice_tower_fire_rate(tower_type, next_level)
+	_apply_resolved_tower_stats(tower, tower_type, next_level)
 	_clear_feedback()
 	_play_sound("sounds/ui/build.wav", 420.0)
 	_emit_status()
@@ -939,52 +1096,15 @@ func _tower_range_color(tower_type: String) -> Color:
 
 
 func _basic_slice_tower_range(tower_type: String, level: int = 1) -> float:
-	var base_range: float = float(config.get("base_tower_range", 145)) + 18.0
-	if tower_type == "sniper":
-		base_range += 90.0
-	if tower_type == "frost":
-		base_range += 22.0
-	if tower_type == "machine_gun":
-		base_range -= 10.0
-	if tower_type == "tesla":
-		base_range += 8.0
-	if level <= 1:
-		return max(80.0, base_range - 12.0)
-	return base_range
+	return TOWER_RUNTIME_RULES.base_range(config, tower_type, level)
 
 
 func _basic_slice_tower_damage(tower_type: String, level: int = 1) -> float:
-	var damage := 39.0
-	if tower_type == "sniper":
-		damage = 58.0
-	elif tower_type == "machine_gun":
-		damage = 22.0
-	elif tower_type == "cannon":
-		damage = 46.0
-	elif tower_type == "frost":
-		damage = 27.0
-	elif tower_type == "tesla":
-		damage = 34.0
-	if level <= 1:
-		return max(1.0, round(damage * 0.93))
-	return damage
+	return TOWER_RUNTIME_RULES.base_damage(tower_type, level)
 
 
 func _basic_slice_tower_fire_rate(tower_type: String, level: int = 1) -> float:
-	var fire_rate := 0.50
-	if tower_type == "sniper":
-		fire_rate = 0.85
-	elif tower_type == "machine_gun":
-		fire_rate = 0.28
-	elif tower_type == "cannon":
-		fire_rate = 0.72
-	elif tower_type == "frost":
-		fire_rate = 0.68
-	elif tower_type == "tesla":
-		fire_rate = 0.45
-	if level <= 1:
-		return fire_rate
-	return fire_rate
+	return TOWER_RUNTIME_RULES.base_fire_interval(tower_type, level)
 
 
 func _selected_tower() -> Dictionary:
@@ -1074,7 +1194,9 @@ func _tower_detail_text(tower: Dictionary) -> String:
 	var data: Dictionary = game_data.get("towers", {}).get("tower_types", {}).get(tower_type, {})
 	var family: String = str(data.get("family", data.get("label", "Basic"))).replace(" Family", "")
 	var selected_branch_name := _selected_branch_name(tower)
-	var branch_text := "Focus at L3"
+	var branch_text := "Upgrades through L2"
+	if int(tower.get("level", 1)) >= 2:
+		branch_text = "Upgrade path complete"
 	if _tower_needs_branch_choice(tower):
 		branch_text = "Choose L3 Focus"
 	elif not selected_branch_name.is_empty():
@@ -1133,7 +1255,7 @@ func _focus_perk_summary(branch: Dictionary) -> String:
 func _tower_needs_branch_choice(tower: Dictionary) -> bool:
 	var root_ids: Array = game_data.get("towers", {}).get("root_tower_ids", [])
 	var branch_unlock_level: int = int(game_data.get("towers", {}).get("branch_unlock_level", 3))
-	return root_ids.has(tower.get("type", "")) and int(tower.get("level", 1)) == branch_unlock_level - 1 and str(tower.get("selected_branch", "")).is_empty()
+	return root_ids.has(tower.get("type", "")) and int(tower.get("level", 1)) == branch_unlock_level - 1 and str(tower.get("selected_branch", "")).is_empty() and not _branch_options_for_tower(tower).is_empty()
 
 
 func _branch_definitions_for_tower(tower_type: String) -> Dictionary:
@@ -1169,6 +1291,8 @@ func _branch_options_for_tower(tower: Dictionary) -> Array:
 			ordered_ids.append(branch_id)
 	var options: Array = []
 	for branch_id in ordered_ids:
+		if not TOWER_RUNTIME_RULES.is_branch_enabled(game_data, tower_type, branch_id):
+			continue
 		var branch: Dictionary = _branch_definition(tower_type, branch_id)
 		if branch.is_empty():
 			continue
@@ -1192,6 +1316,17 @@ func _branch_options_for_tower(tower: Dictionary) -> Array:
 
 
 func _upgrade_options_for_tower(tower: Dictionary) -> Array:
+	var level: int = int(tower.get("level", 1))
+	var branch_unlock_level: int = int(game_data.get("towers", {}).get("branch_unlock_level", 3))
+	if level == branch_unlock_level - 1 and _branch_options_for_tower(tower).is_empty():
+		return [{
+			"tower_type": tower.get("type", ""),
+			"title": "Upgrade unavailable",
+			"cost": 0,
+			"description": "Further upgrades are not implemented yet",
+			"enabled": false,
+			"disabled_reason": "Further upgrades are not implemented yet",
+		}]
 	var cost: int = _upgrade_cost(tower)
 	if cost == 0:
 		return []
@@ -1255,22 +1390,28 @@ func _sell_refund(tower: Dictionary) -> int:
 
 
 func _update_spawning(delta: float) -> void:
-	if spawned_this_wave >= _regular_enemy_count():
+	if spawned_this_wave >= _regular_enemy_count() and _scheduled_specials_are_spawned():
 		return
 	spawn_timer += delta
 	var interval: float = _spawn_interval()
 	if spawn_timer < interval:
 		return
 	spawn_timer = 0.0
-	spawned_this_wave += 1
-	enemies.append(create_enemy(_wave_enemy_kind()))
+	var special := _next_scheduled_special_enemy()
+	if not special.is_empty():
+		enemies.append(special)
+		spawned_extra_this_wave += 1
+		if bool(special.get("boss", false)):
+			spawned_boss_this_wave += 1
+		elif bool(special.get("commander", false)):
+			spawned_commander_this_wave += 1
+		return
+	if spawned_this_wave < _regular_enemy_count():
+		spawned_this_wave += 1
+		enemies.append(create_enemy(_wave_enemy_kind()))
 
 
-func _create_normal_enemy() -> Dictionary:
-	return create_enemy(ENEMY_KIND)
-
-
-func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Vector2 = Vector2.INF, target_index: int = 1) -> Dictionary:
+func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Vector2 = Vector2.INF, target_index: int = 1, requested_lane_index: int = -1) -> Dictionary:
 	if wave_number < 0:
 		wave_number = wave
 	var enemy_kind := _normalized_enemy_kind(kind)
@@ -1282,11 +1423,15 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 	speed *= float(modifier.get("speed_multiplier", 1.0))
 	reward += int(modifier.get("reward_bonus", 0))
 	var shield_hits: int = int(modifier.get("shield_hits", 0))
-	var spawn_position: Vector2 = path_points[0] if position == Vector2.INF else position
+	var lane_index: int = _next_spawn_lane_index() if requested_lane_index < 0 else int(clamp(requested_lane_index, 0, max(0, lane_paths.size() - 1)))
+	var enemy_path: Array = _path_for_lane(lane_index)
+	var safe_target_index: int = int(clamp(target_index, 0, max(0, enemy_path.size() - 1)))
+	var spawn_position: Vector2 = enemy_path[0] if position == Vector2.INF and not enemy_path.is_empty() else position
 	var enemy := {
 		"kind": enemy_kind,
 		"position": spawn_position,
-		"target_index": target_index,
+		"lane_index": lane_index,
+		"target_index": safe_target_index,
 		"hp": hp,
 		"max_hp": hp,
 		"speed": speed,
@@ -1299,16 +1444,82 @@ func create_enemy(kind: String = ENEMY_KIND, wave_number: int = -1, position: Ve
 		"shield_hits": shield_hits,
 		"max_shield_hits": shield_hits,
 		"tags": modifier.get("tags", []).duplicate(true),
+		"boss": false,
+		"boss_kind": "",
 		"commander": bool(modifier.get("commander", false)),
 		"damage_taken_multiplier": 1.0,
+		"breach_stacks": 0,
+		"breach_timer": 0.0,
+		"breach_vulnerability_multiplier": 1.0,
+		"breach_source_tower_id": -1,
 		"regen_scale": 0.0,
+		"poison_stacks": 0,
+		"poison_timer": 0.0,
+		"poison_tick_timer": 0.0,
+		"poison_damage": 0.0,
+		"poison_regen_multiplier": 1.0,
+		"poison_source_tower_id": -1,
+		"poison_damage_multiplier": 1.0,
+		"wildfire_burn_timer": 0.0,
+		"wildfire_burn_tick_timer": 0.0,
+		"wildfire_burn_damage": 0.0,
+		"wildfire_burn_source_tower_id": -1,
 		"slow_timer": 0.0,
 		"slow_multiplier": 1.0,
+		"freeze_timer": 0.0,
+		"shatter_timer": 0.0,
+		"shatter_vulnerability_multiplier": 1.0,
+		"shatter_burst_radius": 0.0,
+		"shatter_burst_damage_fraction": 0.0,
+		"shatter_burst_targets": 0,
+		"shatter_source_tower_id": -1,
+		"last_damage_source_tower_id": -1,
 		"death_spawns": 0,
 		"death_burst_damage_fraction": 0.0,
 		"death_burst_radius": 0.0,
 	}
 	_apply_wave_modifier(enemy)
+	return enemy
+
+
+func _scheduled_boss_count() -> int:
+	return max(0, int(wave_row.get("boss_count", 0)))
+
+
+func _scheduled_commander_count() -> int:
+	return max(0, int(wave_row.get("commander_count", 0)))
+
+
+func _scheduled_specials_are_spawned() -> bool:
+	return spawned_boss_this_wave >= _scheduled_boss_count() and spawned_commander_this_wave >= _scheduled_commander_count()
+
+
+func _next_scheduled_special_enemy() -> Dictionary:
+	if spawned_boss_this_wave < _scheduled_boss_count():
+		return _create_boss_enemy()
+	if spawned_commander_this_wave < _scheduled_commander_count():
+		return create_enemy("commander")
+	return {}
+
+
+func _create_boss_enemy() -> Dictionary:
+	var enemy := create_enemy(_wave_enemy_kind())
+	var boss_rules: Dictionary = game_data.get("enemies", {}).get("boss_rules", {})
+	var overrides: Dictionary = boss_rules.get("wave_overrides", {})
+	var raw_rule: Variant = overrides.get(str(wave), overrides.get("default", {}))
+	var rule: Dictionary = raw_rule if raw_rule is Dictionary else {}
+	enemy["boss"] = true
+	enemy["boss_kind"] = str(rule.get("kind", "boss"))
+	enemy["hp"] = float(enemy.get("hp", 0.0)) * float(rule.get("hp_multiplier", 1.0))
+	enemy["max_hp"] = float(enemy.get("hp", 0.0))
+	enemy["speed"] = float(enemy.get("speed", 0.0)) * float(rule.get("speed_multiplier", 1.0))
+	enemy["reward"] = int(enemy.get("reward", 0)) + int(rule.get("reward_bonus", 0))
+	if rule.has("shield_hits"):
+		var shield_hits: int = max(0, int(rule.get("shield_hits", 0)))
+		enemy["shield_hits"] = shield_hits
+		enemy["max_shield_hits"] = shield_hits
+	if rule.has("death_spawns"):
+		enemy["death_spawns"] = max(0, int(rule.get("death_spawns", 0)))
 	return enemy
 
 
@@ -1408,6 +1619,8 @@ func _wave_start_disabled_reason() -> String:
 		return "Wave already active"
 	if towers.is_empty():
 		return "Build a tower first"
+	if not pending_reward_cards.is_empty():
+		return "Choose a reward card first"
 	var schedule: Array = _wave_schedule()
 	if wave_complete and wave >= schedule.size():
 		return "All waves cleared"
@@ -1421,6 +1634,8 @@ func _wave_control_label() -> String:
 		return "Build a Tower"
 	if wave_active:
 		return "Wave Active"
+	if not pending_reward_cards.is_empty():
+		return "Choose Reward Card"
 	var schedule: Array = _wave_schedule()
 	if wave_complete:
 		if wave >= schedule.size():
@@ -1508,6 +1723,7 @@ func _trigger_game_over() -> void:
 
 
 func _resolve_enemy_death_effects(enemy: Dictionary, spawned: Array) -> void:
+	_apply_shatter_burst(enemy)
 	var burst_radius: float = float(enemy.get("death_burst_radius", 0.0))
 	var burst_fraction: float = float(enemy.get("death_burst_damage_fraction", 0.0))
 	if burst_radius > 0.0 and burst_fraction > 0.0:
@@ -1516,6 +1732,40 @@ func _resolve_enemy_death_effects(enemy: Dictionary, spawned: Array) -> void:
 	for _index in range(spawn_count):
 		spawned.append(_make_death_spawn_enemy(enemy))
 		spawned_extra_this_wave += 1
+
+
+func _apply_shatter_burst(source: Dictionary) -> void:
+	var radius: float = float(source.get("shatter_burst_radius", 0.0))
+	var damage_fraction: float = float(source.get("shatter_burst_damage_fraction", 0.0))
+	var target_limit: int = max(0, int(source.get("shatter_burst_targets", 0)))
+	if radius <= 0.0 or damage_fraction <= 0.0 or target_limit <= 0:
+		return
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var burst_damage: float = max(1.0, float(source.get("max_hp", 0.0)) * damage_fraction)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance: float = source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= radius:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var source_tower_id: int = int(source.get("shatter_source_tower_id", -1))
+	var applied: int = 0
+	while applied < target_limit and not candidates.is_empty():
+		var nearest_index: int = 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		var damage: float = burst_damage * _target_damage_multiplier(candidate)
+		candidate["hp"] = float(candidate.get("hp", 0.0)) - damage
+		candidate["last_damage_source_tower_id"] = source_tower_id
+		var tower := _tower_by_id(source_tower_id)
+		if not tower.is_empty():
+			tower["total_damage"] = float(tower.get("total_damage", 0.0)) + damage
+			tower["mastery_xp"] = float(tower.get("mastery_xp", 0.0)) + damage * 0.02
+		candidates.remove_at(nearest_index)
+		applied += 1
 
 
 func _apply_death_burst(source: Dictionary, radius: float, damage_fraction: float) -> void:
@@ -1527,6 +1777,7 @@ func _apply_death_burst(source: Dictionary, radius: float, damage_fraction: floa
 		if source_position.distance_to(enemy.get("position", Vector2.ZERO)) > radius:
 			continue
 		enemy["hp"] = float(enemy.get("hp", 0.0)) - burst_damage
+		enemy["last_damage_source_tower_id"] = int(source.get("last_damage_source_tower_id", -1))
 
 
 func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
@@ -1543,20 +1794,62 @@ func _make_death_spawn_enemy(parent: Dictionary) -> Dictionary:
 	child["death_burst_damage_fraction"] = 0.0
 	child["death_burst_radius"] = 0.0
 	child["damage_taken_multiplier"] = 1.0
+	child["breach_stacks"] = 0
+	child["breach_timer"] = 0.0
+	child["breach_vulnerability_multiplier"] = 1.0
+	child["breach_source_tower_id"] = -1
+	child["poison_stacks"] = 0
+	child["poison_timer"] = 0.0
+	child["poison_tick_timer"] = 0.0
+	child["poison_damage"] = 0.0
+	child["poison_regen_multiplier"] = 1.0
+	child["poison_source_tower_id"] = -1
+	child["poison_damage_multiplier"] = 1.0
+	child["wildfire_burn_timer"] = 0.0
+	child["wildfire_burn_tick_timer"] = 0.0
+	child["wildfire_burn_damage"] = 0.0
+	child["wildfire_burn_source_tower_id"] = -1
+	child["boss"] = false
+	child["boss_kind"] = ""
 	child["slow_timer"] = 0.0
 	child["slow_multiplier"] = 1.0
+	child["freeze_timer"] = 0.0
+	child["shatter_timer"] = 0.0
+	child["shatter_vulnerability_multiplier"] = 1.0
+	child["shatter_burst_radius"] = 0.0
+	child["shatter_burst_damage_fraction"] = 0.0
+	child["shatter_burst_targets"] = 0
+	child["shatter_source_tower_id"] = -1
+	child["last_damage_source_tower_id"] = -1
 	child["speed"] = float(parent.get("speed", 0.0)) * 1.08
 	child["progress"] = _enemy_progress(child)
 	return child
 
 
 func _update_enemy(enemy: Dictionary, delta: float) -> void:
+	_tick_demolition_breach(enemy, delta)
+	_tick_poison(enemy, delta)
+	_tick_wildfire_burn(enemy, delta)
+	var freeze_timer: float = max(0.0, float(enemy.get("freeze_timer", 0.0)) - delta)
+	enemy["freeze_timer"] = freeze_timer
+	var shatter_timer: float = max(0.0, float(enemy.get("shatter_timer", 0.0)) - delta)
+	enemy["shatter_timer"] = shatter_timer
+	if shatter_timer <= 0.0:
+		enemy["shatter_vulnerability_multiplier"] = 1.0
+		enemy["shatter_burst_radius"] = 0.0
+		enemy["shatter_burst_damage_fraction"] = 0.0
+		enemy["shatter_burst_targets"] = 0
+		enemy["shatter_source_tower_id"] = -1
+	var enemy_path: Array = _path_for_enemy(enemy)
 	var target_index: int = int(enemy["target_index"])
-	if target_index >= path_points.size():
+	if target_index >= enemy_path.size():
 		enemy["reached_end"] = true
 		return
+	if freeze_timer > 0.0:
+		enemy["progress"] = _enemy_progress(enemy)
+		return
 	var position: Vector2 = enemy["position"]
-	var target: Vector2 = path_points[target_index]
+	var target: Vector2 = enemy_path[target_index]
 	var offset: Vector2 = target - position
 	var distance: float = offset.length()
 	if distance < 2.0:
@@ -1574,11 +1867,96 @@ func _update_enemy(enemy: Dictionary, delta: float) -> void:
 	var regen_scale: float = float(enemy.get("regen_scale", 0.0))
 	if regen_scale > 0.0 and float(enemy.get("hp", 0.0)) > 0.0:
 		var max_hp: float = float(enemy.get("max_hp", 0.0))
-		enemy["hp"] = min(max_hp, float(enemy.get("hp", 0.0)) + max_hp * regen_scale * delta)
+		var regen_multiplier: float = clamp(float(enemy.get("poison_regen_multiplier", 1.0)), 0.0, 1.0)
+		enemy["hp"] = min(max_hp, float(enemy.get("hp", 0.0)) + max_hp * regen_scale * regen_multiplier * delta)
+
+
+func _tick_demolition_breach(enemy: Dictionary, delta: float) -> void:
+	var stacks: int = int(enemy.get("breach_stacks", 0))
+	if stacks <= 0:
+		enemy["breach_stacks"] = 0
+		enemy["breach_timer"] = 0.0
+		enemy["breach_vulnerability_multiplier"] = 1.0
+		enemy["breach_source_tower_id"] = -1
+		return
+	var breach_timer: float = max(0.0, float(enemy.get("breach_timer", 0.0)) - delta)
+	enemy["breach_timer"] = breach_timer
+	if breach_timer <= 0.0:
+		enemy["breach_stacks"] = 0
+		enemy["breach_vulnerability_multiplier"] = 1.0
+		enemy["breach_source_tower_id"] = -1
+
+
+func _tick_poison(enemy: Dictionary, delta: float) -> void:
+	var stacks: int = int(enemy.get("poison_stacks", 0))
+	if stacks <= 0:
+		enemy["poison_stacks"] = 0
+		enemy["poison_timer"] = 0.0
+		enemy["poison_tick_timer"] = 0.0
+		enemy["poison_damage"] = 0.0
+		enemy["poison_source_tower_id"] = -1
+		enemy["poison_damage_multiplier"] = 1.0
+		enemy["poison_regen_multiplier"] = 1.0
+		return
+	var poison_timer: float = max(0.0, float(enemy.get("poison_timer", 0.0)) - delta)
+	var tick_timer: float = float(enemy.get("poison_tick_timer", 0.0)) - delta
+	enemy["poison_timer"] = poison_timer
+	if poison_timer <= 0.0:
+		enemy["poison_stacks"] = 0
+		enemy["poison_tick_timer"] = 0.0
+		enemy["poison_damage"] = 0.0
+		enemy["poison_regen_multiplier"] = 1.0
+		enemy["poison_source_tower_id"] = -1
+		enemy["poison_damage_multiplier"] = 1.0
+		return
+	if tick_timer <= 0.0:
+		tick_timer += POISON_TICK_INTERVAL
+		var damage: float = max(0.0, float(enemy.get("poison_damage", 0.0))) * float(stacks)
+		damage *= _target_damage_multiplier(enemy)
+		var source_tower_id: int = int(enemy.get("poison_source_tower_id", -1))
+		damage *= max(0.0, float(enemy.get("poison_damage_multiplier", 1.0)))
+		enemy["hp"] = float(enemy.get("hp", 0.0)) - damage
+		enemy["last_damage_source_tower_id"] = source_tower_id
+		var source_tower := _tower_by_id(source_tower_id)
+		if not source_tower.is_empty():
+			source_tower["total_damage"] = float(source_tower.get("total_damage", 0.0)) + damage
+			source_tower["mastery_xp"] = float(source_tower.get("mastery_xp", 0.0)) + damage * 0.02
+	enemy["poison_tick_timer"] = tick_timer
+
+
+func _poison_damage_multiplier(enemy: Dictionary, source_tower: Dictionary) -> float:
+	if str(source_tower.get("selected_branch", "")) != "venom_cask" or not bool(enemy.get("boss", false)):
+		return 1.0
+	var level: int = int(source_tower.get("level", 1))
+	return 1.0 + min(0.18, 0.06 + float(max(0, level - 3)) * 0.06)
+
+
+func _tick_wildfire_burn(enemy: Dictionary, delta: float) -> void:
+	var burn_timer: float = max(0.0, float(enemy.get("wildfire_burn_timer", 0.0)) - delta)
+	var burn_tick_timer: float = float(enemy.get("wildfire_burn_tick_timer", 0.0)) - delta
+	enemy["wildfire_burn_timer"] = burn_timer
+	if burn_timer <= 0.0:
+		enemy["wildfire_burn_tick_timer"] = 0.0
+		enemy["wildfire_burn_damage"] = 0.0
+		enemy["wildfire_burn_source_tower_id"] = -1
+		return
+	if burn_tick_timer <= 0.0:
+		burn_tick_timer += WILDFIRE_BURN_TICK_INTERVAL
+		var damage: float = max(0.0, float(enemy.get("wildfire_burn_damage", 0.0)))
+		damage *= _target_damage_multiplier(enemy)
+		enemy["hp"] = float(enemy.get("hp", 0.0)) - damage
+		var source_tower_id: int = int(enemy.get("wildfire_burn_source_tower_id", -1))
+		enemy["last_damage_source_tower_id"] = source_tower_id
+		var source_tower := _tower_by_id(source_tower_id)
+		if not source_tower.is_empty():
+			source_tower["total_damage"] = float(source_tower.get("total_damage", 0.0)) + damage
+			source_tower["mastery_xp"] = float(source_tower.get("mastery_xp", 0.0)) + damage * 0.02
+	enemy["wildfire_burn_tick_timer"] = burn_tick_timer
 
 
 func _update_towers(delta: float) -> void:
 	for tower in towers:
+		var tower_id := _ensure_tower_id(tower)
 		tower["cooldown"] = max(0.0, float(tower["cooldown"]) - delta)
 		if float(tower["cooldown"]) > 0.0:
 			continue
@@ -1589,6 +1967,7 @@ func _update_towers(delta: float) -> void:
 			"position": tower["position"],
 			"target": target,
 			"tower": tower,
+			"source_tower_id": tower_id,
 			"damage": tower["damage"],
 			"speed": _projectile_speed_for_tower(tower),
 			"tower_type": tower.get("type", ""),
@@ -1642,7 +2021,7 @@ func _can_attack(tower: Dictionary, enemy: Dictionary) -> bool:
 		return true
 	var tower_type: String = str(tower.get("type", ""))
 	var level: int = int(tower.get("level", 1))
-	return tower_type == "tesla" and level >= 4 or tower_type == "sniper" and level >= 3
+	return tower_type in ["tesla", "sniper"] and level >= 2
 
 
 func _priority_targets(candidates: Array) -> Array:
@@ -1651,26 +2030,6 @@ func _priority_targets(candidates: Array) -> Array:
 		if float(enemy.get("marked_timer", 0.0)) > 0.0 or float(enemy.get("vulnerable_timer", 0.0)) > 0.0:
 			result.append(enemy)
 	return result
-
-
-func _priority_rank(enemy: Dictionary) -> Array:
-	return [
-		0 if float(enemy.get("marked_timer", 0.0)) > 0.0 else 1,
-		0 if float(enemy.get("vulnerable_timer", 0.0)) > 0.0 else 1,
-		float(enemy.get("hp", 0.0)),
-	]
-
-
-func _is_better_priority(candidate: Dictionary, current: Dictionary) -> bool:
-	if current.is_empty():
-		return true
-	var candidate_rank: Array = _priority_rank(candidate)
-	var current_rank: Array = _priority_rank(current)
-	for index in range(candidate_rank.size()):
-		if candidate_rank[index] == current_rank[index]:
-			continue
-		return candidate_rank[index] < current_rank[index]
-	return false
 
 
 func _max_by_progress(candidates: Array) -> Dictionary:
@@ -1719,6 +2078,7 @@ func find_target_for_test(tower: Dictionary) -> Dictionary:
 
 func make_test_tower(target_mode: String = "first", tower_type: String = ARCHER_ID, level: int = 2) -> Dictionary:
 	return {
+		"tower_id": -1,
 		"type": tower_type,
 		"position": Vector2(100, 100),
 		"level": level,
@@ -1750,8 +2110,32 @@ func make_test_enemy(id: String, position: Vector2, progress: float, hp: float =
 		"max_shield_hits": 0,
 		"tags": [],
 		"commander": false,
+		"damage_taken_multiplier": 1.0,
+		"breach_stacks": 0,
+		"breach_timer": 0.0,
+		"breach_vulnerability_multiplier": 1.0,
+		"breach_source_tower_id": -1,
+		"poison_stacks": 0,
+		"poison_timer": 0.0,
+		"poison_tick_timer": 0.0,
+		"poison_damage": 0.0,
+		"poison_regen_multiplier": 1.0,
+		"poison_source_tower_id": -1,
+		"poison_damage_multiplier": 1.0,
+		"wildfire_burn_timer": 0.0,
+		"wildfire_burn_tick_timer": 0.0,
+		"wildfire_burn_damage": 0.0,
+		"wildfire_burn_source_tower_id": -1,
 		"slow_timer": 0.0,
 		"slow_multiplier": 1.0,
+		"freeze_timer": 0.0,
+		"shatter_timer": 0.0,
+		"shatter_vulnerability_multiplier": 1.0,
+		"shatter_burst_radius": 0.0,
+		"shatter_burst_damage_fraction": 0.0,
+		"shatter_burst_targets": 0,
+		"shatter_source_tower_id": -1,
+		"last_damage_source_tower_id": -1,
 	}
 
 
@@ -1771,6 +2155,9 @@ func set_wave_for_test(wave_number: int) -> Dictionary:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
+	spawn_lane_cursor = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -1788,6 +2175,16 @@ func spawn_regular_wave_for_test(wave_number: int) -> Dictionary:
 	for _index in range(spawn_count):
 		enemies.append(create_enemy(enemy_kind, wave))
 	spawned_this_wave = spawn_count
+	while not _scheduled_specials_are_spawned():
+		var special := _next_scheduled_special_enemy()
+		if special.is_empty():
+			break
+		enemies.append(special)
+		spawned_extra_this_wave += 1
+		if bool(special.get("boss", false)):
+			spawned_boss_this_wave += 1
+		elif bool(special.get("commander", false)):
+			spawned_commander_this_wave += 1
 	var kind_counts: Dictionary = {}
 	var boss_count := 0
 	var commander_count := 0
@@ -1849,25 +2246,225 @@ func _hit_projectile_target(projectile: Dictionary) -> float:
 		projectile["dead"] = true
 		return 0.0
 	var damage: float = float(projectile.get("damage", 0.0))
+	var tower: Dictionary = projectile.get("tower", {})
+	var tower_type := str(projectile.get("tower_type", tower.get("type", "")))
+	var tower_level := int(projectile.get("tower_level", tower.get("level", 1)))
 	var shield_hits: int = int(target.get("shield_hits", 0))
 	if shield_hits > 0:
-		target["shield_hits"] = shield_hits - 1
-		return 0.0
-	damage *= float(target.get("damage_taken_multiplier", 1.0))
+		var shield_pierce: int = max(0, reward_card_pierce_bonus)
+		if shield_pierce == 0:
+			target["shield_hits"] = shield_hits - 1
+			_apply_cannon_branch_effect(target, tower, tower_type, tower_level)
+			return 0.0
+		target["shield_hits"] = max(0, shield_hits - shield_pierce)
+		if int(target.get("shield_hits", 0)) > 0:
+			_apply_cannon_branch_effect(target, tower, tower_type, tower_level)
+			return 0.0
+	damage *= _target_damage_multiplier(target)
 	target["hp"] = float(target.get("hp", 0.0)) - damage
-	var tower: Dictionary = projectile.get("tower", {})
-	if str(projectile.get("tower_type", tower.get("type", ""))) == "frost":
-		_apply_frost_slow(target, int(projectile.get("tower_level", tower.get("level", 1))))
+	target["last_damage_source_tower_id"] = _ensure_tower_id(tower)
+	if tower_type == "frost":
+		_apply_frost_slow(target, tower_level)
+		_apply_frost_branch_effect(target, tower, tower_level)
+	elif tower_type == "poison":
+		_apply_poison(target, damage, tower, tower_level)
+	elif tower_type == "cannon":
+		_apply_cannon_branch_effect(target, tower, tower_type, tower_level)
 	tower["total_damage"] = float(tower.get("total_damage", 0.0)) + damage
 	tower["mastery_xp"] = float(tower.get("mastery_xp", 0.0)) + damage * 0.02
 	return damage
+
+
+func _cannon_branch_runtime_effects(tower: Dictionary) -> Dictionary:
+	if str(tower.get("type", "")) != "cannon":
+		return {}
+	var branch_unlock_level: int = int(game_data.get("towers", {}).get("branch_unlock_level", 3))
+	if int(tower.get("level", 1)) < branch_unlock_level:
+		return {}
+	var branch_id := str(tower.get("selected_branch", ""))
+	var branch := _branch_definition("cannon", branch_id)
+	var raw_effects: Variant = branch.get("runtime_effects", {})
+	return raw_effects if raw_effects is Dictionary else {}
+
+
+func _apply_cannon_branch_effect(target: Dictionary, tower: Dictionary, tower_type: String, level: int) -> void:
+	if tower_type != "cannon":
+		return
+	var branch_unlock_level: int = int(game_data.get("towers", {}).get("branch_unlock_level", 3))
+	if level < branch_unlock_level:
+		return
+	var branch_id := str(tower.get("selected_branch", ""))
+	if branch_id != "demolition" and branch_id != "artillery":
+		return
+	var effects := _cannon_branch_runtime_effects(tower)
+	if effects.is_empty():
+		return
+	if branch_id == "artillery":
+		_apply_artillery_splash(target, tower, level, effects)
+		return
+	var max_stacks: int = max(1, int(effects.get("breach_max_stacks", 1)))
+	target["breach_stacks"] = min(max_stacks, int(target.get("breach_stacks", 0)) + 1)
+	target["breach_timer"] = max(float(target.get("breach_timer", 0.0)), float(effects.get("breach_duration", 0.0)))
+	target["breach_source_tower_id"] = _ensure_tower_id(tower)
+	if level >= int(effects.get("shield_strip_level", 999)):
+		var shield_strip_hits: int = max(0, int(effects.get("shield_strip_hits", 0)))
+		target["shield_hits"] = max(0, int(target.get("shield_hits", 0)) - shield_strip_hits)
+	if level >= int(effects.get("vulnerability_level", 999)):
+		target["breach_vulnerability_multiplier"] = max(float(target.get("breach_vulnerability_multiplier", 1.0)), float(effects.get("vulnerability_multiplier", 1.0)))
+
+
+func _apply_artillery_splash(source: Dictionary, tower: Dictionary, level: int, effects: Dictionary) -> void:
+	var radius: float = max(0.0, float(effects.get("splash_radius", 0.0)))
+	var target_limit: int = max(0, int(effects.get("splash_target_count", 0)))
+	if level >= int(effects.get("splash_target_bonus_level", 999)):
+		target_limit += max(0, int(effects.get("splash_target_bonus", 0)))
+	if radius <= 0.0 or target_limit <= 0:
+		return
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance: float = source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= radius:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var applied: int = 0
+	while applied < target_limit and not candidates.is_empty():
+		var nearest_index: int = 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		var splash_damage: float = float(tower.get("damage", 0.0)) * float(effects.get("splash_damage_ratio", 0.0))
+		var shield_hits: int = int(candidate.get("shield_hits", 0))
+		if shield_hits > 0:
+			candidate["shield_hits"] = shield_hits - 1
+		else:
+			splash_damage *= _target_damage_multiplier(candidate)
+			candidate["hp"] = float(candidate.get("hp", 0.0)) - splash_damage
+			candidate["last_damage_source_tower_id"] = _ensure_tower_id(tower)
+			tower["total_damage"] = float(tower.get("total_damage", 0.0)) + splash_damage
+			tower["mastery_xp"] = float(tower.get("mastery_xp", 0.0)) + splash_damage * 0.02
+		candidates.remove_at(nearest_index)
+		applied += 1
+
+
+func _apply_poison(target: Dictionary, damage: float, tower: Dictionary, level: int, allow_branch_effect: bool = true) -> void:
+	var stacks: int = min(POISON_MAX_STACKS, int(target.get("poison_stacks", 0)) + 1)
+	target["poison_stacks"] = stacks
+	target["poison_timer"] = max(float(target.get("poison_timer", 0.0)), POISON_DURATION + float(max(0, level - 1)) * 0.1)
+	target["poison_tick_timer"] = min(float(target.get("poison_tick_timer", POISON_TICK_INTERVAL)), POISON_TICK_INTERVAL)
+	target["poison_damage"] = max(float(target.get("poison_damage", 0.0)), damage * POISON_DAMAGE_RATIO)
+	target["poison_regen_multiplier"] = POISON_REGEN_MULTIPLIER
+	target["poison_source_tower_id"] = _ensure_tower_id(tower)
+	target["poison_damage_multiplier"] = _poison_damage_multiplier(target, tower)
+	if not allow_branch_effect or str(tower.get("type", "")) != "poison" or level < 3:
+		return
+	var branch_id := str(tower.get("selected_branch", ""))
+	if branch_id == "plague_mist":
+		_spread_plague_mist(target, damage, tower, level)
+	elif branch_id == "wildfire":
+		_apply_wildfire_bloom(target, damage, tower, level)
+
+
+func _spread_plague_mist(source: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance := source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= PLAGUE_MIST_SPREAD_RADIUS:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var applied := 0
+	while applied < PLAGUE_MIST_SPREAD_TARGETS and not candidates.is_empty():
+		var nearest_index := 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		_apply_poison(candidate, damage * PLAGUE_MIST_SPREAD_DAMAGE_RATIO, tower, level, false)
+		candidates.remove_at(nearest_index)
+		applied += 1
+
+
+func _apply_wildfire_bloom(source: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	_apply_wildfire_burn(source, damage, tower, level)
+	var source_position: Vector2 = source.get("position", Vector2.ZERO)
+	var candidates: Array = []
+	for enemy in enemies:
+		if enemy == source or bool(enemy.get("reached_end", false)) or float(enemy.get("hp", 0.0)) <= 0.0:
+			continue
+		var distance := source_position.distance_to(enemy.get("position", Vector2.ZERO))
+		if distance <= WILDFIRE_BLOOM_RADIUS:
+			candidates.append({"enemy": enemy, "distance": distance})
+	var applied := 0
+	while applied < WILDFIRE_BLOOM_TARGETS and not candidates.is_empty():
+		var nearest_index := 0
+		for index in range(1, candidates.size()):
+			if float(candidates[index]["distance"]) < float(candidates[nearest_index]["distance"]):
+				nearest_index = index
+		var candidate: Dictionary = candidates[nearest_index]["enemy"]
+		_apply_wildfire_burn(candidate, damage * WILDFIRE_BLOOM_DAMAGE_RATIO, tower, level)
+		candidates.remove_at(nearest_index)
+		applied += 1
+
+
+func _apply_wildfire_burn(target: Dictionary, damage: float, tower: Dictionary, level: int) -> void:
+	target["wildfire_burn_timer"] = max(float(target.get("wildfire_burn_timer", 0.0)), WILDFIRE_BURN_DURATION + float(max(0, level - 3)) * 0.1)
+	target["wildfire_burn_tick_timer"] = min(float(target.get("wildfire_burn_tick_timer", WILDFIRE_BURN_TICK_INTERVAL)), WILDFIRE_BURN_TICK_INTERVAL)
+	target["wildfire_burn_damage"] = max(float(target.get("wildfire_burn_damage", 0.0)), damage * WILDFIRE_BURN_DAMAGE_RATIO)
+	target["wildfire_burn_source_tower_id"] = _ensure_tower_id(tower)
 
 
 func _apply_frost_slow(target: Dictionary, level: int) -> void:
 	var current_timer: float = float(target.get("slow_timer", 0.0))
 	target["slow_timer"] = max(current_timer, _frost_slow_duration(level))
 	var current_multiplier: float = clamp(float(target.get("slow_multiplier", 1.0)), 0.25, 1.0) if current_timer > 0.0 else 1.0
-	target["slow_multiplier"] = min(current_multiplier, _frost_slow_multiplier(level))
+	var hit_multiplier := _frost_slow_multiplier(level)
+	if current_timer > 0.0:
+		# Sustained frost fire rewards focus: each re-hit deepens the chill until
+		# the control floor, while expiry still resets the target to full speed.
+		hit_multiplier = max(0.50, current_multiplier - 0.04)
+	target["slow_multiplier"] = min(current_multiplier, hit_multiplier)
+
+
+func _frost_branch_runtime_effects(tower: Dictionary) -> Dictionary:
+	if str(tower.get("type", "")) != "frost":
+		return {}
+	var branch_unlock_level: int = int(game_data.get("towers", {}).get("branch_unlock_level", 3))
+	if int(tower.get("level", 1)) < branch_unlock_level:
+		return {}
+	var branch_id := str(tower.get("selected_branch", ""))
+	var branch := _branch_definition("frost", branch_id)
+	var raw_effects: Variant = branch.get("runtime_effects", {})
+	return raw_effects if raw_effects is Dictionary else {}
+
+
+func _apply_frost_branch_effect(target: Dictionary, tower: Dictionary, level: int) -> void:
+	if level < int(game_data.get("towers", {}).get("branch_unlock_level", 3)):
+		return
+	var branch_id := str(tower.get("selected_branch", ""))
+	var effects := _frost_branch_runtime_effects(tower)
+	if effects.is_empty():
+		return
+	if branch_id == "glacier":
+		var freeze_duration: float = float(effects.get("freeze_duration", 0.0)) + float(max(0, level - 3)) * float(effects.get("freeze_duration_per_level", 0.0))
+		target["freeze_timer"] = max(float(target.get("freeze_timer", 0.0)), freeze_duration)
+		var slow_bonus: float = float(effects.get("slow_strength_bonus", 0.0))
+		target["slow_multiplier"] = max(0.25, float(target.get("slow_multiplier", 1.0)) - slow_bonus)
+	elif branch_id == "shatter":
+		var vulnerability: float = float(effects.get("vulnerability_multiplier", 1.0)) + float(max(0, level - 3)) * float(effects.get("vulnerability_per_level", 0.0))
+		target["shatter_timer"] = max(float(target.get("shatter_timer", 0.0)), float(effects.get("vulnerability_duration", 0.0)))
+		target["shatter_vulnerability_multiplier"] = max(float(target.get("shatter_vulnerability_multiplier", 1.0)), vulnerability)
+		target["shatter_burst_radius"] = float(effects.get("death_burst_radius", 0.0))
+		target["shatter_burst_damage_fraction"] = float(effects.get("death_burst_damage_ratio", 0.0))
+		target["shatter_burst_targets"] = max(0, int(effects.get("death_burst_targets", 0)))
+		target["shatter_source_tower_id"] = _ensure_tower_id(tower)
+
+
+func _target_damage_multiplier(target: Dictionary) -> float:
+	return float(target.get("damage_taken_multiplier", 1.0)) * float(target.get("shatter_vulnerability_multiplier", 1.0)) * float(target.get("breach_vulnerability_multiplier", 1.0))
 
 
 func _frost_slow_duration(level: int) -> float:
@@ -1875,7 +2472,7 @@ func _frost_slow_duration(level: int) -> float:
 
 
 func _frost_slow_multiplier(level: int) -> float:
-	return max(0.58, 0.76 - float(max(0, level - 1)) * 0.04)
+	return max(0.50, 0.62 - float(max(0, level - 1)) * 0.04)
 
 
 func _projectile_speed_for_tower(tower: Dictionary) -> float:
@@ -1924,6 +2521,7 @@ func _check_wave_completion() -> void:
 	wave_reward_research = _research_reward()
 	money += wave_reward_money
 	research_points += wave_reward_research
+	_offer_reward_cards()
 	_play_sound("sounds/ui/wave_complete.wav", 680.0)
 	_emit_status()
 
@@ -1938,12 +2536,42 @@ func _research_reward() -> int:
 	return 1 + int(floor(float(wave) / 5.0))
 
 
+func _offer_reward_cards() -> void:
+	var interval: int = max(1, int(config.get("protocol_reward_interval", 3)))
+	if wave % interval != 0 or not pending_reward_cards.is_empty():
+		return
+	var progression: Dictionary = game_data.get("progression", {})
+	var card_pool: Dictionary = progression.get("card_pool", {})
+	var categories: Dictionary = progression.get("reward_card_categories", {})
+	var card_ids: Array = card_pool.keys()
+	card_ids.sort()
+	var absolute_max: int = max(1, int(progression.get("max_reward_card_choices", 3)))
+	var base_choices: int = max(1, int(progression.get("base_reward_card_choices", 3)))
+	var run_defaults := _new_run_defaults()
+	var choice_bonus: int = max(0, int(run_defaults.get("reward_card_choice_bonus", 0)))
+	var max_choices: int = min(absolute_max, base_choices + choice_bonus)
+	var choices: Array = []
+	for offset in range(min(max_choices, card_ids.size())):
+		var card_id: String = str(card_ids[(wave + offset) % card_ids.size()])
+		var card: Dictionary = card_pool.get(card_id, {})
+		choices.append({
+			"id": card_id,
+			"label": str(card.get("label", card_id)),
+			"description": str(card.get("description", "")),
+			"category": str(categories.get(card_id, "progression")),
+			"effects": card.get("effects", {}).duplicate(true),
+		})
+	pending_reward_cards = choices
+
+
 func _spawned_total_this_wave() -> int:
 	return spawned_this_wave + spawned_extra_this_wave
 
 
 func snapshot() -> Dictionary:
 	return {
+		"lane_count": lane_paths.size(),
+		"spawn_lane_cursor": spawn_lane_cursor,
 		"money": money,
 		"lives": lives,
 		"research_points": research_points,
@@ -1953,6 +2581,8 @@ func snapshot() -> Dictionary:
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
 		"spawned_extra_this_wave": spawned_extra_this_wave,
+		"spawned_boss_this_wave": spawned_boss_this_wave,
+		"spawned_commander_this_wave": spawned_commander_this_wave,
 		"spawned_total_this_wave": _spawned_total_this_wave(),
 		"spawn_limit": _regular_enemy_count(),
 		"spawn_interval": _spawn_interval(),
@@ -1965,6 +2595,9 @@ func snapshot() -> Dictionary:
 		"projectile_count": projectiles.size(),
 		"wave_reward_money": wave_reward_money,
 		"wave_reward_research": wave_reward_research,
+		"reward_card_choice": reward_card_choice_snapshot(),
+		"reward_card_pierce_bonus": reward_card_pierce_bonus,
+		"run_modifiers": run_modifiers.duplicate(true),
 		"map_name": map_record.get("name", ""),
 		"tower_family": ARCHER_ID if towers.is_empty() else str(towers[0].get("type", ARCHER_ID)),
 		"enemy_family": _wave_enemy_kind(),
@@ -2043,6 +2676,8 @@ func _debug_set_wave(target_wave: int) -> void:
 	wave_complete = false
 	spawned_this_wave = 0
 	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = 0
+	spawned_commander_this_wave = 0
 	spawn_timer = 0.0
 	leaks = 0
 	kills = 0
@@ -2057,7 +2692,7 @@ func _debug_spawn_enemy(args: Dictionary) -> Dictionary:
 	var enemy_kind := _normalized_enemy_kind(requested_kind)
 	var requested_count: int = int(args.get("count", 1))
 	var count: int = int(clamp(requested_count, 1, 50))
-	var target_index: int = int(clamp(int(args.get("target_index", 1)), 0, max(1, path_points.size() - 1)))
+	var target_index: int = int(clamp(int(args.get("target_index", 1)), 0, max(1, _max_lane_path_point_count() - 1)))
 	var position := Vector2.INF
 	var raw_position: Variant = args.get("position", Vector2.INF)
 	if raw_position is Vector2:
@@ -2096,11 +2731,13 @@ func _debug_skip_wave() -> Dictionary:
 	enemies = []
 	projectiles = []
 	spawned_this_wave = _regular_enemy_count()
-	spawned_extra_this_wave = 0
+	spawned_boss_this_wave = _scheduled_boss_count()
+	spawned_commander_this_wave = _scheduled_commander_count()
+	spawned_extra_this_wave = spawned_boss_this_wave + spawned_commander_this_wave
 	if not already_complete:
 		wave_active = false
 		wave_complete = true
-		kills = spawned_this_wave
+		kills = _spawned_total_this_wave()
 		leaks = 0
 		wave_reward_money = _wave_completion_money()
 		wave_reward_research = _research_reward()
@@ -2114,6 +2751,9 @@ func _debug_skip_wave() -> Dictionary:
 		"wave_complete": wave_complete,
 		"wave_reward_money": wave_reward_money,
 		"wave_reward_research": wave_reward_research,
+		"pending_reward_cards": pending_reward_cards.duplicate(true),
+		"reward_card_history": reward_card_history.duplicate(true),
+		"reward_card_pierce_bonus": reward_card_pierce_bonus,
 	}
 
 
@@ -2128,18 +2768,13 @@ func _debug_command_result(ok: bool, command: String, error: String, detail: Dic
 
 
 func debug_overlay_snapshot() -> Dictionary:
-	if not debug_overlay_enabled:
-		return {"enabled": false}
-	return {
-		"enabled": true,
-		"economy": {
+	return GAMEPLAY_VIEW_MODEL.debug_overlay(debug_overlay_enabled, {
 			"money": money,
 			"lives": lives,
 			"research_points": research_points,
 			"wave_reward_money": wave_reward_money,
 			"wave_reward_research": wave_reward_research,
-		},
-		"wave": {
+		}, {
 			"wave": wave,
 			"wave_active": wave_active,
 			"wave_complete": wave_complete,
@@ -2152,12 +2787,7 @@ func debug_overlay_snapshot() -> Dictionary:
 			"wave_modifier": _wave_modifier_id(),
 			"wave_modifier_label": _wave_modifier_label(),
 			"game_speed": game_speed,
-		},
-		"commands": debug_command_names(),
-		"towers": _debug_tower_records(),
-		"enemies": _debug_enemy_records(),
-		"projectiles": _debug_projectile_records(),
-	}
+		}, debug_command_names(), _debug_tower_records(), _debug_enemy_records(), _debug_projectile_records())
 
 
 func _debug_tower_records() -> Array:
@@ -2165,22 +2795,7 @@ func _debug_tower_records() -> Array:
 	for index in range(towers.size()):
 		var tower: Dictionary = towers[index]
 		var target: Dictionary = _find_target(tower)
-		records.append({
-			"index": index,
-			"type": str(tower.get("type", ARCHER_ID)),
-			"position": _vector_to_array(tower.get("position", Vector2.ZERO)),
-			"level": int(tower.get("level", 1)),
-			"range": float(tower.get("range", 0.0)),
-			"damage": float(tower.get("damage", 0.0)),
-			"fire_rate": float(tower.get("fire_rate", 0.0)),
-			"cooldown": float(tower.get("cooldown", 0.0)),
-			"target_mode": str(tower.get("target_mode", "first")),
-			"kills": int(tower.get("kills", 0)),
-			"selected": index == selected_tower_index,
-			"target_index": _debug_enemy_index(target),
-			"target_kind": str(target.get("kind", "")) if not target.is_empty() else "",
-			"target_progress": float(target.get("progress", 0.0)) if not target.is_empty() else 0.0,
-		})
+		records.append(GAMEPLAY_VIEW_MODEL.tower_debug_record(index, tower, index == selected_tower_index, _debug_enemy_index(target), target, ARCHER_ID))
 	return records
 
 
@@ -2188,17 +2803,7 @@ func _debug_enemy_records() -> Array:
 	var records: Array = []
 	for index in range(enemies.size()):
 		var enemy: Dictionary = enemies[index]
-		records.append({
-			"index": index,
-			"kind": str(enemy.get("kind", ENEMY_KIND)),
-			"position": _vector_to_array(enemy.get("position", Vector2.ZERO)),
-			"hp": float(enemy.get("hp", 0.0)),
-			"max_hp": float(enemy.get("max_hp", 0.0)),
-			"progress": float(enemy.get("progress", 0.0)),
-			"target_index": int(enemy.get("target_index", 0)),
-			"shield_hits": int(enemy.get("shield_hits", 0)),
-			"reached_end": bool(enemy.get("reached_end", false)),
-		})
+		records.append(GAMEPLAY_VIEW_MODEL.enemy_debug_record(index, enemy, ENEMY_KIND))
 	return records
 
 
@@ -2206,16 +2811,7 @@ func _debug_projectile_records() -> Array:
 	var records: Array = []
 	for index in range(projectiles.size()):
 		var projectile: Dictionary = projectiles[index]
-		records.append({
-			"index": index,
-			"position": _vector_to_array(projectile.get("position", Vector2.ZERO)),
-			"target_index": _debug_enemy_index(projectile.get("target", {})),
-			"tower_index": _debug_tower_index(projectile.get("tower", {})),
-			"tower_type": str(projectile.get("tower_type", "")),
-			"damage": float(projectile.get("damage", 0.0)),
-			"speed": float(projectile.get("speed", 0.0)),
-			"dead": bool(projectile.get("dead", false)),
-		})
+		records.append(GAMEPLAY_VIEW_MODEL.projectile_debug_record(index, projectile, _debug_enemy_index(projectile.get("target", {})), _debug_tower_index(projectile.get("tower", {}))))
 	return records
 
 
@@ -2238,9 +2834,11 @@ func _debug_tower_index(target: Variant) -> int:
 
 
 func serialize_run_state() -> Dictionary:
-	return {
+	return RUN_STATE_CODEC.encode({
 		"schema_version": 1,
+		"map_index": map_index,
 		"map_name": str(map_record.get("name", "")),
+		"lane_count": lane_paths.size(),
 		"money": money,
 		"lives": lives,
 		"research_points": research_points,
@@ -2250,24 +2848,39 @@ func serialize_run_state() -> Dictionary:
 		"game_over": game_over,
 		"spawned_this_wave": spawned_this_wave,
 		"spawned_extra_this_wave": spawned_extra_this_wave,
+		"spawned_boss_this_wave": spawned_boss_this_wave,
+		"spawned_commander_this_wave": spawned_commander_this_wave,
+		"spawn_lane_cursor": spawn_lane_cursor,
 		"spawn_timer": spawn_timer,
 		"leaks": leaks,
 		"kills": kills,
 		"wave_reward_money": wave_reward_money,
 		"wave_reward_research": wave_reward_research,
+		"pending_reward_cards": pending_reward_cards.duplicate(true),
+		"reward_card_history": reward_card_history.duplicate(true),
+		"reward_card_pierce_bonus": reward_card_pierce_bonus,
+		"run_modifiers": run_modifiers.duplicate(true),
+		"next_tower_id": next_tower_id,
 		"selected_build_type": selected_build_type,
 		"selected_tower_index": selected_tower_index,
 		"game_speed": game_speed,
 		"towers": _serialize_towers(),
 		"enemies": _serialize_enemies(),
 		"projectiles": _serialize_projectiles(),
-	}
+	})
 
 
 func restore_run_state(state: Dictionary) -> bool:
-	if int(state.get("schema_version", 0)) != 1:
+	var decoded := RUN_STATE_CODEC.decode(state, _run_state_decode_context(state))
+	if not bool(decoded.get("ok", false)):
+		_set_feedback("save", str(decoded.get("error", "Invalid run state")))
 		return false
-	reset_slice()
+	state = decoded["value"]
+	var requested_map_index := int(state.get("map_index", -1))
+	if requested_map_index >= 0:
+		reset_slice(requested_map_index)
+	else:
+		reset_slice()
 	money = int(state.get("money", money))
 	lives = max(0, int(state.get("lives", lives)))
 	research_points = int(state.get("research_points", research_points))
@@ -2281,12 +2894,24 @@ func restore_run_state(state: Dictionary) -> bool:
 		wave_complete = false
 	spawned_this_wave = int(state.get("spawned_this_wave", spawned_this_wave))
 	spawn_timer = float(state.get("spawn_timer", spawn_timer))
+	spawn_lane_cursor = int(state.get("spawn_lane_cursor", spawn_lane_cursor)) % max(1, lane_paths.size())
 	leaks = int(state.get("leaks", leaks))
 	kills = int(state.get("kills", kills))
 	wave_reward_money = int(state.get("wave_reward_money", wave_reward_money))
 	wave_reward_research = int(state.get("wave_reward_research", wave_reward_research))
+	pending_reward_cards = state.get("pending_reward_cards", []).duplicate(true)
+	reward_card_history = state.get("reward_card_history", []).duplicate(true)
+	reward_card_pierce_bonus = max(0, int(state.get("reward_card_pierce_bonus", 0)))
+	run_modifiers = TOWER_RUNTIME_RULES.normalized_modifiers(state.get("run_modifiers", {
+		"pierce_bonus": reward_card_pierce_bonus,
+	}))
+	reward_card_pierce_bonus = int(run_modifiers.get("pierce_bonus", reward_card_pierce_bonus))
 	selected_build_type = str(state.get("selected_build_type", selected_build_type))
 	towers = _restore_towers(state.get("towers", []))
+	var highest_tower_id := 0
+	for tower in towers:
+		highest_tower_id = max(highest_tower_id, int(tower.get("tower_id", 0)))
+	next_tower_id = max(highest_tower_id + 1, int(state.get("next_tower_id", highest_tower_id + 1)))
 	enemies = _restore_enemies(state.get("enemies", []))
 	projectiles = _restore_projectiles(state.get("projectiles", []))
 	if state.has("spawned_extra_this_wave"):
@@ -2295,6 +2920,8 @@ func restore_run_state(state: Dictionary) -> bool:
 		spawned_extra_this_wave = max(0, kills + leaks - spawned_this_wave)
 	else:
 		spawned_extra_this_wave = 0
+	spawned_boss_this_wave = int(state.get("spawned_boss_this_wave", 0))
+	spawned_commander_this_wave = int(state.get("spawned_commander_this_wave", 0))
 	var requested_selection: int = int(state.get("selected_tower_index", NO_SELECTED_TOWER))
 	selected_tower_index = requested_selection if requested_selection >= 0 and requested_selection < towers.size() else NO_SELECTED_TOWER
 	if game_over:
@@ -2310,10 +2937,40 @@ func restore_run_state(state: Dictionary) -> bool:
 	return true
 
 
+func _run_state_decode_context(state: Dictionary) -> Dictionary:
+	var source_data: Dictionary = game_data
+	if source_data.is_empty():
+		source_data = GameData.load_game_data()
+	var maps: Array = source_data.get("maps", {}).get("catalog", [])
+	var requested_map_index: int = int(state.get("map_index", map_index))
+	var requested_lane_count := lane_paths.size()
+	if requested_map_index >= 0 and requested_map_index < maps.size():
+		var candidate_paths: Variant = maps[requested_map_index].get("paths", [])
+		if candidate_paths is Array:
+			requested_lane_count = max(1, candidate_paths.size())
+	var branches: Dictionary = {}
+	var all_branch_defs: Variant = source_data.get("towers", {}).get("branch_definitions", {})
+	if all_branch_defs is Dictionary:
+		for tower_type in all_branch_defs.keys():
+			var definitions: Variant = all_branch_defs[tower_type]
+			branches[str(tower_type)] = definitions.keys() if definitions is Dictionary else []
+	return {
+		"valid_tower_types": source_data.get("towers", {}).get("tower_types", {}).keys(),
+		"valid_target_modes": source_data.get("towers", {}).get("target_modes", []),
+		"valid_branches": branches,
+		"valid_enemy_kinds": source_data.get("enemies", {}).get("kind_modifiers", {}).keys(),
+		"reward_cards": source_data.get("progression", {}).get("card_pool", {}),
+		"valid_game_speeds": [0.0, 1.0, 2.0, 4.0],
+		"lane_count": requested_lane_count,
+		"max_map_index": max(0, maps.size() - 1),
+	}
+
+
 func _serialize_towers() -> Array:
 	var records: Array = []
 	for tower in towers:
 		records.append({
+			"tower_id": int(tower.get("tower_id", -1)),
 			"type": str(tower.get("type", ARCHER_ID)),
 			"position": _vector_to_array(tower.get("position", Vector2.ZERO)),
 			"level": int(tower.get("level", 1)),
@@ -2337,12 +2994,16 @@ func _restore_towers(records: Array) -> Array:
 	var restored: Array = []
 	for raw in records:
 		if raw is Dictionary:
-			restored.append(_tower_from_state(raw))
+			var tower := _tower_from_state(raw)
+			if int(tower.get("tower_id", -1)) <= 0:
+				tower["tower_id"] = restored.size() + 1
+			restored.append(tower)
 	return restored
 
 
 func _tower_from_state(record: Dictionary) -> Dictionary:
 	return {
+		"tower_id": int(record.get("tower_id", -1)),
 		"type": str(record.get("type", ARCHER_ID)),
 		"position": _array_to_vector(record.get("position", [0.0, 0.0])),
 		"level": int(record.get("level", 1)),
@@ -2366,6 +3027,7 @@ func _serialize_enemies() -> Array:
 	for enemy in enemies:
 		records.append({
 			"kind": str(enemy.get("kind", ENEMY_KIND)),
+			"lane_index": int(enemy.get("lane_index", 0)),
 			"position": _vector_to_array(enemy.get("position", Vector2.ZERO)),
 			"target_index": int(enemy.get("target_index", 1)),
 			"hp": float(enemy.get("hp", 0.0)),
@@ -2380,11 +3042,36 @@ func _serialize_enemies() -> Array:
 			"shield_hits": int(enemy.get("shield_hits", 0)),
 			"max_shield_hits": int(enemy.get("max_shield_hits", 0)),
 			"tags": enemy.get("tags", []).duplicate(true),
+			"boss": bool(enemy.get("boss", false)),
+			"boss_kind": str(enemy.get("boss_kind", "")),
 			"commander": bool(enemy.get("commander", false)),
 			"damage_taken_multiplier": float(enemy.get("damage_taken_multiplier", 1.0)),
+			"breach_stacks": int(enemy.get("breach_stacks", 0)),
+			"breach_timer": float(enemy.get("breach_timer", 0.0)),
+			"breach_vulnerability_multiplier": float(enemy.get("breach_vulnerability_multiplier", 1.0)),
+			"breach_source_tower_id": int(enemy.get("breach_source_tower_id", -1)),
 			"regen_scale": float(enemy.get("regen_scale", 0.0)),
+			"poison_stacks": int(enemy.get("poison_stacks", 0)),
+			"poison_timer": float(enemy.get("poison_timer", 0.0)),
+			"poison_tick_timer": float(enemy.get("poison_tick_timer", 0.0)),
+			"poison_damage": float(enemy.get("poison_damage", 0.0)),
+			"poison_regen_multiplier": float(enemy.get("poison_regen_multiplier", 1.0)),
+			"poison_source_tower_id": int(enemy.get("poison_source_tower_id", -1)),
+			"poison_damage_multiplier": float(enemy.get("poison_damage_multiplier", 1.0)),
+			"wildfire_burn_timer": float(enemy.get("wildfire_burn_timer", 0.0)),
+			"wildfire_burn_tick_timer": float(enemy.get("wildfire_burn_tick_timer", 0.0)),
+			"wildfire_burn_damage": float(enemy.get("wildfire_burn_damage", 0.0)),
+			"wildfire_burn_source_tower_id": int(enemy.get("wildfire_burn_source_tower_id", -1)),
 			"slow_timer": float(enemy.get("slow_timer", 0.0)),
 			"slow_multiplier": float(enemy.get("slow_multiplier", 1.0)),
+			"freeze_timer": float(enemy.get("freeze_timer", 0.0)),
+			"shatter_timer": float(enemy.get("shatter_timer", 0.0)),
+			"shatter_vulnerability_multiplier": float(enemy.get("shatter_vulnerability_multiplier", 1.0)),
+			"shatter_burst_radius": float(enemy.get("shatter_burst_radius", 0.0)),
+			"shatter_burst_damage_fraction": float(enemy.get("shatter_burst_damage_fraction", 0.0)),
+			"shatter_burst_targets": int(enemy.get("shatter_burst_targets", 0)),
+			"shatter_source_tower_id": int(enemy.get("shatter_source_tower_id", -1)),
+			"last_damage_source_tower_id": int(enemy.get("last_damage_source_tower_id", -1)),
 			"death_spawns": int(enemy.get("death_spawns", 0)),
 			"death_burst_damage_fraction": float(enemy.get("death_burst_damage_fraction", 0.0)),
 			"death_burst_radius": float(enemy.get("death_burst_radius", 0.0)),
@@ -2403,6 +3090,7 @@ func _restore_enemies(records: Array) -> Array:
 func _enemy_from_state(record: Dictionary) -> Dictionary:
 	return {
 		"kind": str(record.get("kind", ENEMY_KIND)),
+		"lane_index": clamp(int(record.get("lane_index", 0)), 0, max(0, lane_paths.size() - 1)),
 		"position": _array_to_vector(record.get("position", [0.0, 0.0])),
 		"target_index": int(record.get("target_index", 1)),
 		"hp": float(record.get("hp", 0.0)),
@@ -2417,15 +3105,50 @@ func _enemy_from_state(record: Dictionary) -> Dictionary:
 		"shield_hits": int(record.get("shield_hits", 0)),
 		"max_shield_hits": int(record.get("max_shield_hits", 0)),
 		"tags": record.get("tags", []).duplicate(true),
+		"boss": bool(record.get("boss", false)),
+		"boss_kind": str(record.get("boss_kind", "")),
 		"commander": bool(record.get("commander", false)),
 		"damage_taken_multiplier": float(record.get("damage_taken_multiplier", 1.0)),
+		"breach_stacks": int(record.get("breach_stacks", 0)),
+		"breach_timer": float(record.get("breach_timer", 0.0)),
+		"breach_vulnerability_multiplier": float(record.get("breach_vulnerability_multiplier", 1.0)),
+		"breach_source_tower_id": _legacy_source_tower_id(record, "breach_source_tower_id", "breach_source_tower_index"),
 		"regen_scale": float(record.get("regen_scale", 0.0)),
+		"poison_stacks": int(record.get("poison_stacks", 0)),
+		"poison_timer": float(record.get("poison_timer", 0.0)),
+		"poison_tick_timer": float(record.get("poison_tick_timer", 0.0)),
+		"poison_damage": float(record.get("poison_damage", 0.0)),
+		"poison_regen_multiplier": float(record.get("poison_regen_multiplier", 1.0)),
+		"poison_source_tower_id": _legacy_source_tower_id(record, "poison_source_tower_id", "poison_source_tower_index"),
+		"poison_damage_multiplier": float(record.get("poison_damage_multiplier", 1.0)),
+		"wildfire_burn_timer": float(record.get("wildfire_burn_timer", 0.0)),
+		"wildfire_burn_tick_timer": float(record.get("wildfire_burn_tick_timer", 0.0)),
+		"wildfire_burn_damage": float(record.get("wildfire_burn_damage", 0.0)),
+		"wildfire_burn_source_tower_id": _legacy_source_tower_id(record, "wildfire_burn_source_tower_id", "wildfire_burn_source_tower_index"),
 		"slow_timer": float(record.get("slow_timer", 0.0)),
 		"slow_multiplier": float(record.get("slow_multiplier", 1.0)),
+		"freeze_timer": float(record.get("freeze_timer", 0.0)),
+		"shatter_timer": float(record.get("shatter_timer", 0.0)),
+		"shatter_vulnerability_multiplier": float(record.get("shatter_vulnerability_multiplier", 1.0)),
+		"shatter_burst_radius": float(record.get("shatter_burst_radius", 0.0)),
+		"shatter_burst_damage_fraction": float(record.get("shatter_burst_damage_fraction", 0.0)),
+		"shatter_burst_targets": int(record.get("shatter_burst_targets", 0)),
+		"shatter_source_tower_id": _legacy_source_tower_id(record, "shatter_source_tower_id", "shatter_source_tower_index"),
+		"last_damage_source_tower_id": int(record.get("last_damage_source_tower_id", -1)),
 		"death_spawns": int(record.get("death_spawns", 0)),
 		"death_burst_damage_fraction": float(record.get("death_burst_damage_fraction", 0.0)),
 		"death_burst_radius": float(record.get("death_burst_radius", 0.0)),
 	}
+
+
+func _legacy_source_tower_id(record: Dictionary, id_key: String, index_key: String) -> int:
+	var tower_id := int(record.get(id_key, -1))
+	if tower_id > 0:
+		return tower_id
+	var legacy_index := int(record.get(index_key, -1))
+	if legacy_index >= 0 and legacy_index < towers.size():
+		return int(towers[legacy_index].get("tower_id", -1))
+	return -1
 
 
 func _serialize_projectiles() -> Array:
@@ -2434,7 +3157,7 @@ func _serialize_projectiles() -> Array:
 		records.append({
 			"position": _vector_to_array(projectile.get("position", Vector2.ZERO)),
 			"target_index": enemies.find(projectile.get("target", {})),
-			"tower_index": towers.find(projectile.get("tower", {})),
+			"source_tower_id": int(projectile.get("source_tower_id", projectile.get("tower", {}).get("tower_id", -1))),
 			"damage": float(projectile.get("damage", 0.0)),
 			"speed": float(projectile.get("speed", 0.0)),
 			"tower_type": str(projectile.get("tower_type", "")),
@@ -2453,18 +3176,24 @@ func _restore_projectiles(records: Array) -> Array:
 		var record: Dictionary = raw
 		var target_index: int = int(record.get("target_index", -1))
 		var tower_index: int = int(record.get("tower_index", -1))
+		var source_tower_id: int = int(record.get("source_tower_id", -1))
 		if target_index < 0 or target_index >= enemies.size():
 			continue
-		if tower_index < 0 or tower_index >= towers.size():
+		var source_tower := _tower_by_id(source_tower_id)
+		if source_tower.is_empty() and tower_index >= 0 and tower_index < towers.size():
+			source_tower = towers[tower_index]
+			source_tower_id = int(source_tower.get("tower_id", -1))
+		if source_tower.is_empty():
 			continue
 		restored.append({
 			"position": _array_to_vector(record.get("position", [0.0, 0.0])),
 			"target": enemies[target_index],
-			"tower": towers[tower_index],
+			"tower": source_tower,
+			"source_tower_id": source_tower_id,
 			"damage": float(record.get("damage", 0.0)),
-			"speed": float(record.get("speed", _projectile_speed_for_tower(towers[tower_index]))),
-			"tower_type": str(record.get("tower_type", towers[tower_index].get("type", ""))),
-			"tower_level": int(record.get("tower_level", towers[tower_index].get("level", 1))),
+			"speed": float(record.get("speed", _projectile_speed_for_tower(source_tower))),
+			"tower_type": str(record.get("tower_type", source_tower.get("type", ""))),
+			"tower_level": int(record.get("tower_level", source_tower.get("level", 1))),
 			"trail_timer": float(record.get("trail_timer", 0.0)),
 			"dead": bool(record.get("dead", false)),
 		})
@@ -2489,6 +3218,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, viewport_size), Color(0.02, 0.025, 0.024))
 	_draw_map_layer(metrics)
 	_draw_sidebar()
+	_draw_reward_card_panel()
 	if game_over:
 		_draw_game_over_overlay()
 
@@ -2512,11 +3242,13 @@ func _draw_map() -> void:
 		_draw_tiled_texture(grass, map_rect)
 	_draw_path()
 	_draw_build_grid(map_rect)
-	if not path_points.is_empty():
-		if not _draw_texture_centered("sprites/terrain/spawn_gate.png", path_points[0], Vector2(44, 44)):
-			draw_circle(path_points[0], 22.0, Color(0.25, 0.85, 0.50))
-		if not _draw_texture_centered("sprites/terrain/base_gate.png", path_points[path_points.size() - 1], Vector2(44, 44)):
-			draw_circle(path_points[path_points.size() - 1], 22.0, Color(0.95, 0.28, 0.23))
+	for lane_path in lane_paths:
+		if lane_path.is_empty():
+			continue
+		if not _draw_texture_centered("sprites/terrain/spawn_gate.png", lane_path[0], Vector2(44, 44)):
+			draw_circle(lane_path[0], 22.0, Color(0.25, 0.85, 0.50))
+		if not _draw_texture_centered("sprites/terrain/base_gate.png", lane_path[lane_path.size() - 1], Vector2(44, 44)):
+			draw_circle(lane_path[lane_path.size() - 1], 22.0, Color(0.95, 0.28, 0.23))
 
 
 func _draw_tiled_texture(texture: Texture2D, rect: Rect2) -> void:
@@ -2561,12 +3293,13 @@ func _draw_path() -> void:
 
 
 func _draw_path_pass(width: float, color: Color) -> void:
-	if path_points.size() < 2:
-		return
-	for index in range(path_points.size() - 1):
-		draw_line(path_points[index], path_points[index + 1], color, width)
-	for point in path_points:
-		draw_rect(Rect2(point - Vector2(width, width) * 0.5, Vector2(width, width)), color)
+	for lane_path in lane_paths:
+		if lane_path.size() < 2:
+			continue
+		for index in range(lane_path.size() - 1):
+			draw_line(lane_path[index], lane_path[index + 1], color, width)
+		for point in lane_path:
+			draw_rect(Rect2(point - Vector2(width, width) * 0.5, Vector2(width, width)), color)
 
 
 func _draw_build_grid(map_rect: Rect2) -> void:
@@ -2680,7 +3413,7 @@ func _draw_debug_overlay() -> void:
 		var enemy: Dictionary = enemies[index]
 		var position: Vector2 = enemy.get("position", Vector2.ZERO)
 		draw_arc(position, 20.0, 0.0, TAU, 28, Color(1.0, 0.42, 0.34, 0.36), 1.0)
-		var enemy_label := "#%s %s %.0f%%" % [index, str(enemy.get("kind", ENEMY_KIND)), float(enemy.get("progress", 0.0)) * 100.0]
+		var enemy_label := GAMEPLAY_VIEW_MODEL.enemy_debug_label(index, enemy, ENEMY_KIND, _enemy_progress_ratio(enemy))
 		draw_string(ThemeDB.fallback_font, position + Vector2(-28, 33), enemy_label, HORIZONTAL_ALIGNMENT_LEFT, 96.0, 8, Color(1.0, 0.78, 0.68, 0.82))
 	for projectile in projectiles:
 		var position: Vector2 = projectile.get("position", Vector2.ZERO)
@@ -2869,6 +3602,47 @@ func _draw_wave_control_button() -> void:
 		draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, rect.size.y - 5.0), disabled_reason, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 9, Color(0.94, 0.68, 0.48))
 	for button in get_speed_button_rects():
 		_draw_speed_button(button)
+
+
+func _draw_reward_card_panel() -> void:
+	if pending_reward_cards.is_empty():
+		return
+	var viewport_size := _layout_viewport_size()
+	var panel := get_reward_card_panel_rect()
+	draw_rect(Rect2(Vector2.ZERO, viewport_size), Color(0.01, 0.02, 0.015, 0.68))
+	draw_rect(panel, Color(0.055, 0.075, 0.065, 0.98))
+	draw_rect(Rect2(panel.position, Vector2(panel.size.x, 5.0)), Color(0.78, 0.62, 0.30))
+	draw_rect(panel, Color(0.52, 0.44, 0.28), false, 2.0)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(18, 30), "Choose Reward Card", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 20, Color(0.97, 0.96, 0.86))
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(18, 51), "Select one card to continue to the next wave", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 36.0, 11, Color(0.76, 0.82, 0.72))
+	for card_button in get_reward_card_rects():
+		_draw_reward_card_button(card_button)
+
+
+func _draw_reward_card_button(card_button: Dictionary) -> void:
+	var rect: Rect2 = card_button["rect"]
+	var accent := _reward_card_color(str(card_button.get("category", "progression")))
+	var hovered := _ui_rect_hovered(rect)
+	var fill := Color(accent.r * 0.20, accent.g * 0.20, accent.b * 0.20, 1.0)
+	if hovered:
+		fill = fill.lightened(0.10)
+		accent = accent.lightened(0.10)
+	draw_rect(rect, fill)
+	draw_rect(rect, accent, false, 2.0)
+	draw_rect(Rect2(rect.position, Vector2(rect.size.x, 5.0)), Color(accent.r, accent.g, accent.b, 0.78))
+	draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, 28), str(card_button.get("label", "Reward")), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 14, Color(0.96, 0.97, 0.90))
+	draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, 45), str(card_button.get("category", "progression")).capitalize(), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 10, accent.lightened(0.18))
+	draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, 72), _truncate_text(str(card_button.get("description", "")), 46), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 11, Color(0.80, 0.85, 0.76))
+	draw_string(ThemeDB.fallback_font, rect.position + Vector2(12, rect.size.y - 14.0), "Click to select", HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24.0, 10, Color(0.92, 0.86, 0.62))
+
+
+func _reward_card_color(category: String) -> Color:
+	var progression: Dictionary = game_data.get("progression", {})
+	var colors: Dictionary = progression.get("reward_card_category_colors", {})
+	var values: Variant = colors.get(category, [130, 165, 130])
+	if values is Array and values.size() >= 3:
+		return _color_from_array(values)
+	return Color(0.51, 0.65, 0.51)
 
 
 func _draw_speed_button(button: Dictionary) -> void:
@@ -3195,6 +3969,12 @@ func _check_global_invariants(failures: Array) -> void:
 		failures.append("selected_build_type not in shop data: %s" % selected_build_type)
 	if path_points.size() < 2:
 		failures.append("path_points too short: %s" % path_points.size())
+	if lane_paths.is_empty():
+		failures.append("lane_paths is empty")
+	else:
+		for lane_index in range(lane_paths.size()):
+			if lane_paths[lane_index].size() < 2:
+				failures.append("lane %s path too short: %s" % [lane_index, lane_paths[lane_index].size()])
 
 
 func _check_tower_invariants(failures: Array) -> void:
@@ -3240,8 +4020,13 @@ func _check_enemy_invariants(failures: Array) -> void:
 		if not (enemy.get("position", Vector2.ZERO) is Vector2):
 			failures.append("enemy %s position is not Vector2" % index)
 		var target_index := int(enemy.get("target_index", 0))
-		if target_index < 0 or target_index > path_points.size():
-			failures.append("enemy %s target_index out of range: %s of %s" % [index, target_index, path_points.size()])
+		var lane_index := int(enemy.get("lane_index", 0))
+		if lane_index < 0 or lane_index >= lane_paths.size():
+			failures.append("enemy %s lane_index out of range: %s of %s" % [index, lane_index, lane_paths.size()])
+		else:
+			var enemy_path: Array = lane_paths[lane_index]
+			if target_index < 0 or target_index > enemy_path.size():
+				failures.append("enemy %s target_index out of range: %s of %s on lane %s" % [index, target_index, enemy_path.size(), lane_index])
 		_require_finite_float(failures, "enemy %s hp" % index, float(enemy.get("hp", 0.0)))
 		var max_hp := float(enemy.get("max_hp", 0.0))
 		_require_positive_float(failures, "enemy %s max_hp" % index, max_hp)
@@ -3257,9 +4042,31 @@ func _check_enemy_invariants(failures: Array) -> void:
 		if int(enemy.get("shield_hits", 0)) > int(enemy.get("max_shield_hits", 0)):
 			failures.append("enemy %s shield_hits exceeds max_shield_hits" % index)
 		_require_nonnegative_float(failures, "enemy %s damage_taken_multiplier" % index, float(enemy.get("damage_taken_multiplier", 1.0)))
+		_require_nonnegative_int(failures, "enemy %s breach_stacks" % index, int(enemy.get("breach_stacks", 0)))
+		_require_nonnegative_float(failures, "enemy %s breach_timer" % index, float(enemy.get("breach_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s breach_vulnerability_multiplier" % index, float(enemy.get("breach_vulnerability_multiplier", 1.0)))
 		_require_nonnegative_float(failures, "enemy %s regen_scale" % index, float(enemy.get("regen_scale", 0.0)))
+		_require_nonnegative_int(failures, "enemy %s poison_stacks" % index, int(enemy.get("poison_stacks", 0)))
+		if int(enemy.get("poison_stacks", 0)) > POISON_MAX_STACKS:
+			failures.append("enemy %s poison_stacks exceeds max" % index)
+		_require_nonnegative_float(failures, "enemy %s poison_timer" % index, float(enemy.get("poison_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s poison_tick_timer" % index, float(enemy.get("poison_tick_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s poison_damage" % index, float(enemy.get("poison_damage", 0.0)))
+		var poison_regen_multiplier := float(enemy.get("poison_regen_multiplier", 1.0))
+		_require_nonnegative_float(failures, "enemy %s poison_regen_multiplier" % index, poison_regen_multiplier)
+		if poison_regen_multiplier > 1.0:
+			failures.append("enemy %s poison_regen_multiplier above 1.0" % index)
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_timer" % index, float(enemy.get("wildfire_burn_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_tick_timer" % index, float(enemy.get("wildfire_burn_tick_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s wildfire_burn_damage" % index, float(enemy.get("wildfire_burn_damage", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s slow_timer" % index, float(enemy.get("slow_timer", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s slow_multiplier" % index, float(enemy.get("slow_multiplier", 1.0)))
+		_require_nonnegative_float(failures, "enemy %s freeze_timer" % index, float(enemy.get("freeze_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s shatter_timer" % index, float(enemy.get("shatter_timer", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s shatter_vulnerability_multiplier" % index, float(enemy.get("shatter_vulnerability_multiplier", 1.0)))
+		_require_nonnegative_float(failures, "enemy %s shatter_burst_radius" % index, float(enemy.get("shatter_burst_radius", 0.0)))
+		_require_nonnegative_float(failures, "enemy %s shatter_burst_damage_fraction" % index, float(enemy.get("shatter_burst_damage_fraction", 0.0)))
+		_require_nonnegative_int(failures, "enemy %s shatter_burst_targets" % index, int(enemy.get("shatter_burst_targets", 0)))
 		_require_nonnegative_int(failures, "enemy %s death_spawns" % index, int(enemy.get("death_spawns", 0)))
 		_require_nonnegative_float(failures, "enemy %s death_burst_damage_fraction" % index, float(enemy.get("death_burst_damage_fraction", 0.0)))
 		_require_nonnegative_float(failures, "enemy %s death_burst_radius" % index, float(enemy.get("death_burst_radius", 0.0)))
@@ -3339,29 +4146,56 @@ func _clear_feedback() -> void:
 
 
 func _credit_tower_kill(enemy: Dictionary) -> void:
-	var best: Dictionary = {}
-	for tower in towers:
-		if best.is_empty() or tower["position"].distance_to(enemy["position"]) < best["position"].distance_to(enemy["position"]):
-			best = tower
-	if not best.is_empty():
-		best["kills"] = int(best["kills"]) + 1
+	var source := _tower_by_id(int(enemy.get("last_damage_source_tower_id", -1)))
+	if not source.is_empty():
+		source["kills"] = int(source.get("kills", 0)) + 1
 
 
 func _enemy_progress(enemy: Dictionary) -> float:
+	var enemy_path: Array = _path_for_enemy(enemy)
 	var total := 0.0
 	var target_index: int = int(enemy["target_index"])
-	for index in range(1, min(target_index, path_points.size())):
-		total += path_points[index - 1].distance_to(path_points[index])
-	if target_index > 0 and target_index < path_points.size():
-		total += path_points[target_index - 1].distance_to(enemy["position"])
+	for index in range(1, min(target_index, enemy_path.size())):
+		total += enemy_path[index - 1].distance_to(enemy_path[index])
+	if target_index > 0 and target_index < enemy_path.size():
+		total += enemy_path[target_index - 1].distance_to(enemy["position"])
 	return total
 
 
-func _points_from_path(raw_path: Array) -> Array:
-	var result: Array = []
-	for point in raw_path:
-		result.append(Vector2(float(point[0]), float(point[1])))
-	return result
+func _enemy_progress_ratio(enemy: Dictionary) -> float:
+	var enemy_path: Array = _path_for_enemy(enemy)
+	var path_length := 0.0
+	for index in range(1, enemy_path.size()):
+		path_length += enemy_path[index - 1].distance_to(enemy_path[index])
+	if path_length <= 0.0:
+		return 0.0
+	return clamp(_enemy_progress(enemy) / path_length, 0.0, 1.0)
+
+
+func _path_for_lane(requested_lane_index: int) -> Array:
+	if lane_paths.is_empty():
+		return path_points
+	var lane_index: int = int(clamp(requested_lane_index, 0, lane_paths.size() - 1))
+	return lane_paths[lane_index]
+
+
+func _path_for_enemy(enemy: Dictionary) -> Array:
+	return _path_for_lane(int(enemy.get("lane_index", 0)))
+
+
+func _next_spawn_lane_index() -> int:
+	if lane_paths.size() <= 1:
+		return 0
+	var lane_index := spawn_lane_cursor % lane_paths.size()
+	spawn_lane_cursor = (spawn_lane_cursor + 1) % lane_paths.size()
+	return lane_index
+
+
+func _max_lane_path_point_count() -> int:
+	var maximum := path_points.size()
+	for lane_path in lane_paths:
+		maximum = max(maximum, lane_path.size())
+	return maximum
 
 
 func _distance_point_to_segment(point: Vector2, start: Vector2, end: Vector2) -> float:

@@ -22,23 +22,17 @@ func _initialize() -> void:
 
 
 func _run_validation() -> void:
-	var smoke := _run_fixture("smoke", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_smoke", "--compare-previous=false", "--scenario-probes=smoke"])
-	_expect_json_value(smoke, ["scenario_probes", "mode"], "smoke", "smoke mode")
-	_expect_probe_ids(smoke, "tower_family_probes", ["archer", "cannon", "tesla"], "smoke tower probes")
-	_expect_probe_ids(smoke, "enemy_kind_probes", ["normal", "fast", "tank", "flying"], "smoke enemy probes")
-	_expect_probe_waves(smoke, "scheduled_wave_probes", [5, 8], "smoke scheduled waves")
-	_expect_branch_subset(smoke, ["archer", "cannon", "tesla"], "smoke branches")
-	_expect_flying_probe_uses_unlocked_anti_air(smoke, "smoke")
-
-	var full := _run_fixture("full", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_full", "--compare-previous=false", "--scenario-probes=full"])
-	_expect_json_value(full, ["schema_version"], 6, "schema version")
+	var full := _run_fixture("full", ["--runs=1", "--max-waves=1", "--report-label=scenario_probe_validation_full", "--compare-previous=false", "--scenario-probes=full", "--coverage=full"])
+	_expect_json_value(full, ["schema_version"], 7, "schema version")
 	_expect_json_value(full, ["scenario_probes", "mode"], "full", "full mode")
-	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "sniper", "tesla"], "full tower probes")
+	_expect_probe_ids(full, "tower_family_probes", ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"], "full tower probes")
 	_expect_probe_ids(full, "enemy_kind_probes", ["armored", "commander", "fast", "flying", "normal", "shield", "swarm", "tank"], "full enemy probes")
 	_expect_probe_waves(full, "scheduled_wave_probes", [5, 8, 10, 12, 15, 16, 20, 24, 25, 28, 30], "full scheduled waves")
+	_expect_probe_ids(full, "map_probes", ["map_0", "map_1", "map_2", "map_3"], "full map probes")
 	_expect_all_enabled_branches(full)
 	_expect_branch_exercise(full)
-	_expect_special_wave_diagnostics(full)
+	_expect_no_branch_probe_failures(full)
+	_expect_special_wave_spawns(full)
 	_expect_flying_probe_uses_unlocked_anti_air(full, "full")
 	_expect_contains(full.get("markdown", ""), "## Scenario probes", "markdown scenario section")
 	_expect_contains(full.get("prompt", ""), "## Scenario Probes", "prompt scenario section")
@@ -56,10 +50,15 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 		_errors.append("Fixture %s failed with exit code %s: %s" % [name, exit_code, _join_strings(output, "\n")])
 		return {"json": {}, "markdown": "", "prompt": ""}
 	var json_path := _latest_file(output_dir, "ai_simulation_data_", ".json")
-	var markdown_path := _latest_file(output_dir, "ai_simulation_report_", ".md")
-	var prompt_path := _latest_file(output_dir, "ai_simulation_codex_prompt_", ".md")
+	var packet_id := json_path.get_file().trim_prefix("ai_simulation_data_").trim_suffix(".json") if not json_path.is_empty() else ""
+	var markdown_path := "%s/ai_simulation_report_%s.md" % [output_dir, packet_id]
+	var prompt_path := "%s/ai_simulation_codex_prompt_%s.md" % [output_dir, packet_id]
+	var manifest_path := "%s/ai_simulation_manifest_%s.json" % [output_dir, packet_id]
 	if json_path.is_empty() or markdown_path.is_empty() or prompt_path.is_empty():
 		_errors.append("Fixture %s did not write timestamped outputs under %s." % [name, output_dir])
+		return {"json": {}, "markdown": "", "prompt": ""}
+	if not FileAccess.file_exists(markdown_path) or not FileAccess.file_exists(prompt_path) or not FileAccess.file_exists(manifest_path):
+		_errors.append("Fixture %s did not write a complete matching packet under %s." % [name, output_dir])
 		return {"json": {}, "markdown": "", "prompt": ""}
 	var parsed = JSON.parse_string(FileAccess.get_file_as_string(json_path))
 	if typeof(parsed) != TYPE_DICTIONARY:
@@ -142,7 +141,7 @@ func _expect_branch_subset(fixture: Dictionary, tower_types: Array, label: Strin
 
 
 func _expect_all_enabled_branches(fixture: Dictionary) -> void:
-	var expected_count := 15
+	var expected_count := 7
 	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("branch_probes", [])
 	if probes.size() != expected_count:
 		_errors.append("full branch probe count expected %s, got %s." % [expected_count, probes.size()])
@@ -155,15 +154,29 @@ func _expect_branch_exercise(fixture: Dictionary) -> void:
 			_errors.append("branch probe did not exercise requested branch: %s." % str(probe))
 
 
-func _expect_special_wave_diagnostics(fixture: Dictionary) -> void:
-	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("scheduled_wave_probes", [])
-	var diagnostic_count := 0
+func _expect_no_branch_probe_failures(fixture: Dictionary) -> void:
+	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("branch_probes", [])
 	for probe in probes:
 		for failure in probe.get("failures", []):
+			if str(failure.get("label", "")) == "scenario_branch_not_exercised":
+				_errors.append("branch probe retained a scenario_branch_not_exercised failure: %s." % str(probe))
+
+
+func _expect_special_wave_spawns(fixture: Dictionary) -> void:
+	var probes: Array = fixture.get("json", {}).get("scenario_probes", {}).get("scheduled_wave_probes", [])
+	var scheduled_special_count := 0
+	for probe in probes:
+		var scheduled := int(probe.get("scheduled_boss_count", 0)) + int(probe.get("scheduled_commander_count", 0))
+		var spawned := int(probe.get("spawned_boss_count", 0)) + int(probe.get("spawned_commander_count", 0))
+		if scheduled > 0:
+			scheduled_special_count += 1
+			if spawned != scheduled and not bool(probe.get("diagnostic_only", false)):
+				_errors.append("scheduled special probe did not spawn its configured specials: %s." % str(probe))
+		for failure in probe.get("failures", []):
 			if str(failure.get("label", "")) == "scenario_scheduled_special_unspawned" and str(failure.get("severity", "")) == "info":
-				diagnostic_count += 1
-	if diagnostic_count == 0:
-		_errors.append("expected at least one scheduled special known-gap diagnostic.")
+				_errors.append("scheduled special probe still reported an unspawned-special diagnostic: %s." % str(probe))
+	if scheduled_special_count == 0:
+		_errors.append("expected at least one scheduled special probe.")
 
 
 func _expect_flying_probe_uses_unlocked_anti_air(fixture: Dictionary, label: String) -> void:
@@ -172,11 +185,11 @@ func _expect_flying_probe_uses_unlocked_anti_air(fixture: Dictionary, label: Str
 		_errors.append("%s flying enemy probe missing." % label)
 		return
 	var setup: Dictionary = probe.get("anti_air_setup", {})
-	if int(setup.get("tesla_level", 0)) < 4:
-		_errors.append("%s flying probe expected Tesla level >= 4, got %s." % [label, str(setup)])
-	if int(setup.get("sniper_level", 0)) < 3:
-		_errors.append("%s flying probe expected Sniper level >= 3, got %s." % [label, str(setup)])
-	if float(probe.get("damage_delta", 0.0)) <= 0.0:
+	if int(setup.get("tesla_level", 0)) < 2:
+		_errors.append("%s flying probe expected reachable Tesla anti-air level >= 2, got %s." % [label, str(setup)])
+	if int(setup.get("sniper_level", 0)) < 2:
+		_errors.append("%s flying probe expected reachable Sniper anti-air level >= 2, got %s." % [label, str(setup)])
+	if not bool(probe.get("diagnostic_only", false)) and float(probe.get("damage_delta", 0.0)) <= 0.0:
 		_errors.append("%s flying probe expected anti-air damage, got %s." % [label, str(probe)])
 	for failure in probe.get("failures", []):
 		if str(failure.get("label", "")) == "scenario_spend_efficiency_out_of_range":

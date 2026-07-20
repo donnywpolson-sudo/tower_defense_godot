@@ -1,0 +1,582 @@
+{
+	"action_trace": [
+		{
+			"action": "reset_slice",
+			"map_index": 0
+		},
+		{
+			"action": "set_money",
+			"money": 5000
+		},
+		{
+			"action": "set_lives",
+			"lives": 25
+		},
+		{
+			"action": "set_game_speed",
+			"speed": 4.0
+		},
+		{
+			"action": "set_wave_for_test",
+			"wave": 6
+		},
+		{
+			"action": "place_selected_tower",
+			"sites": [
+				[
+					351.0,
+					297.0
+				],
+				[
+					108.0,
+					162.0
+				],
+				[
+					567.0,
+					513.0
+				]
+			],
+			"tower_type": "frost"
+		},
+		{
+			"action": "select_tower",
+			"tower_index": 0
+		},
+		{
+			"action": "upgrade_selected_tower",
+			"baseline": true
+		},
+		{
+			"action": "start_wave",
+			"wave": 6
+		},
+		{
+			"action": "process_scaled_delta",
+			"delta": 0.2,
+			"max_cycles": 900,
+			"until": "wave_complete_or_game_over"
+		}
+	],
+	"cases": [
+		{
+			"case_id": "baseline_first",
+			"completed": true,
+			"cycles_to_resolution": 70,
+			"final_snapshot": {
+				"enemy_count": 0,
+				"enemy_family": "fast",
+				"game_data_regular_enemy_count": 28,
+				"game_over": false,
+				"game_speed": 4.0,
+				"game_speed_label": "4x",
+				"kills": 21,
+				"lane_count": 1,
+				"latest_feedback": {},
+				"leaks": 7,
+				"lives": 18,
+				"map_name": "Classic Road",
+				"money": 4820,
+				"projectile_count": 0,
+				"research_points": 2,
+				"reward_card_choice": {
+					"choices": [
+						{
+							"category": "power",
+							"description": "All towers hit shielded targets harder.",
+							"effects": {
+								"pierce_bonus": 1.0
+							},
+							"id": "pierce_patch",
+							"label": "Pierce"
+						},
+						{
+							"category": "power",
+							"description": "All towers gain permanent range.",
+							"effects": {
+								"range_bonus": 12.0
+							},
+							"id": "range_patch",
+							"label": "Range Boost"
+						},
+						{
+							"category": "progression",
+							"description": "Gain tech for mastery upgrades.",
+							"effects": {
+								"research_points": 3.0
+							},
+							"id": "research_grant",
+							"label": "Tech Cache"
+						}
+					],
+					"history": [],
+					"pending": true
+				},
+				"reward_card_pierce_bonus": 0,
+				"run_modifiers": {
+					"attack_speed_multiplier": 1.0,
+					"damage_multiplier": 1.0,
+					"pierce_bonus": 0,
+					"range_bonus": 0.0
+				},
+				"selected_build_type": "",
+				"shop_button_count": 9,
+				"slice_spawn_limit": 3,
+				"spawn_interval": 0.548,
+				"spawn_lane_cursor": 0,
+				"spawn_limit": 28,
+				"spawned_boss_this_wave": 0,
+				"spawned_commander_this_wave": 0,
+				"spawned_extra_this_wave": 0,
+				"spawned_this_wave": 28,
+				"spawned_total_this_wave": 28,
+				"tower_count": 3,
+				"tower_family": "frost",
+				"wave": 6,
+				"wave_active": false,
+				"wave_complete": true,
+				"wave_forecast": {
+					"enemy_kind": "fast",
+					"label": "Fast",
+					"modifier": "",
+					"modifier_label": "",
+					"recommendation": "Build coverage and upgrade key towers.",
+					"regular_enemy_count": 28,
+					"spawn_interval": 0.548,
+					"wave": 6
+				},
+				"wave_reward_money": 15,
+				"wave_reward_research": 2
+			},
+			"game_over": false,
+			"kills": 21,
+			"leak_rate": 0.25,
+			"leaks": 7,
+			"lives": 18,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						351.0,
+						297.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						162.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						567.0,
+						513.0
+					]
+				}
+			],
+			"runtime_invariant_failures": [],
+			"setup_valid": true,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"damage": 40.0,
+					"fire_rate": 0.68,
+					"kills": 2,
+					"level": 2,
+					"money_spent": 140,
+					"position": [
+						351.0,
+						297.0
+					],
+					"range": 185.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 3,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						108.0,
+						162.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 16,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						567.0,
+						513.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				}
+			],
+			"upgrade_requested": true,
+			"upgrade_succeeded": true
+		},
+		{
+			"case_id": "baseline_repeat",
+			"completed": true,
+			"cycles_to_resolution": 70,
+			"final_snapshot": {
+				"enemy_count": 0,
+				"enemy_family": "fast",
+				"game_data_regular_enemy_count": 28,
+				"game_over": false,
+				"game_speed": 4.0,
+				"game_speed_label": "4x",
+				"kills": 21,
+				"lane_count": 1,
+				"latest_feedback": {},
+				"leaks": 7,
+				"lives": 18,
+				"map_name": "Classic Road",
+				"money": 4820,
+				"projectile_count": 0,
+				"research_points": 2,
+				"reward_card_choice": {
+					"choices": [
+						{
+							"category": "power",
+							"description": "All towers hit shielded targets harder.",
+							"effects": {
+								"pierce_bonus": 1.0
+							},
+							"id": "pierce_patch",
+							"label": "Pierce"
+						},
+						{
+							"category": "power",
+							"description": "All towers gain permanent range.",
+							"effects": {
+								"range_bonus": 12.0
+							},
+							"id": "range_patch",
+							"label": "Range Boost"
+						},
+						{
+							"category": "progression",
+							"description": "Gain tech for mastery upgrades.",
+							"effects": {
+								"research_points": 3.0
+							},
+							"id": "research_grant",
+							"label": "Tech Cache"
+						}
+					],
+					"history": [],
+					"pending": true
+				},
+				"reward_card_pierce_bonus": 0,
+				"run_modifiers": {
+					"attack_speed_multiplier": 1.0,
+					"damage_multiplier": 1.0,
+					"pierce_bonus": 0,
+					"range_bonus": 0.0
+				},
+				"selected_build_type": "",
+				"shop_button_count": 9,
+				"slice_spawn_limit": 3,
+				"spawn_interval": 0.548,
+				"spawn_lane_cursor": 0,
+				"spawn_limit": 28,
+				"spawned_boss_this_wave": 0,
+				"spawned_commander_this_wave": 0,
+				"spawned_extra_this_wave": 0,
+				"spawned_this_wave": 28,
+				"spawned_total_this_wave": 28,
+				"tower_count": 3,
+				"tower_family": "frost",
+				"wave": 6,
+				"wave_active": false,
+				"wave_complete": true,
+				"wave_forecast": {
+					"enemy_kind": "fast",
+					"label": "Fast",
+					"modifier": "",
+					"modifier_label": "",
+					"recommendation": "Build coverage and upgrade key towers.",
+					"regular_enemy_count": 28,
+					"spawn_interval": 0.548,
+					"wave": 6
+				},
+				"wave_reward_money": 15,
+				"wave_reward_research": 2
+			},
+			"game_over": false,
+			"kills": 21,
+			"leak_rate": 0.25,
+			"leaks": 7,
+			"lives": 18,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						351.0,
+						297.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						162.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						567.0,
+						513.0
+					]
+				}
+			],
+			"runtime_invariant_failures": [],
+			"setup_valid": true,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"damage": 40.0,
+					"fire_rate": 0.68,
+					"kills": 2,
+					"level": 2,
+					"money_spent": 140,
+					"position": [
+						351.0,
+						297.0
+					],
+					"range": 185.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 3,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						108.0,
+						162.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 16,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						567.0,
+						513.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				}
+			],
+			"upgrade_requested": true,
+			"upgrade_succeeded": true
+		},
+		{
+			"case_id": "counterfactual_no_upgrade",
+			"completed": true,
+			"cycles_to_resolution": 76,
+			"final_snapshot": {
+				"enemy_count": 0,
+				"enemy_family": "fast",
+				"game_data_regular_enemy_count": 28,
+				"game_over": false,
+				"game_speed": 4.0,
+				"game_speed_label": "4x",
+				"kills": 11,
+				"lane_count": 1,
+				"latest_feedback": {},
+				"leaks": 17,
+				"lives": 8,
+				"map_name": "Classic Road",
+				"money": 4830,
+				"projectile_count": 0,
+				"research_points": 2,
+				"reward_card_choice": {
+					"choices": [
+						{
+							"category": "power",
+							"description": "All towers hit shielded targets harder.",
+							"effects": {
+								"pierce_bonus": 1.0
+							},
+							"id": "pierce_patch",
+							"label": "Pierce"
+						},
+						{
+							"category": "power",
+							"description": "All towers gain permanent range.",
+							"effects": {
+								"range_bonus": 12.0
+							},
+							"id": "range_patch",
+							"label": "Range Boost"
+						},
+						{
+							"category": "progression",
+							"description": "Gain tech for mastery upgrades.",
+							"effects": {
+								"research_points": 3.0
+							},
+							"id": "research_grant",
+							"label": "Tech Cache"
+						}
+					],
+					"history": [],
+					"pending": true
+				},
+				"reward_card_pierce_bonus": 0,
+				"run_modifiers": {
+					"attack_speed_multiplier": 1.0,
+					"damage_multiplier": 1.0,
+					"pierce_bonus": 0,
+					"range_bonus": 0.0
+				},
+				"selected_build_type": "",
+				"shop_button_count": 9,
+				"slice_spawn_limit": 3,
+				"spawn_interval": 0.548,
+				"spawn_lane_cursor": 0,
+				"spawn_limit": 28,
+				"spawned_boss_this_wave": 0,
+				"spawned_commander_this_wave": 0,
+				"spawned_extra_this_wave": 0,
+				"spawned_this_wave": 28,
+				"spawned_total_this_wave": 28,
+				"tower_count": 3,
+				"tower_family": "frost",
+				"wave": 6,
+				"wave_active": false,
+				"wave_complete": true,
+				"wave_forecast": {
+					"enemy_kind": "fast",
+					"label": "Fast",
+					"modifier": "",
+					"modifier_label": "",
+					"recommendation": "Build coverage and upgrade key towers.",
+					"regular_enemy_count": 28,
+					"spawn_interval": 0.548,
+					"wave": 6
+				},
+				"wave_reward_money": 15,
+				"wave_reward_research": 2
+			},
+			"game_over": false,
+			"kills": 11,
+			"leak_rate": 0.607142857142857,
+			"leaks": 17,
+			"lives": 8,
+			"placement_results": [
+				{
+					"placed": true,
+					"site": [
+						351.0,
+						297.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						108.0,
+						162.0
+					]
+				},
+				{
+					"placed": true,
+					"site": [
+						567.0,
+						513.0
+					]
+				}
+			],
+			"runtime_invariant_failures": [],
+			"setup_valid": true,
+			"spawned": 28,
+			"start_succeeded": true,
+			"tower_summary": [
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 4,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						351.0,
+						297.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 1,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						108.0,
+						162.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				},
+				{
+					"damage": 37.0,
+					"fire_rate": 0.68,
+					"kills": 6,
+					"level": 1,
+					"money_spent": 80,
+					"position": [
+						567.0,
+						513.0
+					],
+					"range": 173.0,
+					"selected_branch": "",
+					"type": "frost"
+				}
+			],
+			"upgrade_requested": false,
+			"upgrade_succeeded": false
+		}
+	],
+	"deterministic": true,
+	"fix_summary": {
+		"base_damage": "27 -> 40 before level-one scaling; level-one runtime damage is now 37",
+		"initial_slow_multiplier": "0.76 -> 0.62",
+		"repeat_hit_behavior": "Repeated hits deepen chill by 0.04 down to a 0.50 multiplier floor, then expiry resets speed."
+	},
+	"no_code_change_if": "Do not generalize this tuning from one map and wave; rerun broader map, branch, and economy coverage before further frost changes.",
+	"replay_id": "frost_tower_family_wave6_map0_v1",
+	"selected_replay": {
+		"candidate": "SCENARIO-0003",
+		"reason": "Frost had the highest recorded tower-family leak rate: 23 of 28 enemies leaked and only 2 lives remained.",
+		"source_issue": "scenario_leak_rate_out_of_range",
+		"source_leak_rate": 0.821428571428571,
+		"source_packet": "2026_07_13_0926",
+		"target_max_leak_rate": 0.35
+	}
+}

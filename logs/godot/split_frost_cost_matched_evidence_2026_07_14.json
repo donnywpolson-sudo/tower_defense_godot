@@ -1,0 +1,4312 @@
+{
+	"cost_match_definition": {
+		"allowed_spend_delta": 5.0,
+		"archer_branch": "deadeye",
+		"expected_control_spend": 815.0,
+		"placement_topology_policy": "same deterministic placement sites; tower type may differ only at the Frost/poison slot",
+		"target_branch_spend": 810.0,
+		"upgrade_costs": [
+			60.0,
+			125.0,
+			175.0
+		],
+		"upgrade_total": 360.0,
+		"upgrade_tower": "archer"
+	},
+	"cost_matched_entries": [
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.526478406422781,
+					"left": 6.51358024691358,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -396.511999999999,
+					"left": 5276.0,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.526478406422781,
+					"left": 6.51358024691358,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -396.511999999999,
+					"left": 5276.0,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.986523838521546,
+					"left": 6.97362567901235,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 24.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 1.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -769.148799999999,
+					"left": 5648.6368,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.986523838521546,
+					"left": 6.97362567901235,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 24.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 1.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -769.148799999999,
+					"left": 5648.6368,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.526478406422781,
+					"left": 6.51358024691358,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -396.511999999999,
+					"left": 5276.0,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.526478406422781,
+					"left": 6.51358024691358,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -396.511999999999,
+					"left": 5276.0,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.986523838521546,
+					"left": 6.97362567901235,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 24.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 1.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -769.148799999999,
+					"left": 5648.6368,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Spiral Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.986523838521546,
+					"left": 6.97362567901235,
+					"right": 5.9871018404908
+				},
+				"leaks": {
+					"delta": 1.0,
+					"left": 24.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -1.0,
+					"left": 1.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -769.148799999999,
+					"left": 5648.6368,
+					"right": 4879.488
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": 0.101694221010378,
+					"left": 5.06864197530864,
+					"right": 5.17033619631902
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": 108.224000000001,
+					"left": 4105.6,
+					"right": 4213.824
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": false,
+			"pair_key": "split_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": 0.101694221010378,
+					"left": 5.06864197530864,
+					"right": 5.17033619631902
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": 108.224000000001,
+					"left": 4105.6,
+					"right": 4213.824
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": false,
+			"pair_key": "split_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": 0.0907905173066741,
+					"left": 5.07954567901235,
+					"right": 5.17033619631902
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": 99.3920000000007,
+					"left": 4114.432,
+					"right": 4213.824
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": false,
+			"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "active",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": 0.0907905173066741,
+					"left": 5.07954567901235,
+					"right": 5.17033619631902
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": 99.3920000000007,
+					"left": 4114.432,
+					"right": 4213.824
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": false,
+			"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.187216602287357,
+					"left": 5.79950617283951,
+					"right": 5.61228957055215
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -123.583999999999,
+					"left": 4697.6,
+					"right": 4574.016
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "split_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "glacier",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": false,
+					"right": false,
+					"same": true
+				},
+				"damage_per_spend": {
+					"delta": -0.187216602287357,
+					"left": 5.79950617283951,
+					"right": 5.61228957055215
+				},
+				"leaks": {
+					"delta": 0.0,
+					"left": 25.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": 0.0,
+					"left": 0.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -123.583999999999,
+					"left": 4697.6,
+					"right": 4574.016
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "split_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": false,
+				"direction_key": "0|0|0",
+				"metrics": []
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.614436355373776,
+					"left": 6.22672592592593,
+					"right": 5.61228957055215
+				},
+				"leaks": {
+					"delta": 7.0,
+					"left": 18.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -7.0,
+					"left": 7.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -469.631999999998,
+					"left": 5043.648,
+					"right": 4574.016
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 1,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		},
+		{
+			"actual_control_spend": 815,
+			"branch": "shatter",
+			"branch_spend_delta": 5,
+			"build_variant": "mixed",
+			"control_branch_selection": {
+				"action": "choose_branch",
+				"actual_branch": "deadeye",
+				"requested_branch": "deadeye",
+				"selected": true,
+				"tower_type": "archer",
+				"valid": true
+			},
+			"control_branch_selection_succeeded": true,
+			"control_branch_selection_valid": true,
+			"control_selected_branch": "deadeye",
+			"control_spend_delta": 0,
+			"control_upgrade_trace": [
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 60.0,
+					"expected_cost": 60.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "choose_branch",
+					"actual_branch": "deadeye",
+					"requested_branch": "deadeye",
+					"selected": true,
+					"tower_type": "archer",
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 125.0,
+					"expected_cost": 125.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				},
+				{
+					"action": "upgrade_tower",
+					"actual_cost": 175.0,
+					"expected_cost": 175.0,
+					"tower_type": "archer",
+					"upgraded": true,
+					"valid": true
+				}
+			],
+			"control_upgrade_valid": true,
+			"cost_match_valid": true,
+			"enemy_kind": "normal",
+			"layout": "default",
+			"left_control_mode": "baseline",
+			"map": "Split Road",
+			"metrics": {
+				"completed": {
+					"left": true,
+					"right": false,
+					"same": false
+				},
+				"damage_per_spend": {
+					"delta": -0.614436355373776,
+					"left": 6.22672592592593,
+					"right": 5.61228957055215
+				},
+				"leaks": {
+					"delta": 7.0,
+					"left": 18.0,
+					"right": 25.0
+				},
+				"lives": {
+					"delta": -7.0,
+					"left": 7.0,
+					"right": 0.0
+				},
+				"total_damage": {
+					"delta": -469.631999999998,
+					"left": 5043.648,
+					"right": 4574.016
+				},
+				"total_spend": {
+					"delta": 5.0,
+					"left": 810.0,
+					"right": 815.0
+				}
+			},
+			"normalized_advantage": true,
+			"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+			"raw_survival": {
+				"advantage": true,
+				"direction_key": "1|1|1",
+				"metrics": [
+					"completion",
+					"lives",
+					"leaks"
+				]
+			},
+			"repeat": 2,
+			"right_control_mode": "cost_matched",
+			"spend_match_delta": 0,
+			"target_branch_spend": 810,
+			"target_control_spend": 815,
+			"topology_match": true,
+			"wave": 8
+		}
+	],
+	"cost_neutral_gate_passed": true,
+	"decision": "Cost-matched control validation failed closed; no Frost tuning is authorized.",
+	"evidence_only": true,
+	"normalized_advantage_repeat_count": 6,
+	"normalized_advantage_repeat_total": 6,
+	"normalized_rejection_reasons": [],
+	"pressure_groups": [
+		{
+			"branch": "glacier",
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.526478406422781,
+									"left": 6.51358024691358,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -396.511999999999,
+									"left": 5276.0,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.526478406422781,
+									"left": 6.51358024691358,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -396.511999999999,
+									"left": 5276.0,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.526478406422781,
+									"left": 6.51358024691358,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -396.511999999999,
+									"left": 5276.0,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.526478406422781,
+									"left": 6.51358024691358,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -396.511999999999,
+									"left": 5276.0,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.101694221010378,
+									"left": 5.06864197530864,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 108.224000000001,
+									"left": 4105.6,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"pair_key": "split_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.101694221010378,
+									"left": 5.06864197530864,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 108.224000000001,
+									"left": 4105.6,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"pair_key": "split_road_8_waveactive_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 0,
+					"normalized_gate_passed": false,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.187216602287357,
+									"left": 5.79950617283951,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -123.583999999999,
+									"left": 4697.6,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "glacier",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": -0.187216602287357,
+									"left": 5.79950617283951,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -123.583999999999,
+									"left": 4697.6,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_glacier_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				}
+			],
+			"enemy_kind": "normal",
+			"pressure_key": "glacier|normal",
+			"raw_build_layout_conditions": [],
+			"raw_conditions": [],
+			"raw_gate_passed": false,
+			"raw_maps": []
+		},
+		{
+			"branch": "shatter",
+			"conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": false,
+									"right": false,
+									"same": true
+								},
+								"damage_per_spend": {
+									"delta": 0.0907905173066741,
+									"left": 5.07954567901235,
+									"right": 5.17033619631902
+								},
+								"leaks": {
+									"delta": 0.0,
+									"left": 25.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": 0.0,
+									"left": 0.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": 99.3920000000007,
+									"left": 4114.432,
+									"right": 4213.824
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": false,
+							"pair_key": "split_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": false,
+								"direction_key": "0|0|0",
+								"metrics": []
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 0,
+					"normalized_gate_passed": false,
+					"raw_gate_passed": false,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				}
+			],
+			"enemy_kind": "normal",
+			"pressure_key": "shatter|normal",
+			"raw_build_layout_conditions": [
+				"active|mixed",
+				"default|mixed"
+			],
+			"raw_conditions": [
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|active|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "active",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_waveactive_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "active",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Spiral Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Spiral Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.986523838521546,
+									"left": 6.97362567901235,
+									"right": 5.9871018404908
+								},
+								"leaks": {
+									"delta": 1.0,
+									"left": 24.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -1.0,
+									"left": 1.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -769.148799999999,
+									"left": 5648.6368,
+									"right": 4879.488
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "spiral_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Spiral Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				},
+				{
+					"build_variant": "mixed",
+					"condition_key": "Split Road|8|default|mixed",
+					"enemy_kind": "normal",
+					"entries": [
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat1",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 1,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						},
+						{
+							"actual_control_spend": 815,
+							"branch": "shatter",
+							"branch_spend_delta": 5,
+							"build_variant": "mixed",
+							"control_branch_selection": {
+								"action": "choose_branch",
+								"actual_branch": "deadeye",
+								"requested_branch": "deadeye",
+								"selected": true,
+								"tower_type": "archer",
+								"valid": true
+							},
+							"control_branch_selection_succeeded": true,
+							"control_branch_selection_valid": true,
+							"control_selected_branch": "deadeye",
+							"control_spend_delta": 0,
+							"control_upgrade_trace": [
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 60.0,
+									"expected_cost": 60.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "choose_branch",
+									"actual_branch": "deadeye",
+									"requested_branch": "deadeye",
+									"selected": true,
+									"tower_type": "archer",
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 125.0,
+									"expected_cost": 125.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								},
+								{
+									"action": "upgrade_tower",
+									"actual_cost": 175.0,
+									"expected_cost": 175.0,
+									"tower_type": "archer",
+									"upgraded": true,
+									"valid": true
+								}
+							],
+							"control_upgrade_valid": true,
+							"cost_match_valid": true,
+							"enemy_kind": "normal",
+							"layout": "default",
+							"left_control_mode": "baseline",
+							"map": "Split Road",
+							"metrics": {
+								"completed": {
+									"left": true,
+									"right": false,
+									"same": false
+								},
+								"damage_per_spend": {
+									"delta": -0.614436355373776,
+									"left": 6.22672592592593,
+									"right": 5.61228957055215
+								},
+								"leaks": {
+									"delta": 7.0,
+									"left": 18.0,
+									"right": 25.0
+								},
+								"lives": {
+									"delta": -7.0,
+									"left": 7.0,
+									"right": 0.0
+								},
+								"total_damage": {
+									"delta": -469.631999999998,
+									"left": 5043.648,
+									"right": 4574.016
+								},
+								"total_spend": {
+									"delta": 5.0,
+									"left": 810.0,
+									"right": 815.0
+								}
+							},
+							"normalized_advantage": true,
+							"pair_key": "split_road_8_wavedefault_mixed_shatter_vs_no_frost_cost_matched_repeat2",
+							"raw_survival": {
+								"advantage": true,
+								"direction_key": "1|1|1",
+								"metrics": [
+									"completion",
+									"lives",
+									"leaks"
+								]
+							},
+							"repeat": 2,
+							"right_control_mode": "cost_matched",
+							"spend_match_delta": 0,
+							"target_branch_spend": 810,
+							"target_control_spend": 815,
+							"topology_match": true,
+							"wave": 8
+						}
+					],
+					"layout": "default",
+					"map": "Split Road",
+					"normalized_advantage_repeat_count": 2,
+					"normalized_gate_passed": true,
+					"raw_gate_passed": true,
+					"repeats": [
+						1,
+						2
+					],
+					"topology_all_match": true,
+					"wave": 8
+				}
+			],
+			"raw_gate_passed": true,
+			"raw_maps": [
+				"Spiral Road",
+				"Split Road"
+			]
+		}
+	],
+	"qualifying_branches": [
+		"shatter"
+	],
+	"raw_gate_passed": true,
+	"raw_qualifying_branches": [
+		"shatter"
+	],
+	"report_schema_version": 1,
+	"report_type": "cost_matched_frost_evidence_only",
+	"source_artifact": "res://logs/godot/split_frost_cost_matched_paired_replay_2026_07_14.json",
+	"source_validation_errors": [],
+	"structural": {
+		"branch_ready_count": 16,
+		"branch_ready_expected": 16,
+		"case_count": 32,
+		"cost_control_count": 8,
+		"cost_control_expected": 8,
+		"cost_control_valid_count": 8,
+		"determinism_check_count": 16,
+		"determinism_expected": 16,
+		"determinism_failure_count": 0,
+		"expected_case_count": 32,
+		"paired_comparison_count": 32,
+		"paired_cost_comparison_count": 16,
+		"paired_cost_comparison_expected": 16,
+		"paired_match_failure_count": 0,
+		"paired_topology_mismatch_count": 0,
+		"runtime_invariant_failure_count": 0,
+		"setup_valid_count": 32,
+		"setup_valid_expected": 32,
+		"source_validation_errors": [],
+		"source_validation_passed": true,
+		"structural_all_passed": true
+	},
+	"tuning_authorized": true
+}

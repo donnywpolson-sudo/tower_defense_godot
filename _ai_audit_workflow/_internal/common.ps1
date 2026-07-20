@@ -103,6 +103,22 @@ function Join-ProcessArguments {
     return (($ArgumentList | ForEach-Object { ConvertTo-ProcessArgument -Argument $_ }) -join ' ')
 }
 
+function ConvertTo-BatchArgumentList {
+    param([string[]] $ArgumentList)
+    $normalized = New-Object System.Collections.Generic.List[string]
+    foreach ($argument in $ArgumentList) {
+        $text = [string]$argument
+        $equalsIndex = $text.IndexOf('=')
+        if ($text.StartsWith('--') -and $equalsIndex -gt 2) {
+            $normalized.Add($text.Substring(0, $equalsIndex))
+            $normalized.Add($text.Substring($equalsIndex + 1))
+        } else {
+            $normalized.Add($text)
+        }
+    }
+    return @($normalized.ToArray())
+}
+
 function Get-ChildProcessIds {
     param([Parameter(Mandatory)][int] $ParentProcessId)
     $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId = $ParentProcessId" -ErrorAction SilentlyContinue)
@@ -126,7 +142,11 @@ function Stop-ProcessTree {
         }
     } catch {
     }
-    $ids = @((Get-ChildProcessIds -ParentProcessId $RootProcessId) + @($RootProcessId))
+    $ids = New-Object System.Collections.Generic.List[int]
+    foreach ($childId in @(Get-ChildProcessIds -ParentProcessId $RootProcessId)) {
+        $ids.Add([int]$childId)
+    }
+    $ids.Add($RootProcessId)
     foreach ($id in $ids) {
         try {
             $process = Get-Process -Id $id -ErrorAction SilentlyContinue
@@ -215,6 +235,10 @@ function Invoke-RepoProcess {
         throw "Working directory is empty for $Label."
     }
     $workingDirectoryPath = (Resolve-Path -LiteralPath $workingDirectoryPath).Path
+    $effectiveArgumentList = @($ArgumentList)
+    if ($FilePath -match '\.(bat|cmd)$') {
+        $effectiveArgumentList = @(ConvertTo-BatchArgumentList -ArgumentList $ArgumentList)
+    }
     $useRedirectedProcess = ($StdoutPath.Trim().Length -gt 0 -or $StderrPath.Trim().Length -gt 0)
     $runnerPath = ''
     if ($StdoutPath.Trim().Length -gt 0) {
@@ -256,7 +280,7 @@ function Invoke-RepoProcess {
             }
             $runnerName = 'process_runner_{0}_{1}.cmd' -f $PID, ([datetime]::UtcNow.Ticks)
             $runnerPath = Join-Path $redirectDir $runnerName
-            $commandLine = '"' + $FilePath + '" ' + (Join-ProcessArguments -ArgumentList $ArgumentList)
+            $commandLine = '"' + $FilePath + '" ' + (Join-ProcessArguments -ArgumentList $effectiveArgumentList)
             if ($StdoutPath.Trim().Length -gt 0) {
                 $commandLine += ' 1> "' + $StdoutPath + '"'
             }
@@ -285,7 +309,7 @@ function Invoke-RepoProcess {
         } else {
             $startInfo = @{
                 FilePath = $FilePath
-                ArgumentList = $ArgumentList
+                ArgumentList = $effectiveArgumentList
                 WorkingDirectory = $workingDirectoryPath
                 Wait = $false
                 PassThru = $true
@@ -471,6 +495,20 @@ function Read-JsonFileOrNull {
     return $raw | ConvertFrom-Json
 }
 
+function Resolve-AuditTier {
+    param([Parameter(Mandatory)][string] $Tier)
+    $normalized = $Tier.Trim()
+    if ($normalized -ieq 'Light') {
+        return 'Medium'
+    }
+    foreach ($candidate in @('Smoke', 'Medium', 'Deep', 'Overnight')) {
+        if ($normalized -ieq $candidate) {
+            return $candidate
+        }
+    }
+    throw "Unsupported audit profile '$Tier'. Expected Smoke, Medium, Deep, Overnight, or compatibility alias Light."
+}
+
 function Get-AuditQueueValidation {
     param(
         [Parameter(Mandatory)][string] $RepoRoot,
@@ -503,6 +541,10 @@ function Get-AuditQueueValidation {
     $findingsRunId = [string](Get-ObjectProperty -Object $findings -Name 'runId' -Default '')
     $queueStatus = [string](Get-ObjectProperty -Object $queue -Name 'sourceStatus' -Default '')
     $findingsStatus = [string](Get-ObjectProperty -Object $findings -Name 'status' -Default '')
+    $queuePacketId = [string](Get-ObjectProperty -Object $queue -Name 'sourcePacketId' -Default '')
+    $findingsArtifacts = Get-ObjectProperty -Object $findings -Name 'artifacts' -Default $null
+    $findingsPacket = Get-ObjectProperty -Object $findingsArtifacts -Name 'simulationPacket' -Default $null
+    $findingsPacketId = [string](Get-ObjectProperty -Object $findingsPacket -Name 'packetId' -Default '')
     if ([bool](Get-ObjectProperty -Object $queue -Name 'invalidated' -Default $false)) {
         return & $fail 'The audit queue is explicitly invalidated.'
     }
@@ -511,6 +553,9 @@ function Get-AuditQueueValidation {
     }
     if ($findingsStatus -eq 'fail' -or $queueStatus -ne $findingsStatus) {
         return & $fail 'The audit queue source status does not match a successful latest findings state.'
+    }
+    if ($queuePacketId.Trim().Length -eq 0 -or $findingsPacketId.Trim().Length -eq 0 -or $queuePacketId -ne $findingsPacketId) {
+        return & $fail 'The audit queue source packet does not match the latest findings packet.'
     }
     $queuedItemCount = @($queue.items | Where-Object { $_.status -eq 'queued' }).Count
     return [pscustomobject]@{
@@ -548,13 +593,43 @@ function Get-LatestSimulationPacket {
     )
     $simDir = Join-Path $RepoRoot $Config.simulationDir
     $json = Get-LatestFile -Folder $simDir -Prefix 'ai_simulation_data_' -Suffix '.json' -EarliestWriteTime $EarliestWriteTime
-    $report = Get-LatestFile -Folder $simDir -Prefix 'ai_simulation_report_' -Suffix '.md' -EarliestWriteTime $EarliestWriteTime
-    $prompt = Get-LatestFile -Folder $simDir -Prefix 'ai_simulation_codex_prompt_' -Suffix '.md' -EarliestWriteTime $EarliestWriteTime
+    $report = $null
+    $prompt = $null
+    $manifest = $null
+    $packetId = ''
+    $manifestIdentityValid = $false
+    $identityValid = $false
+    $identity = $null
+    if ($null -ne $json) {
+        $packetId = $json.Name.Substring('ai_simulation_data_'.Length, $json.Name.Length - 'ai_simulation_data_'.Length - '.json'.Length)
+        $parsed = Read-JsonFileOrNull -Path $json.FullName
+        if ($null -ne $parsed) {
+            $identity = Get-ObjectProperty -Object $parsed -Name 'packet_identity'
+            $identityValid = $null -ne $identity -and [string](Get-ObjectProperty -Object $identity -Name 'packet_id' -Default '') -eq $packetId
+        }
+        $report = Get-Item -LiteralPath (Join-Path $simDir "ai_simulation_report_$packetId.md") -ErrorAction SilentlyContinue
+        $prompt = Get-Item -LiteralPath (Join-Path $simDir "ai_simulation_codex_prompt_$packetId.md") -ErrorAction SilentlyContinue
+        $manifest = Get-Item -LiteralPath (Join-Path $simDir "ai_simulation_manifest_$packetId.json") -ErrorAction SilentlyContinue
+        if ($null -ne $manifest) {
+            $manifestParsed = Read-JsonFileOrNull -Path $manifest.FullName
+            $manifestIdentity = Get-ObjectProperty -Object $manifestParsed -Name 'packet_identity'
+            $manifestIdentityValid = $null -ne $manifestIdentity
+            foreach ($identityKey in @('run_id', 'packet_id', 'profile', 'runs', 'waves', 'canonical_data_sha256', 'git_status_classification')) {
+                if ([string](Get-ObjectProperty -Object $manifestIdentity -Name $identityKey -Default '') -ne [string](Get-ObjectProperty -Object $identity -Name $identityKey -Default '')) {
+                    $manifestIdentityValid = $false
+                }
+            }
+        }
+    }
     return [pscustomobject]@{
         json = $json
         report = $report
         prompt = $prompt
-        complete = ($null -ne $json -and $null -ne $report -and $null -ne $prompt)
+        manifest = $manifest
+        packetId = $packetId
+        identity = $identity
+        identityValid = ($identityValid -and $manifestIdentityValid)
+        complete = ($null -ne $json -and $null -ne $report -and $null -ne $prompt -and $null -ne $manifest -and $identityValid -and $manifestIdentityValid)
     }
 }
 
@@ -578,10 +653,15 @@ function Get-VisualReviewEvidence {
 function Test-GodotLogExpectedToken {
     param(
         [Parameter(Mandatory)][string] $LogPath,
-        [Parameter(Mandatory)][string] $Expected
+        [Parameter(Mandatory)][string] $Expected,
+        [datetime] $FreshAfter = [datetime]::MinValue
     )
     if (-not (Test-Path -LiteralPath $LogPath)) {
         return [pscustomobject]@{ passed = $false; detail = "Missing log: $LogPath" }
+    }
+    $log = Get-Item -LiteralPath $LogPath
+    if ($log.LastWriteTime -lt $FreshAfter) {
+        return [pscustomobject]@{ passed = $false; detail = "Stale log rejected: $LogPath (last write $($log.LastWriteTime.ToString('s')), audit started $($FreshAfter.ToString('s')))." }
     }
     $text = Get-Content -Raw -LiteralPath $LogPath
     if ($text.Contains($Expected)) {

@@ -1,8 +1,10 @@
 param(
-    [ValidateSet('Light', 'Deep')]
-    [string] $Tier = 'Light',
+    [ValidateSet('Light', 'Smoke', 'Medium', 'Deep', 'Overnight')]
+    [string] $Tier = 'Medium',
     [switch] $NextFix,
     [switch] $AutoImprove,
+    [Alias('PursueGoal')]
+    [switch] $PursueGoalPrompt,
     [ValidateRange(1, 5)]
     [int] $MaxFixes = 1,
     [switch] $SkipAudit,
@@ -76,11 +78,15 @@ function Write-RootStepSummary {
     param(
         [Parameter(Mandatory)][string] $Step,
         [Parameter(Mandatory)][string] $Status,
+        [string] $LogPath = '',
         [string] $Detail = ''
     )
     Write-Host ''
     Write-Host "STEP SUMMARY: $Step"
     Write-Host "  Status: $Status"
+    if ($LogPath.Trim().Length -gt 0) {
+        Write-Host "  Log: $LogPath"
+    }
     if ($Detail.Trim().Length -gt 0) {
         Write-Host "  Detail: $Detail"
     }
@@ -91,17 +97,17 @@ function Show-Menu {
     Write-Host ''
     Write-Host 'Tower Defense AI Audit Workflow'
     Write-Host ''
-    Write-Host '1. Light audit + apply next safe improvement (~5 minutes + fix)'
-    Write-Host '2. Light audit only (~5 minutes)'
-    Write-Host '3. Deep audit + apply next safe improvement (~10 hours + fix)'
-    Write-Host '4. Deep audit only (~10 hours / overnight)'
-    Write-Host '5. Apply next queued fix/review'
+    Write-Host '1. Medium audit report only (420 runs / 6 waves)'
+    Write-Host '2. Smoke audit report only (14 runs / 2 waves)'
+    Write-Host '3. Deep audit report only (2,500 runs / 20 waves)'
+    Write-Host '4. Overnight audit report only (6,000 runs / 50 waves)'
+    Write-Host '5. Apply next queued fix/review (explicit)'
     Write-Host '6. Cancel'
     Write-Host ''
     if ([Console]::IsInputRedirected) {
         return '__NO_INTERACTIVE_INPUT__'
     }
-    return (Read-Host 'Choose 1-6 then press Enter (Enter = 1)')
+    return (Read-Host 'Choose 1-6 then press Enter (Enter = 1; report-only)')
 }
 
 function Show-NoInteractiveInputMessage {
@@ -109,9 +115,9 @@ function Show-NoInteractiveInputMessage {
     Write-Host 'No interactive keyboard input is available, so no audit was started.'
     Write-Host 'Run this script from an interactive PowerShell window to use the menu, or choose an explicit command:'
     Write-Host ''
-    Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light'
+    Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Medium'
     Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Deep'
-    Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Light -AutoImprove'
+    Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -Tier Medium -AutoImprove  # explicit apply only'
     Write-Host '  .\_ai_audit_workflow\RUN_AUDIT.ps1 -NextFix'
     Write-Host ''
 }
@@ -180,12 +186,12 @@ function Test-AuditQueue {
     $queueValidation = Get-AuditQueueValidation -RepoRoot $RepoRoot -Config $Config
     if (-not $queueValidation.valid) {
         $title = if ($queueValidation.reason -like '*missing or invalid*' -and -not (Test-Path -LiteralPath $queueValidation.queuePath)) { 'No audit queue yet' } else { 'Audit queue is stale or invalidated' }
-        $fix = if ($title -eq 'No audit queue yet') { 'Choose 1 for Light audit or 2 for Deep audit first. After that finishes, choose 3 again.' } else { 'Run a fresh successful Light or Deep audit before applying any queued item.' }
+        $fix = if ($title -eq 'No audit queue yet') { 'Choose a report-only profile audit first. After that finishes, retry the explicit apply command.' } else { 'Run a fresh successful profile audit before applying any queued item.' }
         Add-PreflightIssue -Title $title -Problem $queueValidation.reason -Fix $fix
         return
     }
     if ($queueValidation.queuedItemCount -eq 0) {
-        Add-PreflightIssue -Title 'No queued fix or review prompt' -Problem 'The latest audit queue exists, but it does not contain a queued evidence-backed fix or review-backed polish prompt.' -Fix 'Run a fresh Light or Deep audit, or review the audit report for residual gaps that need manual evidence.'
+        Add-PreflightIssue -Title 'No queued fix or review prompt' -Problem 'The latest audit queue exists, but it does not contain a queued evidence-backed fix or review-backed polish prompt.' -Fix 'Run a fresh report-only profile audit, or review the current packet for residual gaps that need manual evidence.'
     }
 }
 
@@ -207,13 +213,14 @@ function Test-AuditTierStopBudget {
         [Parameter(Mandatory)] $Config,
         [Parameter(Mandatory)][string] $AuditTier
     )
-    $tierConfig = $Config.tiers.$AuditTier
+    $resolvedTier = if ($AuditTier -ieq 'Light') { 'Medium' } else { $AuditTier }
+    $tierConfig = $Config.tiers.$resolvedTier
     if ($null -eq $tierConfig) {
-        Add-PreflightIssue -Title 'Missing audit tier config' -Problem "No config.json tier entry exists for $AuditTier." -Fix 'Restore or repair _ai_audit_workflow/_internal/config.json before running the audit.'
+        Add-PreflightIssue -Title 'Missing audit tier config' -Problem "No config.json tier entry exists for $resolvedTier." -Fix 'Restore or repair _ai_audit_workflow/_internal/config.json before running the audit.'
         return
     }
     if ([int]$tierConfig.timeoutSeconds -le 0) {
-        Add-PreflightIssue -Title 'Audit stop budget is disabled' -Problem "$AuditTier timeoutSeconds is $($tierConfig.timeoutSeconds), which would allow an uncapped simulation run." -Fix 'Set a positive timeoutSeconds in _ai_audit_workflow/_internal/config.json, or run a narrower explicit command outside this workflow.'
+        Add-PreflightIssue -Title 'Audit stop budget is disabled' -Problem "$resolvedTier timeoutSeconds is $($tierConfig.timeoutSeconds), which would allow an uncapped simulation run." -Fix 'Set a positive timeoutSeconds in _ai_audit_workflow/_internal/config.json, or run a narrower explicit command outside this workflow.'
     }
 }
 
@@ -415,9 +422,41 @@ function Invoke-AutoImprovementLoop {
     return 0
 }
 
+function Show-PursueGoalPrompt {
+    param([Parameter(Mandatory)][string] $RepoRoot, [Parameter(Mandatory)] $Config)
+    $promptPath = Join-Path (Join-Path $RepoRoot $Config.currentDir) 'next_improvement_prompt.md'
+    if (-not (Test-Path -LiteralPath $promptPath)) {
+        Write-RootStepSummary -Step 'pursue-goal prompt' -Status 'blocked' -Detail "Prompt was not generated: $promptPath"
+        return 1
+    }
+    $queuePath = Join-Path (Join-Path $RepoRoot $Config.currentDir) 'improvement_queue.json'
+    $queue = if (Test-Path -LiteralPath $queuePath) { Get-Content -Raw -LiteralPath $queuePath | ConvertFrom-Json } else { $null }
+    $count = if ($null -ne $queue) { @($queue.items | Where-Object { $_.status -eq 'queued' }).Count } else { 0 }
+    Write-Host ''
+    Write-Host 'PURSUE GOAL PROMPT READY'
+    Write-Host "Queued candidate findings/gaps: $count"
+    Write-Host "Prompt file: $promptPath"
+    Write-Host ''
+    Write-Host 'Copy the full prompt below into Codex:'
+    Write-Host '----- BEGIN PURSUE GOAL PROMPT -----'
+    Get-Content -Raw -LiteralPath $promptPath | Write-Host -NoNewline
+    Write-Host ''
+    Write-Host '----- END PURSUE GOAL PROMPT -----'
+    Write-RootStepSummary -Step 'pursue-goal prompt' -Status 'passed' -LogPath $promptPath -Detail "$count candidate finding/gap item(s) included; no code was changed by prompt generation."
+    return 0
+}
+
 $interactive = $PSBoundParameters.Count -eq 0
 $pauseOnExitRequested = $interactive -or $PauseOnExit
 Initialize-RunLog
+
+if ($PursueGoalPrompt -and $AutoImprove) {
+    Add-PreflightIssue -Title 'Ambiguous remediation mode' -Problem '-PursueGoalPrompt generates one autonomous prompt, while -AutoImprove launches Codex item-by-item.' -Fix 'Use -PursueGoalPrompt by itself for the all-findings prompt, or use -AutoImprove for the older bounded apply loop.'
+    Show-PreflightIssues
+    Pause-IfInteractive -Interactive $pauseOnExitRequested
+    Stop-RunLog
+    exit 1
+}
 
 if ($interactive) {
     $choice = (Show-Menu).Trim()
@@ -428,11 +467,11 @@ if ($interactive) {
             Stop-RunLog
             exit 1
         }
-        '' { $Tier = 'Light'; $AutoImprove = $true }
-        '1' { $Tier = 'Light'; $AutoImprove = $true }
-        '2' { $Tier = 'Light' }
-        '3' { $Tier = 'Deep'; $AutoImprove = $true }
-        '4' { $Tier = 'Deep' }
+        '' { $Tier = 'Medium' }
+        '1' { $Tier = 'Medium' }
+        '2' { $Tier = 'Smoke' }
+        '3' { $Tier = 'Deep' }
+        '4' { $Tier = 'Overnight' }
         '5' { $NextFix = $true }
         '6' {
             Write-Host 'Cancelled.'
@@ -451,7 +490,7 @@ if ($interactive) {
     if ($NextFix) {
         Write-Host 'Starting next fix/review prompt flow...'
     } elseif ($AutoImprove) {
-        Write-Host "Starting $Tier audit with automatic improvement..."
+        Write-Host "Starting $Tier audit with explicit automatic improvement..."
     } else {
         Write-Host "Starting $Tier audit..."
     }
@@ -481,10 +520,18 @@ try {
         Pause-IfInteractive -Interactive $pauseOnExitRequested
         exit 1
     }
-    & (Join-Path $internal 'run_cycle.ps1') -Tier $Tier -SkipAudit:$SkipAudit -AllowDirtyQueue:$AllowDirtyQueue
+    & (Join-Path $internal 'run_cycle.ps1') -Tier $Tier -SkipAudit:$SkipAudit -AllowDirtyQueue:$AllowDirtyQueue -IncludeDiagnosticCandidates:$PursueGoalPrompt
     $exitCode = Get-SafeLastExitCode
     if ($exitCode -eq 0) {
-        if ($AutoImprove) {
+        if ($PursueGoalPrompt) {
+            $promptRepoRoot = Get-RepoRootOrNull
+            $promptConfig = Read-ConfigOrNull
+            if ($null -eq $promptRepoRoot -or $null -eq $promptConfig) {
+                $exitCode = 1
+            } else {
+                $exitCode = Show-PursueGoalPrompt -RepoRoot $promptRepoRoot -Config $promptConfig
+            }
+        } elseif ($AutoImprove) {
             $autoImproveExitCode = Invoke-AutoImprovementLoop -MaxPasses $MaxFixes -AllowDirtyApply $AllowDirtyApply
             if ($autoImproveExitCode -ne 0) {
                 $exitCode = $autoImproveExitCode

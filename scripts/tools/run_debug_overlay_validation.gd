@@ -62,11 +62,4 @@ func _initialize() -> void:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)

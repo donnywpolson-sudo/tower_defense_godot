@@ -9,6 +9,7 @@ set "AUDIT_REPORT_RES=res://_ai_audit_workflow/_internal/TOWER_DEFENSE_AI_SIMULA
 
 set "GODOT_EXE=C:\Users\donny\Desktop\Godot_v4.7-stable_win64.exe"
 set "AI_SIM_DIR=%PROJECT_ROOT%\.godot\ai_simulation"
+set "AI_SIM_DIR_RES=res://.godot/ai_simulation"
 set "PROMPT_FILE="
 set "LOG_DIR=%PROJECT_ROOT%\logs\godot"
 set "LOG_FILE=%LOG_DIR%\godot_ai_simulation.log"
@@ -27,14 +28,11 @@ set "SUMMARY_ISSUES=unknown"
 set "TEST_MODE=0"
 set "SHOW_COMMAND=%TD_SIM_SHOW_COMMAND%"
 set "RECOMMEND_ONLY=0"
-set "FALLBACK_RECOMMENDED_ARGS=medium --scenario-probes=auto"
+set "FALLBACK_RECOMMENDED_ARGS=--profile=medium --scenario-probes=auto --record=flagged --report-only"
 set "RECOMMENDED_ARGS=%FALLBACK_RECOMMENDED_ARGS%"
 set "USER_ARGS="
 set "TIER_NAME=Medium"
-set "RUNS_LABEL=420"
-set "SCOPE_LABEL=6 waves"
-set "SEEDS_LABEL=5"
-set "EST_RUNTIME_LABEL=5 min"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=normal research"
 
 :parse_args
@@ -45,6 +43,18 @@ if /I "%~1"=="--test" (
     set "RECOMMEND_ONLY=1"
 ) else if /I "%~1"=="--show-command" (
     set "SHOW_COMMAND=1"
+) else if /I "%~1"=="--profile" (
+    set "USER_ARGS=!USER_ARGS! --profile=%~2"
+    shift
+) else if /I "%~1"=="--ai-profile" (
+    set "USER_ARGS=!USER_ARGS! --ai-profile=%~2"
+    shift
+) else if /I "%~1"=="--mode" (
+    set "USER_ARGS=!USER_ARGS! --mode=%~2"
+    shift
+) else if /I "%~1"=="--scenario-probes" (
+    set "USER_ARGS=!USER_ARGS! --scenario-probes=%~2"
+    shift
 ) else if /I "%~1"=="debug" (
     set "SHOW_COMMAND=1"
 ) else if /I "%~1"=="smoke" (
@@ -65,16 +75,26 @@ if /I "%~1"=="--test" (
 ) else (
     set "USER_ARGS=!USER_ARGS! %1"
     set "TIER_NAME=Custom"
-    set "RUNS_LABEL=custom"
-    set "SCOPE_LABEL=custom"
-    set "SEEDS_LABEL=custom"
-    set "EST_RUNTIME_LABEL=custom"
+    set "EXECUTION_LABEL=explicit command overrides"
     set "PURPOSE=custom run"
 )
 shift
 goto parse_args
 
 :args_done
+
+set "OUTPUT_DIR_RES=!AI_SIM_DIR_RES!"
+for %%A in (!USER_ARGS!) do (
+    set "USER_ARG=%%~A"
+    if /I "!USER_ARG:~0,13!"=="--output-dir=" set "OUTPUT_DIR_RES=!USER_ARG:~13!"
+)
+set "AI_SIM_DIR_RES=!OUTPUT_DIR_RES!"
+if /I "!AI_SIM_DIR_RES:~0,6!"=="res://" (
+    set "AI_SIM_DIR=%PROJECT_ROOT%\!AI_SIM_DIR_RES:~6!"
+    set "AI_SIM_DIR=!AI_SIM_DIR:/=\!"
+) else (
+    set "AI_SIM_DIR=!AI_SIM_DIR_RES!"
+)
 
 set "LOG_FILE=%LOG_DIR%\godot_ai_simulation.log"
 set "RAW_LOG_FILE=%LOG_DIR%\godot_ai_simulation_raw.log"
@@ -108,10 +128,8 @@ echo Godot: 4.7 stable
 echo.
 echo Selected:
 echo   Tier: !TIER_NAME!
-echo   Runs: !RUNS_LABEL!
-echo   Scope: !SCOPE_LABEL!
-echo   Seeds: !SEEDS_LABEL!
-echo   Estimated runtime: !EST_RUNTIME_LABEL!
+echo   Contract: config.json
+echo   Execution: !EXECUTION_LABEL!
 echo   Purpose: !PURPOSE!
 echo.
 
@@ -159,9 +177,26 @@ echo.
 echo Progress:
 echo.
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& '%GODOT_EXE%' --headless --no-header --log-file '%RAW_LOG_FILE%' --path '%PROJECT_ROOT%' --script 'res://scripts/tools/run_ai_simulation_batch.gd' -- --seed=12345 '--output-dir=res://.godot/ai_simulation' !USER_ARGS! 2> '%ENGINE_STDERR_LOG%' | Tee-Object -FilePath '%STDOUT_LOG%'; exit $LASTEXITCODE"
+"%GODOT_EXE%" --headless --no-header --log-file "%RAW_LOG_FILE%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/run_ai_simulation_batch.gd" -- --seed=12345 "--output-dir=res://.godot/ai_simulation" !USER_ARGS! 1> "%STDOUT_LOG%" 2> "%ENGINE_STDERR_LOG%"
 set "RUN_EXIT=%ERRORLEVEL%"
 call :clean_log
+
+for /f "tokens=3" %%F in ('findstr /I /C:"Report JSON " "%LOG_FILE%" 2^>nul') do set "REPORT_JSON_RES=%%F"
+if defined REPORT_JSON_RES (
+    set "REPORT_JSON_FILE=!REPORT_JSON_RES!"
+    set "REPORT_JSON_FILE=!REPORT_JSON_FILE:res://=%PROJECT_ROOT%\!"
+    set "REPORT_JSON_FILE=!REPORT_JSON_FILE:/=\!"
+    for %%F in ("!REPORT_JSON_FILE!") do set "AI_SIM_DIR=%%~dpF"
+    set "AI_SIM_DIR=!AI_SIM_DIR:~0,-1!"
+    for %%F in ("!REPORT_JSON_FILE!") do set "JSON_BASENAME=%%~nxF"
+    set "PACKET_SUFFIX=!JSON_BASENAME:ai_simulation_data_=!"
+    set "PACKET_SUFFIX=!PACKET_SUFFIX:.json=!"
+    set "REPORT_MD_FILE=!AI_SIM_DIR!\ai_simulation_report_!PACKET_SUFFIX!.md"
+    set "REPORT_MD_RES=!REPORT_JSON_RES:ai_simulation_data_=ai_simulation_report_!"
+    set "REPORT_MD_RES=!REPORT_MD_RES:.json=.md!"
+    set "PROMPT_FILE=!AI_SIM_DIR!\ai_simulation_codex_prompt_!PACKET_SUFFIX!.md"
+    set "MANIFEST_FILE=!AI_SIM_DIR!\ai_simulation_manifest_!PACKET_SUFFIX!.json"
+)
 
 if not "%RUN_EXIT%"=="0" (
     echo.
@@ -183,13 +218,13 @@ for /f "delims=" %%F in ('dir /b /a-d /o-d "%AI_SIM_DIR%\ai_simulation_codex_pro
 for /f "delims=" %%F in ('dir /b /a-d /o-d "%AI_SIM_DIR%\ai_simulation_data_*.json" 2^>nul') do (
     if not defined REPORT_JSON_FILE (
         set "REPORT_JSON_FILE=%AI_SIM_DIR%\%%F"
-        set "REPORT_JSON_RES=res://.godot/ai_simulation/%%F"
+        set "REPORT_JSON_RES=!AI_SIM_DIR_RES!/%%F"
     )
 )
 for /f "delims=" %%F in ('dir /b /a-d /o-d "%AI_SIM_DIR%\ai_simulation_report_*.md" 2^>nul') do (
     if not defined REPORT_MD_FILE (
         set "REPORT_MD_FILE=%AI_SIM_DIR%\%%F"
-        set "REPORT_MD_RES=res://.godot/ai_simulation/%%F"
+        set "REPORT_MD_RES=!AI_SIM_DIR_RES!/%%F"
     )
 )
 
@@ -212,6 +247,26 @@ if not defined REPORT_MD_FILE (
     echo ERROR: AI simulation finished, but no timestamped markdown report was found under:
     echo %AI_SIM_DIR%
     if "%TEST_MODE%"=="0" pause
+    exit /b 1
+)
+
+for %%F in ("%REPORT_JSON_FILE%") do set "JSON_BASENAME=%%~nxF"
+set "PACKET_SUFFIX=!JSON_BASENAME:ai_simulation_data_=!"
+set "PACKET_SUFFIX=!PACKET_SUFFIX:.json=!"
+set "REPORT_MD_FILE=%AI_SIM_DIR%\ai_simulation_report_!PACKET_SUFFIX!.md"
+if not defined REPORT_MD_RES set "REPORT_MD_RES=!AI_SIM_DIR_RES!/ai_simulation_report_!PACKET_SUFFIX!.md"
+set "PROMPT_FILE=%AI_SIM_DIR%\ai_simulation_codex_prompt_!PACKET_SUFFIX!.md"
+set "MANIFEST_FILE=%AI_SIM_DIR%\ai_simulation_manifest_!PACKET_SUFFIX!.json"
+if not exist "!REPORT_MD_FILE!" (
+    echo ERROR: JSON packet has no matching markdown report for packet !PACKET_SUFFIX!.
+    exit /b 1
+)
+if not exist "!PROMPT_FILE!" (
+    echo ERROR: JSON packet has no matching Codex prompt for packet !PACKET_SUFFIX!.
+    exit /b 1
+)
+if not exist "!MANIFEST_FILE!" (
+    echo ERROR: JSON packet has no matching manifest for packet !PACKET_SUFFIX!.
     exit /b 1
 )
 
@@ -241,17 +296,16 @@ exit /b 0
 echo Tower Defense AI simulation launcher
 echo.
 call :load_recommended_args
-call :show_recommendation_if_available
 echo.
 echo Choose a run tier:
-echo   #  Tier              Est. Runtime  Runs   Waves  Seeds  Purpose
-echo   ---------------------------------------------------------------------
-echo   0  Recommended       varies        rec.   rec.   rec.   audit recommendation
-echo   1  Strategy Smoke    5 sec         14     2      1      quick sanity check
-echo   2  Medium            5 min         420    6      5      normal research
-echo   3  Deep              2 hr          2,500  20     8      deeper evidence
-echo   4  Overnight         8+ hr         6,000  50     12     full research
-echo   5  Cancel            -             -      -      -      exit launcher
+echo   #  Profile            Purpose
+echo   -----------------------------------------------
+echo   0  Recommended         use the current contract recommendation
+echo   1  Smoke               bounded report-only sanity check
+echo   2  Medium              standard report-only audit
+echo   3  Deep                deeper report-only audit
+echo   4  Overnight           full report-only audit
+echo   5  Cancel              exit launcher
 echo.
 set "PROFILE_CHOICE="
 set /p "PROFILE_CHOICE=Choose a tier [0]: "
@@ -262,22 +316,22 @@ if "!PROFILE_CHOICE!"=="5" (
     exit /b 2
 )
 if "!PROFILE_CHOICE!"=="4" (
-    set "USER_ARGS= overnight"
+    set "USER_ARGS= --profile=overnight --record=flagged --report-only"
     call :set_overnight_display
     exit /b 0
 )
 if "!PROFILE_CHOICE!"=="3" (
-    set "USER_ARGS= deep"
+    set "USER_ARGS= --profile=deep --record=flagged --report-only"
     call :set_deep_display
     exit /b 0
 )
 if "!PROFILE_CHOICE!"=="2" (
-    set "USER_ARGS= medium"
+    set "USER_ARGS= --profile=medium --record=flagged --report-only"
     call :set_medium_display
     exit /b 0
 )
 if "!PROFILE_CHOICE!"=="1" (
-    set "USER_ARGS= --runs=14 --max-waves=2 --report-label=strategy_smoke"
+    set "USER_ARGS= --profile=smoke --runs=14 --max-waves=2 --report-label=strategy_smoke --record=flagged --report-only"
     call :set_smoke_display
     exit /b 0
 )
@@ -292,46 +346,31 @@ exit /b 2
 
 :set_recommended_display
 set "TIER_NAME=Recommended audit"
-set "RUNS_LABEL=recommended"
-set "SCOPE_LABEL=recommended"
-set "SEEDS_LABEL=recommended"
-set "EST_RUNTIME_LABEL=varies"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=audit recommendation"
 exit /b 0
 
 :set_smoke_display
-set "TIER_NAME=Strategy Smoke"
-set "RUNS_LABEL=14"
-set "SCOPE_LABEL=2 waves"
-set "SEEDS_LABEL=1"
-set "EST_RUNTIME_LABEL=5 sec"
+set "TIER_NAME=Smoke"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=quick sanity check"
 exit /b 0
 
 :set_medium_display
 set "TIER_NAME=Medium"
-set "RUNS_LABEL=420"
-set "SCOPE_LABEL=6 waves"
-set "SEEDS_LABEL=5"
-set "EST_RUNTIME_LABEL=5 min"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=normal research"
 exit /b 0
 
 :set_deep_display
 set "TIER_NAME=Deep"
-set "RUNS_LABEL=2,500"
-set "SCOPE_LABEL=20 waves"
-set "SEEDS_LABEL=8"
-set "EST_RUNTIME_LABEL=2 hr"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=deeper evidence"
 exit /b 0
 
 :set_overnight_display
 set "TIER_NAME=Overnight"
-set "RUNS_LABEL=6,000"
-set "SCOPE_LABEL=50 waves"
-set "SEEDS_LABEL=12"
-set "EST_RUNTIME_LABEL=8+ hr"
+set "EXECUTION_LABEL=canonical profile from config.json"
 set "PURPOSE=full research"
 exit /b 0
 
@@ -351,20 +390,10 @@ for /f "usebackq tokens=1,2 delims=|" %%A in (`powershell.exe -NoProfile -Execut
 exit /b 0
 
 :show_recommendation_if_available
-if not exist "%AUDIT_REPORT_FILE%" exit /b 0
-call :show_recommendation
 exit /b 0
 
 :load_recommended_args
 set "RECOMMENDED_ARGS=%FALLBACK_RECOMMENDED_ARGS%"
-if not exist "%AUDIT_REPORT_FILE%" exit /b 0
-if not exist "%GODOT_EXE%" exit /b 0
-if not exist "%PROJECT_ROOT%\scripts\tools\recommend_ai_audit_settings.gd" exit /b 0
-"%GODOT_EXE%" --headless --no-header --log-file "%RECOMMENDATION_LOG%" --path "%PROJECT_ROOT%" --script "res://scripts/tools/recommend_ai_audit_settings.gd" -- --args-only "--report-path=%AUDIT_REPORT_RES%" > "%RECOMMENDATION_ARGS_FILE%" 2>nul
-if not "%ERRORLEVEL%"=="0" exit /b 0
-for /f "usebackq delims=" %%A in ("%RECOMMENDATION_ARGS_FILE%") do (
-    if not "%%A"=="" set "RECOMMENDED_ARGS=%%A"
-)
 exit /b 0
 
 :show_recommendation

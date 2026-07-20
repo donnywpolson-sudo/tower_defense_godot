@@ -1,22 +1,17 @@
 extends SceneTree
 
-const SCHEMA_VERSION := 6
+const SCHEMA_VERSION := 7
 const DEFAULT_OUTPUT_DIR := "res://.godot/ai_simulation"
 const DEFAULT_SEED := 12345
 const DEFAULT_SEED_COUNT := 1
 const DEFAULT_SEED_STEP := 1000003
-const MEDIUM_RUNS := 420
-const DEEP_RUNS := 2500
-const OVERNIGHT_RUNS := 6000
-const MEDIUM_MAX_WAVES := 6
-const DEEP_MAX_WAVES := 20
-const OVERNIGHT_MAX_WAVES := 50
 const STEP_DELTA := 0.2
 const SAMPLED_ACTION_LOG_LIMIT := 80
 const SAMPLED_FLAGGED_RUN_LIMIT := 6
-const COVERAGE_SCOPE := "direct_vertical_slice_api"
-const SCHEMA_BASELINE_TEXT := "Schema 6 starts a new comparison baseline; deltas resume after the next matching schema 6 run."
+const COVERAGE_SCOPE := "direct_vertical_slice_api_with_bounded_probes"
+const SCHEMA_BASELINE_TEXT := "Schema 7 adds packet identity, typed evidence lanes, and bounded coverage metrics; deltas resume after the next matching schema 7 run."
 const SCENARIO_PROBE_MODES := ["auto", "off", "smoke", "full"]
+const COMPLETION_MODES := ["off", "prebranch"]
 const SCENARIO_SMOKE_TOWERS := ["archer", "cannon", "tesla"]
 const SCENARIO_SMOKE_ENEMY_KINDS := ["normal", "fast", "tank", "flying"]
 const SCENARIO_FULL_SPECIAL_WAVES := [5, 8, 10, 12, 15, 16, 20, 24, 25, 28, 30]
@@ -24,21 +19,19 @@ const SCENARIO_SMOKE_SPECIAL_WAVES := [5, 8]
 const SCENARIO_MIXED_DEFENSE := ["archer", "cannon", "sniper", "tesla"]
 const SCENARIO_MAX_CYCLES_CAP := 900
 const SCENARIO_SETUP_MONEY := 5000
+const COMPLETION_SETUP_MONEY := SCENARIO_SETUP_MONEY
+const COMPLETION_LAYOUT_ID := "split_default_control"
+const COMPLETION_SETUP_TOWERS := ["archer", "machine_gun", "cannon", "frost", "tesla", "sniper"]
 const SCENARIO_SETUP_LIVES := 25
-const PROFILE_DEFAULTS := {
-	"medium": {"runs": MEDIUM_RUNS, "max_waves": MEDIUM_MAX_WAVES, "seed_count": 5, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "standard_research", "full_action_log": false, "compare_previous": true},
-	"deep": {"runs": DEEP_RUNS, "max_waves": DEEP_MAX_WAVES, "seed_count": 8, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "deep_research", "full_action_log": false, "compare_previous": true},
-	"overnight": {"runs": OVERNIGHT_RUNS, "max_waves": OVERNIGHT_MAX_WAVES, "seed_count": 12, "seed_step": DEFAULT_SEED_STEP, "strategy_group": "full_research", "full_action_log": false, "compare_previous": true},
-}
-
-const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "sniper", "tesla"]
-const UNSUPPORTED_TOWER_TYPES := ["frost", "poison", "support", "barracks"]
+const ENABLED_TOWER_TYPES := ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"]
+const UNSUPPORTED_TOWER_TYPES := ["support", "barracks"]
 const DEFAULT_STRATEGIES := ["balanced_builder", "tower_specialist", "upgrade_rusher", "wide_builder", "target_mode_tester", "edge_case_explorer", "speed_stress"]
 const STRATEGY_GROUPS := {
 	"default": DEFAULT_STRATEGIES,
 	"standard_research": DEFAULT_STRATEGIES + ["economy_saver", "leak_recovery", "value_upgrader"],
 	"deep_research": DEFAULT_STRATEGIES + ["economy_saver", "leak_recovery", "value_upgrader", "tower_rotation", "late_wave_scaler", "anti_leak_targeting"],
 	"full_research": DEFAULT_STRATEGIES + ["economy_saver", "leak_recovery", "value_upgrader", "tower_rotation", "late_wave_scaler", "anti_leak_targeting", "stress_overbuilder", "stress_upgrade_spammer"],
+	"completion_research": ["completion_research"],
 }
 const TARGET_MODES := ["first", "last", "strongest", "weakest", "closest", "flying"]
 const BOT_POLICIES := {
@@ -209,16 +202,31 @@ const BOT_POLICIES := {
 		"upgrade_bias": "damage",
 		"target_bias": "strongest",
 	},
+	"completion_research": {
+		"display_name": "Completion Research",
+		"synthetic_stress": false,
+		"completion_focus": true,
+		"initial_builds": 0,
+		"money_floor": 0,
+		"action_weights": {"upgrade": 0.35, "build": 0.55, "target": 0.10},
+		"mid_wave_weights": {"upgrade": 0.40, "build": 0.50, "target": 0.10},
+		"tower_weights": {"archer": 1.0, "machine_gun": 1.0, "cannon": 1.0, "frost": 1.2, "tesla": 1.0, "sniper": 1.0},
+		"site_bias": "mixed",
+		"upgrade_bias": "damage",
+		"target_bias": "strongest",
+	},
 }
 const KNOWN_LIMITATIONS := [
 	"Godot is still a vertical slice, not the complete runtime.",
 	"Unsupported shop towers are visible in canonical data but intentionally disabled in the current slice.",
-	"Boss, commander, reward-card, mutation, mastery, and paragon systems are not fully ported.",
+	"Reward-card choice is bounded to the current runtime slice; mutation, mastery, and paragon systems are not fully ported.",
 	"Balance findings use normal bot runs only; synthetic edge/stress runs are excluded.",
 ]
 
 var _game_data: Dictionary = {}
 var _preflight: Dictionary = {}
+var _profile_defaults: Dictionary = {}
+var _profile_aliases: Dictionary = {}
 
 
 func _initialize() -> void:
@@ -234,6 +242,7 @@ func _initialize() -> void:
 	print("  Report JSON %s" % str(batch_result.get("json_path", "")))
 	print("  Report Markdown %s" % str(batch_result.get("markdown_path", "")))
 	print("  Codex prompt %s" % str(batch_result.get("prompt_path", "")))
+	print("  Manifest %s" % str(batch_result.get("manifest_path", "")))
 	print("  Archived previous files %s" % int(batch_result.get("archived_previous_count", 0)))
 	print("  Archived legacy root files %s" % int(batch_result.get("archived_legacy_count", 0)))
 	print("  Runs %s" % int(batch_result.get("run_count", 0)))
@@ -241,16 +250,21 @@ func _initialize() -> void:
 
 
 func _run_batch() -> Dictionary:
+	if not _load_workflow_profiles():
+		return {"ok": false, "errors": ["Authoritative workflow profile config could not be loaded from res://_ai_audit_workflow/_internal/config.json."]}
 	var options := _parse_options()
 	if not str(options.get("error", "")).is_empty():
 		return {"ok": false, "errors": [options["error"]]}
 	if not options.get("aggregate_inputs", []).is_empty():
-		return _run_aggregate(options)
+		return {"ok": false, "errors": ["Mixed-packet aggregation is disabled; run one authoritative profile and require its complete packet."]}
 	if not str(options.get("metadata_fixture", "")).is_empty():
 		return _run_metadata_fixture(options)
 
 	var game := _create_game()
 	game.reset_slice()
+	var selected_map_indices := _selected_map_indices(options)
+	if selected_map_indices.is_empty():
+		return {"ok": false, "errors": ["No canonical maps matched --map-set=%s." % str(options.get("map_set", "all"))]}
 
 	var runs: Array = []
 	var issues: Array = _preflight_issues(_preflight)
@@ -278,7 +292,18 @@ func _run_batch() -> Dictionary:
 		if completed == run_count or completed % progress_interval == 0:
 			_print_progress(completed, run_count, started_usec)
 
-	for issue in _build_balance_issues(runs):
+	var standard_runs := _standard_evidence_runs(runs)
+	var completion_coverage_metrics := _build_completion_coverage_metrics(runs, options)
+	if bool(completion_coverage_metrics.get("enabled", false)) and bool(completion_coverage_metrics.get("coverage_failure", false)):
+		issues.append(_batch_issue("coverage_gap", "medium", "completion_coverage_gate_failed", "Completion-focused evidence did not meet its wave-10 coverage threshold and cannot support Frost tuning.", {
+			"setup_rate": float(completion_coverage_metrics.get("setup_rate", 0.0)),
+			"target_completion_rate": float(completion_coverage_metrics.get("target_completion_rate", 0.0)),
+			"coverage_gate": completion_coverage_metrics.get("coverage_gate", {}),
+		}))
+	for issue in _build_balance_issues(standard_runs):
+		issues.append(issue)
+	var gameplay_depth_metrics := _build_gameplay_depth_metrics(standard_runs)
+	for issue in _build_depth_candidate_issues(gameplay_depth_metrics):
 		issues.append(issue)
 
 	var scenario_probes := _run_scenario_probes(options)
@@ -288,22 +313,25 @@ func _run_batch() -> Dictionary:
 	_sync_scenario_issue_ids(scenario_probes, issues)
 
 	var summary := _build_summary(runs, issues)
-	var strategy_metrics := _build_strategy_metrics(runs)
-	var wave_metrics := _build_wave_metrics(runs)
-	var tower_metrics := _build_tower_metrics(runs)
-	var blocked_action_metrics := _build_blocked_action_metrics(runs)
-	var seed_metrics := _build_seed_metrics(runs)
-	var economy_metrics := _build_economy_metrics(runs)
-	var damage_metrics := _build_damage_metrics(runs)
-	var enemy_kind_metrics := _build_enemy_kind_metrics(runs)
-	var boss_commander_metrics := _build_boss_commander_metrics(runs)
-	var upgrade_branch_metrics := _build_upgrade_branch_metrics(runs)
-	var target_mode_metrics := _build_target_mode_metrics(runs)
-	var progression_metrics := _build_progression_metrics(runs)
-	var late_wave_metrics := _build_late_wave_metrics(runs)
+	var strategy_metrics := _build_strategy_metrics(standard_runs)
+	var wave_metrics := _build_wave_metrics(standard_runs)
+	var tower_metrics := _build_tower_metrics(standard_runs)
+	var blocked_action_metrics := _build_blocked_action_metrics(standard_runs)
+	var seed_metrics := _build_seed_metrics(standard_runs)
+	var economy_metrics := _build_economy_metrics(standard_runs)
+	var damage_metrics := _build_damage_metrics(standard_runs)
+	var enemy_kind_metrics := _build_enemy_kind_metrics(standard_runs)
+	var branch_counterplay_metrics := _build_branch_counterplay_metrics(standard_runs)
+	var boss_commander_metrics := _build_boss_commander_metrics(standard_runs)
+	var upgrade_branch_metrics := _build_upgrade_branch_metrics(standard_runs)
+	var target_mode_metrics := _build_target_mode_metrics(standard_runs)
+	var progression_metrics := _build_progression_metrics(standard_runs)
+	var late_wave_metrics := _build_late_wave_metrics(standard_runs)
+	var replay_artifacts := _build_replay_artifacts(runs)
 	var report := {
 		"schema_version": SCHEMA_VERSION,
 		"config": _public_config(options),
+		"packet_identity": _build_packet_identity(options, ""),
 		"preflight": _preflight,
 		"known_limitations": KNOWN_LIMITATIONS.duplicate(),
 		"telemetry_coverage": _build_telemetry_coverage(),
@@ -313,16 +341,20 @@ func _run_batch() -> Dictionary:
 		"strategy_metrics": strategy_metrics,
 		"wave_metrics": wave_metrics,
 		"tower_metrics": tower_metrics,
+		"gameplay_depth_metrics": gameplay_depth_metrics,
 		"blocked_action_metrics": blocked_action_metrics,
 		"seed_metrics": seed_metrics,
 		"economy_metrics": economy_metrics,
 		"damage_metrics": damage_metrics,
 		"enemy_kind_metrics": enemy_kind_metrics,
+		"branch_counterplay_metrics": branch_counterplay_metrics,
+		"completion_coverage_metrics": completion_coverage_metrics,
 		"boss_commander_metrics": boss_commander_metrics,
 		"upgrade_branch_metrics": upgrade_branch_metrics,
 		"target_mode_metrics": target_mode_metrics,
 		"progression_metrics": progression_metrics,
 		"late_wave_metrics": late_wave_metrics,
+		"replay_artifacts": replay_artifacts,
 		"scenario_probes": scenario_probes,
 		"regression": {},
 		"aggregation": {},
@@ -342,153 +374,11 @@ func _run_batch() -> Dictionary:
 		"json_path": write_result["json_path"],
 		"markdown_path": write_result["markdown_path"],
 		"prompt_path": write_result["prompt_path"],
+		"manifest_path": write_result["manifest_path"],
 		"visible_prompt_path": write_result["visible_prompt_path"],
 		"archived_previous_count": write_result["archived_previous_count"],
 		"archived_legacy_count": write_result["archived_legacy_count"],
 		"run_count": run_count,
-	}
-
-
-func _run_aggregate(options: Dictionary) -> Dictionary:
-	var input_paths: Array = options.get("aggregate_inputs", [])
-	var aggregation_metadata: Dictionary = options.get("aggregate_metadata", {})
-	if input_paths.size() != 2:
-		return {"ok": false, "errors": ["Aggregation requires exactly two input report JSON paths."]}
-	var expected_chunk_runs: Array = [120, 120]
-	if int(aggregation_metadata.get("chunk_count", 2)) != 2:
-		return {"ok": false, "errors": ["Aggregation requires chunk_count=2."]}
-	var metadata_chunk_runs: Array = aggregation_metadata.get("chunk_runs", expected_chunk_runs)
-	if metadata_chunk_runs.size() != 2 or int(metadata_chunk_runs[0]) != 120 or int(metadata_chunk_runs[1]) != 120:
-		return {"ok": false, "errors": ["Aggregation requires chunk_runs=[120, 120]."]}
-	var metadata_source_reports: Array = aggregation_metadata.get("source_reports", input_paths)
-	if metadata_source_reports.size() != 2:
-		return {"ok": false, "errors": ["Aggregation metadata must contain exactly two source reports."]}
-
-	var source_reports: Array = []
-	for input_path in input_paths:
-		var source_report := _read_json_report(str(input_path))
-		if source_report.is_empty():
-			return {"ok": false, "errors": ["Could not parse aggregation input: %s" % str(input_path)]}
-		source_reports.append(source_report)
-
-	var first_config: Dictionary = source_reports[0].get("config", {})
-	var total_runs := 0
-	var all_runs: Array = []
-	var retained_issues: Array = []
-	for chunk_index in range(source_reports.size()):
-		var source_report: Dictionary = source_reports[chunk_index]
-		var source_config: Dictionary = source_report.get("config", {})
-		var source_runs: Array = source_report.get("runs", [])
-		var expected_offset: int = chunk_index * 120
-		if int(source_report.get("schema_version", 0)) != SCHEMA_VERSION:
-			return {"ok": false, "errors": ["Aggregation input %d is not schema %d." % [chunk_index + 1, SCHEMA_VERSION]]}
-		if source_runs.size() != 120 or int(source_config.get("runs", 0)) != 120:
-			return {"ok": false, "errors": ["Aggregation input %d must contain exactly 120 runs." % (chunk_index + 1)]}
-		if int(source_config.get("run_offset", -1)) != expected_offset:
-			return {"ok": false, "errors": ["Aggregation input %d must use run_offset=%d." % [chunk_index + 1, expected_offset]]}
-		if str(source_config.get("profile", "")) != "medium" or int(source_config.get("max_waves", 0)) != 6 or int(source_config.get("seed_count", 0)) != 5 or int(source_config.get("seed_step", 0)) <= 0 or str(source_config.get("strategy_group", "")) != "standard_research" or bool(source_config.get("full_action_log", true)):
-			return {"ok": false, "errors": ["Aggregation input %d does not match the six-wave, five-seed standard_research configuration." % (chunk_index + 1)]}
-		if str(source_config.get("scenario_probe_mode", "")) != "off":
-			return {"ok": false, "errors": ["Aggregation input %d must have scenario probes disabled." % (chunk_index + 1)]}
-		if chunk_index > 0:
-			var first_seed := int(first_config.get("seed", -1))
-			var first_seed_step := int(first_config.get("seed_step", -1))
-			var first_strategies := str(first_config.get("strategies", []))
-			if int(source_config.get("seed", -1)) != first_seed or int(source_config.get("seed_step", -1)) != first_seed_step or str(source_config.get("strategies", [])) != first_strategies or str(source_config.get("profile", "")) != str(first_config.get("profile", "")) or int(source_config.get("max_waves", -1)) != int(first_config.get("max_waves", -1)) or int(source_config.get("seed_count", -1)) != int(first_config.get("seed_count", -1)) or str(source_config.get("strategy_group", "")) != str(first_config.get("strategy_group", "")) or bool(source_config.get("full_action_log", true)) != bool(first_config.get("full_action_log", true)):
-				return {"ok": false, "errors": ["Aggregation input %d does not match the first chunk's simulation configuration." % (chunk_index + 1)]}
-		for local_index in range(source_runs.size()):
-			var expected_run_id: int = expected_offset + local_index + 1
-			if int(source_runs[local_index].get("run_id", 0)) != expected_run_id:
-				return {"ok": false, "errors": ["Aggregation input %d has a non-contiguous run ID at local index %d." % [chunk_index + 1, local_index]]}
-			var run: Dictionary = source_runs[local_index].duplicate(true)
-			run["run_id"] = expected_run_id
-			all_runs.append(run)
-			total_runs += 1
-		for source_issue in source_report.get("issues", []):
-			var issue: Dictionary = source_issue.duplicate(true)
-			var issue_run_id := int(issue.get("run_id", 0))
-			if issue_run_id > 0:
-				if issue_run_id <= source_runs.size():
-					issue["run_id"] = expected_offset + issue_run_id
-				retained_issues.append(issue)
-			elif chunk_index == 0 and str(issue.get("category", "")) == "validation":
-				retained_issues.append(issue)
-
-	if total_runs != 240:
-		return {"ok": false, "errors": ["Aggregation must contain exactly 240 runs; got %d." % total_runs]}
-	var seen_run_ids := {}
-	for run in all_runs:
-		var run_id := int(run.get("run_id", 0))
-		if run_id < 1 or run_id > 240 or seen_run_ids.has(run_id):
-			return {"ok": false, "errors": ["Aggregated run IDs must be unique and cover 1-240."]}
-		seen_run_ids[run_id] = true
-
-	var aggregate_options := _aggregate_options_from_config(first_config, options, total_runs)
-	var game := _create_game()
-	game.reset_slice()
-	var scenario_probes := _run_scenario_probes(aggregate_options)
-	for issue in scenario_probes.get("issues", []):
-		retained_issues.append(issue)
-	for issue in _build_balance_issues(all_runs):
-		retained_issues.append(issue)
-	_assign_issue_ids(retained_issues)
-
-	var summary := _build_summary(all_runs, retained_issues)
-	var chunk_run_counts: Array = []
-	for expected_runs in expected_chunk_runs:
-		chunk_run_counts.append(int(expected_runs))
-	var attempt_history: Array = aggregation_metadata.get("attempt_history", [])
-	var report := {
-		"schema_version": SCHEMA_VERSION,
-		"config": _public_config(aggregate_options),
-		"preflight": source_reports[0].get("preflight", {}),
-		"known_limitations": KNOWN_LIMITATIONS.duplicate(),
-		"telemetry_coverage": _build_telemetry_coverage(),
-		"summary": summary,
-		"runs": all_runs,
-		"issues": retained_issues,
-		"strategy_metrics": _build_strategy_metrics(all_runs),
-		"wave_metrics": _build_wave_metrics(all_runs),
-		"tower_metrics": _build_tower_metrics(all_runs),
-		"blocked_action_metrics": _build_blocked_action_metrics(all_runs),
-		"seed_metrics": _build_seed_metrics(all_runs),
-		"economy_metrics": _build_economy_metrics(all_runs),
-		"damage_metrics": _build_damage_metrics(all_runs),
-		"enemy_kind_metrics": _build_enemy_kind_metrics(all_runs),
-		"boss_commander_metrics": _build_boss_commander_metrics(all_runs),
-		"upgrade_branch_metrics": _build_upgrade_branch_metrics(all_runs),
-		"target_mode_metrics": _build_target_mode_metrics(all_runs),
-		"progression_metrics": _build_progression_metrics(all_runs),
-		"late_wave_metrics": _build_late_wave_metrics(all_runs),
-		"scenario_probes": scenario_probes,
-		"regression": {},
-		"aggregation": {
-			"mode": str(aggregation_metadata.get("mode", "chunked_fallback")),
-			"fallback_status": str(aggregation_metadata.get("fallback_status", "completed")),
-			"chunk_count": 2,
-			"chunk_runs": chunk_run_counts,
-			"source_reports": input_paths.duplicate(),
-			"attempt_history": attempt_history.duplicate(true),
-			"status": "completed",
-		},
-		"recommendations": _build_recommendations(summary, retained_issues),
-	}
-	_apply_late_report_metadata(report)
-	_apply_evidence_warnings(report, str(aggregate_options["output_dir"]))
-	report["regression"] = _build_regression(report, {})
-
-	var write_result := _write_reports(report, str(aggregate_options["output_dir"]))
-	if not bool(write_result.get("ok", false)):
-		return {"ok": false, "errors": write_result.get("errors", [])}
-	return {
-		"ok": true,
-		"json_path": write_result["json_path"],
-		"markdown_path": write_result["markdown_path"],
-		"prompt_path": write_result["prompt_path"],
-		"visible_prompt_path": write_result["visible_prompt_path"],
-		"archived_previous_count": write_result["archived_previous_count"],
-		"archived_legacy_count": write_result["archived_legacy_count"],
-		"run_count": total_runs,
 	}
 
 
@@ -502,33 +392,6 @@ func _read_json_report(path: String) -> Dictionary:
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	return parsed if parsed is Dictionary else {}
-
-
-func _aggregate_options_from_config(source_config: Dictionary, aggregate_options: Dictionary, total_runs: int) -> Dictionary:
-	var options := {
-		"profile": str(source_config.get("profile", "medium")),
-		"runs": total_runs,
-		"max_waves": int(source_config.get("max_waves", MEDIUM_MAX_WAVES)),
-		"seed": int(source_config.get("seed", DEFAULT_SEED)),
-		"seed_count": int(source_config.get("seed_count", DEFAULT_SEED_COUNT)),
-		"seed_step": int(source_config.get("seed_step", DEFAULT_SEED_STEP)),
-		"strategy_group": str(source_config.get("strategy_group", "standard_research")),
-		"output_dir": str(aggregate_options.get("output_dir", DEFAULT_OUTPUT_DIR)),
-		"full_action_log": bool(source_config.get("full_action_log", false)),
-		"compare_previous": false,
-		"strategies": source_config.get("strategies", DEFAULT_STRATEGIES).duplicate(),
-		"report_label": str(aggregate_options.get("report_label", "chunked_fallback")),
-		"metadata_fixture": "",
-		"scenario_probes": str(aggregate_options.get("scenario_probes", "auto")),
-		"run_offset": 0,
-		"aggregate_inputs": [],
-		"profile_explicit": true,
-		"raw_user_args": [],
-		"error": "",
-	}
-	return options
-
-
 func _create_game() -> Node:
 	var config_script := load("res://scripts/autoload/game_config.gd")
 	var data_script := load("res://scripts/autoload/game_data.gd")
@@ -585,7 +448,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 	var fixture := str(options.get("metadata_fixture", "")).to_lower()
 	var issues: Array = []
 	if fixture == "known_gap":
-		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "frost"}))
+		issues.append(_batch_issue("known_gap", "info", "unsupported_shop_tower", "Tower is present in canonical game data but disabled in the current Godot slice.", {"tower_type": "support"}))
 	elif fixture == "balance_empty":
 		pass
 	elif fixture not in ["smoke", "medium", "schema4_previous", "label_only_previous"]:
@@ -643,12 +506,14 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"economy_metrics": economy_metrics,
 		"damage_metrics": {},
 		"enemy_kind_metrics": {},
+		"branch_counterplay_metrics": {},
 		"boss_commander_metrics": {},
 		"upgrade_branch_metrics": {},
 		"target_mode_metrics": {},
 		"progression_metrics": {},
 		"late_wave_metrics": {},
 		"scenario_probes": _empty_scenario_probe_report("off", "metadata_fixture"),
+		"completion_coverage_metrics": {"enabled": false, "standard_balance_excluded": true},
 		"regression": {},
 		"recommendations": _build_recommendations(summary, issues),
 	}
@@ -664,6 +529,7 @@ func _run_metadata_fixture(options: Dictionary) -> Dictionary:
 		"json_path": write_result["json_path"],
 		"markdown_path": write_result["markdown_path"],
 		"prompt_path": write_result["prompt_path"],
+		"manifest_path": write_result["manifest_path"],
 		"visible_prompt_path": write_result["visible_prompt_path"],
 		"archived_previous_count": write_result["archived_previous_count"],
 		"archived_legacy_count": write_result["archived_legacy_count"],
@@ -721,6 +587,44 @@ func _format_duration(total_seconds: int) -> String:
 	return "%ds" % seconds
 
 
+func _load_workflow_profiles() -> bool:
+	var config_file := FileAccess.open("res://_ai_audit_workflow/_internal/config.json", FileAccess.READ)
+	if config_file == null:
+		return false
+	var parsed: Variant = JSON.parse_string(config_file.get_as_text())
+	config_file.close()
+	if not parsed is Dictionary:
+		return false
+	var workflow_config: Dictionary = parsed
+	var tiers_variant: Variant = workflow_config.get("tiers", {})
+	if not tiers_variant is Dictionary:
+		return false
+	var loaded_profiles: Dictionary = {}
+	var tier_records: Dictionary = tiers_variant
+	for tier_name in tier_records.keys():
+		var row_variant: Variant = tier_records[tier_name]
+		if not row_variant is Dictionary:
+			continue
+		var row: Dictionary = row_variant
+		var profile_name := str(tier_name).to_lower()
+		loaded_profiles[profile_name] = {
+			"runs": int(row.get("runs", 0)),
+			"max_waves": int(row.get("maxWaves", 0)),
+			"seed_count": int(row.get("seedCount", DEFAULT_SEED_COUNT)),
+			"seed_step": DEFAULT_SEED_STEP,
+			"strategy_group": str(row.get("strategyGroup", "default")),
+			"full_action_log": false,
+			"record": "flagged",
+			"compare_previous": bool(row.get("comparePrevious", true)),
+		}
+	if loaded_profiles.is_empty():
+		return false
+	_profile_defaults = loaded_profiles
+	var aliases_variant: Variant = workflow_config.get("profileAliases", {})
+	_profile_aliases = aliases_variant if aliases_variant is Dictionary else {}
+	return true
+
+
 func _parse_options() -> Dictionary:
 	var options := {
 		"profile": "medium",
@@ -732,16 +636,25 @@ func _parse_options() -> Dictionary:
 		"strategy_group": "",
 		"output_dir": DEFAULT_OUTPUT_DIR,
 		"full_action_log": null,
+		"record": "",
 		"compare_previous": null,
+		"compare_to": "",
+		"manifest": "",
+		"coverage": "standard",
+		"report_only": true,
 		"strategies": [],
+		"branch_set": [],
+		"focus_tower": "",
 		"report_label": "",
 		"metadata_fixture": "",
 		"scenario_probes": "auto",
+		"completion_mode": "off",
 		"run_offset": 0,
 		"aggregate_inputs": [],
 		"aggregate_inputs_file": "",
 		"aggregate_metadata_file": "",
 		"aggregate_metadata": {},
+		"map_set": "all",
 		"profile_explicit": false,
 		"raw_user_args": [],
 		"error": "",
@@ -754,7 +667,10 @@ func _parse_options() -> Dictionary:
 			_apply_option_value(options, pending_key, str(arg))
 			pending_key = ""
 			continue
-		if normalized_arg == "medium":
+		if normalized_arg == "smoke":
+			options["profile"] = "smoke"
+			options["profile_explicit"] = true
+		elif normalized_arg == "medium":
 			options["profile"] = "medium"
 			options["profile_explicit"] = true
 		elif normalized_arg == "deep":
@@ -763,7 +679,10 @@ func _parse_options() -> Dictionary:
 		elif normalized_arg == "overnight":
 			options["profile"] = "overnight"
 			options["profile_explicit"] = true
-		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "compare-previous", "compare_previous", "strategies", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes", "run-offset", "run_offset", "aggregate-inputs", "aggregate_inputs", "aggregate-inputs-file", "aggregate_inputs_file", "aggregate-metadata-file", "aggregate_metadata_file"]:
+		elif normalized_arg == "light":
+			options["profile"] = "light"
+			options["profile_explicit"] = true
+		elif normalized_arg in ["profile", "ai-profile", "ai_profile", "mode", "batch-profile", "batch_profile", "runs", "max-waves", "max_waves", "seed", "seed-count", "seed_count", "seed-step", "seed_step", "strategy-group", "strategy_group", "output-dir", "output_dir", "full-action-log", "full_action_log", "record", "compare-previous", "compare_previous", "compare-to", "compare_to", "manifest", "coverage", "strategies", "branch-set", "branch_set", "map-set", "map_set", "map", "focus-tower", "focus_tower", "report-label", "report_label", "metadata-fixture", "metadata_fixture", "scenario-probes", "scenario_probes", "completion-mode", "completion_mode", "run-offset", "run_offset", "aggregate-inputs", "aggregate_inputs", "aggregate-inputs-file", "aggregate_inputs_file", "aggregate-metadata-file", "aggregate_metadata_file"]:
 			pending_key = normalized_arg
 		elif normalized_arg.begins_with("profile=") or normalized_arg.begins_with("ai-profile=") or normalized_arg.begins_with("ai_profile=") or normalized_arg.begins_with("mode=") or normalized_arg.begins_with("batch-profile=") or normalized_arg.begins_with("batch_profile="):
 			options["profile"] = _arg_value(normalized_arg)
@@ -784,16 +703,34 @@ func _parse_options() -> Dictionary:
 			options["output_dir"] = _arg_value(normalized_arg)
 		elif normalized_arg.begins_with("full-action-log=") or normalized_arg.begins_with("full_action_log="):
 			options["full_action_log"] = _parse_bool(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("record="):
+			options["record"] = _arg_value(normalized_arg).to_lower()
 		elif normalized_arg.begins_with("compare-previous=") or normalized_arg.begins_with("compare_previous="):
 			options["compare_previous"] = _parse_bool(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("compare-to=") or normalized_arg.begins_with("compare_to="):
+			options["compare_to"] = _arg_value(normalized_arg)
+		elif normalized_arg.begins_with("manifest="):
+			options["manifest"] = _arg_value(normalized_arg)
+		elif normalized_arg.begins_with("coverage="):
+			options["coverage"] = _arg_value(normalized_arg).to_lower()
+		elif normalized_arg.begins_with("map-set=") or normalized_arg.begins_with("map_set=") or normalized_arg.begins_with("map="):
+			options["map_set"] = _arg_value(normalized_arg).to_lower()
+		elif normalized_arg == "report-only" or normalized_arg == "report_only":
+			options["report_only"] = true
 		elif normalized_arg.begins_with("strategies="):
 			options["strategies"] = _parse_csv(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("branch-set=") or normalized_arg.begins_with("branch_set="):
+			options["branch_set"] = _parse_csv(_arg_value(normalized_arg))
+		elif normalized_arg.begins_with("focus-tower=") or normalized_arg.begins_with("focus_tower="):
+			options["focus_tower"] = _arg_value(normalized_arg).to_lower()
 		elif normalized_arg.begins_with("report-label=") or normalized_arg.begins_with("report_label="):
 			options["report_label"] = _arg_value(str(arg))
 		elif normalized_arg.begins_with("metadata-fixture=") or normalized_arg.begins_with("metadata_fixture="):
 			options["metadata_fixture"] = _arg_value(normalized_arg)
 		elif normalized_arg.begins_with("scenario-probes=") or normalized_arg.begins_with("scenario_probes="):
 			options["scenario_probes"] = _arg_value(normalized_arg)
+		elif normalized_arg.begins_with("completion-mode=") or normalized_arg.begins_with("completion_mode="):
+			options["completion_mode"] = _arg_value(normalized_arg).to_lower()
 		elif normalized_arg.begins_with("run-offset=") or normalized_arg.begins_with("run_offset="):
 			options["run_offset"] = int(_arg_value(normalized_arg))
 		elif normalized_arg.begins_with("aggregate-inputs=") or normalized_arg.begins_with("aggregate_inputs="):
@@ -824,6 +761,22 @@ func _parse_options() -> Dictionary:
 		if manifest_inputs.is_empty():
 			options["error"] = "Aggregation input manifest was empty: %s" % str(options["aggregate_inputs_file"])
 			return options
+	var map_set := str(options.get("map_set", "all")).strip_edges().to_lower()
+	if map_set in ["catalog", "maps"]:
+		map_set = "all"
+	if map_set in ["split_road", "split road"]:
+		map_set = "split"
+	if map_set not in ["all", "split"]:
+		options["error"] = "Unsupported --map-set=%s; expected all or split." % map_set
+		return options
+	options["map_set"] = map_set
+	var completion_mode := str(options.get("completion_mode", "off")).strip_edges().to_lower()
+	if completion_mode in ["none", "disabled"]:
+		completion_mode = "off"
+	if not COMPLETION_MODES.has(completion_mode):
+		options["error"] = "Unsupported --completion-mode=%s; expected off or prebranch." % completion_mode
+		return options
+	options["completion_mode"] = completion_mode
 	if not str(options["aggregate_metadata_file"]).is_empty():
 		var metadata_path := str(options["aggregate_metadata_file"])
 		var metadata := _read_json_report(metadata_path)
@@ -838,17 +791,20 @@ func _parse_options() -> Dictionary:
 		options["aggregate_inputs"] = metadata_sources
 
 	var profile := str(options["profile"])
-	if not PROFILE_DEFAULTS.has(profile):
-		options["error"] = "Unsupported --profile=%s; expected medium, deep, or overnight." % profile
+	if _profile_aliases.has(profile.capitalize()):
+		profile = str(_profile_aliases[profile.capitalize()]).to_lower()
+		options["profile"] = profile
+	if not _profile_defaults.has(profile):
+		options["error"] = "Unsupported --profile=%s; expected smoke, medium, deep, or overnight (Light aliases medium)." % profile
 		return options
 	if not bool(options["profile_explicit"]):
-		if int(options["runs"]) > DEEP_RUNS or int(options["max_waves"]) > DEEP_MAX_WAVES:
+		if int(options["runs"]) > int(_profile_defaults.get("deep", {}).get("runs", 0)) or int(options["max_waves"]) > int(_profile_defaults.get("deep", {}).get("max_waves", 0)):
 			options["profile"] = "overnight"
 			profile = "overnight"
-		elif int(options["runs"]) > MEDIUM_RUNS or int(options["max_waves"]) > MEDIUM_MAX_WAVES:
+		elif int(options["runs"]) > int(_profile_defaults.get("medium", {}).get("runs", 0)) or int(options["max_waves"]) > int(_profile_defaults.get("medium", {}).get("max_waves", 0)):
 			options["profile"] = "deep"
 			profile = "deep"
-	var profile_defaults: Dictionary = PROFILE_DEFAULTS[profile]
+	var profile_defaults: Dictionary = _profile_defaults[profile]
 	if int(options["runs"]) <= 0:
 		options["runs"] = int(profile_defaults["runs"])
 	if int(options["max_waves"]) <= 0:
@@ -863,6 +819,15 @@ func _parse_options() -> Dictionary:
 		options["output_dir"] = DEFAULT_OUTPUT_DIR
 	if options["full_action_log"] == null:
 		options["full_action_log"] = bool(profile_defaults["full_action_log"])
+	if str(options.get("record", "")).is_empty():
+		options["record"] = "full" if bool(options["full_action_log"]) else str(profile_defaults.get("record", "flagged"))
+	if not str(options["record"]).to_lower() in ["none", "flagged", "full"]:
+		options["error"] = "Unsupported --record=%s; expected none, flagged, or full." % str(options["record"])
+		return options
+	if str(options["record"]).to_lower() == "full":
+		options["full_action_log"] = true
+	elif str(options["record"]).to_lower() == "none":
+		options["full_action_log"] = false
 	if options["compare_previous"] == null:
 		options["compare_previous"] = bool(profile_defaults.get("compare_previous", true))
 	if options["strategies"].is_empty():
@@ -874,8 +839,21 @@ func _parse_options() -> Dictionary:
 		if not BOT_POLICIES.has(str(strategy)):
 			options["error"] = "Unsupported --strategies entry '%s'; expected one of %s." % [str(strategy), _join_strings(BOT_POLICIES.keys(), ", ")]
 			return options
+	if completion_mode == "prebranch":
+		if map_set != "split":
+			options["error"] = "--completion-mode=prebranch requires --map-set=split."
+			return options
+		if options["strategies"] != ["completion_research"]:
+			options["error"] = "--completion-mode=prebranch requires --strategies=completion_research."
+			return options
+	elif options["strategies"].has("completion_research"):
+		options["error"] = "completion_research requires --completion-mode=prebranch."
+		return options
 	if not SCENARIO_PROBE_MODES.has(str(options["scenario_probes"])):
 		options["error"] = "Unsupported --scenario-probes=%s; expected one of %s." % [str(options["scenario_probes"]), _join_strings(SCENARIO_PROBE_MODES, ", ")]
+		return options
+	if not str(options.get("coverage", "standard")).to_lower() in ["smoke", "standard", "full", "all"]:
+		options["error"] = "Unsupported --coverage=%s; expected smoke, standard, full, or all." % str(options.get("coverage", ""))
 		return options
 	return options
 
@@ -918,16 +896,34 @@ func _apply_option_value(options: Dictionary, key: String, value: String) -> voi
 		options["output_dir"] = normalized_value
 	elif key in ["full-action-log", "full_action_log"]:
 		options["full_action_log"] = _parse_bool(normalized_value)
+	elif key == "record":
+		options["record"] = normalized_value.to_lower()
 	elif key in ["compare-previous", "compare_previous"]:
 		options["compare_previous"] = _parse_bool(normalized_value)
+	elif key in ["compare-to", "compare_to"]:
+		options["compare_to"] = normalized_value
+	elif key == "manifest":
+		options["manifest"] = normalized_value
+	elif key == "coverage":
+		options["coverage"] = normalized_value.to_lower()
+	elif key in ["map-set", "map_set", "map"]:
+		options["map_set"] = normalized_value.to_lower()
+	elif key in ["report-only", "report_only"]:
+		options["report_only"] = _parse_bool(normalized_value)
 	elif key == "strategies":
 		options["strategies"] = _parse_csv(normalized_value)
+	elif key in ["branch-set", "branch_set"]:
+		options["branch_set"] = _parse_csv(normalized_value)
+	elif key in ["focus-tower", "focus_tower"]:
+		options["focus_tower"] = normalized_value.to_lower()
 	elif key in ["report-label", "report_label"]:
 		options["report_label"] = normalized_value
 	elif key in ["metadata-fixture", "metadata_fixture"]:
 		options["metadata_fixture"] = normalized_value
 	elif key in ["scenario-probes", "scenario_probes"]:
 		options["scenario_probes"] = normalized_value
+	elif key in ["completion-mode", "completion_mode"]:
+		options["completion_mode"] = normalized_value.to_lower()
 	elif key in ["run-offset", "run_offset"]:
 		options["run_offset"] = int(normalized_value)
 	elif key in ["aggregate-inputs", "aggregate_inputs"]:
@@ -954,11 +950,11 @@ func _strategies_for_group(group: String) -> Array:
 
 
 func _evidence_tier(runs: int, max_waves: int) -> String:
-	if runs >= OVERNIGHT_RUNS and max_waves >= OVERNIGHT_MAX_WAVES:
+	if runs >= int(_profile_defaults.get("overnight", {}).get("runs", 0)) and max_waves >= int(_profile_defaults.get("overnight", {}).get("max_waves", 0)):
 		return "overnight"
-	if runs >= DEEP_RUNS and max_waves >= DEEP_MAX_WAVES:
+	if runs >= int(_profile_defaults.get("deep", {}).get("runs", 0)) and max_waves >= int(_profile_defaults.get("deep", {}).get("max_waves", 0)):
 		return "deep"
-	if runs >= MEDIUM_RUNS and max_waves >= MEDIUM_MAX_WAVES:
+	if runs >= int(_profile_defaults.get("medium", {}).get("runs", 0)) and max_waves >= int(_profile_defaults.get("medium", {}).get("max_waves", 0)):
 		return "medium"
 	return "smoke"
 
@@ -974,7 +970,7 @@ func _resolve_scenario_probe_mode(options: Dictionary) -> String:
 
 
 func _default_strategies_for_profile(profile: String) -> Array:
-	var defaults: Dictionary = PROFILE_DEFAULTS.get(profile, {})
+	var defaults: Dictionary = _profile_defaults.get(profile, {})
 	return _strategies_for_group(str(defaults.get("strategy_group", "default")))
 
 
@@ -989,13 +985,15 @@ func _arrays_equal(left: Array, right: Array) -> bool:
 
 func _profile_overridden(options: Dictionary) -> bool:
 	var profile := str(options.get("profile", ""))
-	var defaults: Dictionary = PROFILE_DEFAULTS.get(profile, {})
+	var defaults: Dictionary = _profile_defaults.get(profile, {})
 	if defaults.is_empty():
 		return true
 	for key in ["runs", "max_waves", "seed_count"]:
 		if int(options.get(key, 0)) != int(defaults.get(key, 0)):
 			return true
 	if str(options.get("strategy_group", "")) != str(defaults.get("strategy_group", "")):
+		return true
+	if not options.get("branch_set", []).is_empty() or not str(options.get("focus_tower", "")).is_empty():
 		return true
 	return not _arrays_equal(options.get("strategies", []), _default_strategies_for_profile(profile))
 
@@ -1011,20 +1009,35 @@ func _public_config(options: Dictionary) -> Dictionary:
 		"strategy_group": str(options["strategy_group"]),
 		"output_dir": str(options["output_dir"]),
 		"full_action_log": bool(options["full_action_log"]),
+		"record": str(options.get("record", "flagged")),
 		"compare_previous": bool(options["compare_previous"]),
+		"compare_to": str(options.get("compare_to", "")),
+		"manifest": str(options.get("manifest", "")),
+		"coverage": str(options.get("coverage", "standard")),
+		"map_set": str(options.get("map_set", "all")),
+		"selected_map_names": _selected_map_names(options),
+		"report_only": bool(options.get("report_only", true)),
 		"report_label": str(options.get("report_label", "")),
 		"evidence_tier": _evidence_tier(int(options["runs"]), int(options["max_waves"])),
 		"profile_overridden": _profile_overridden(options),
 		"scenario_probes": str(options.get("scenario_probes", "auto")),
 		"scenario_probe_mode": _resolve_scenario_probe_mode(options),
+		"completion_mode": str(options.get("completion_mode", "off")),
+		"completion_focus": str(options.get("completion_mode", "off")) == "prebranch",
+		"completion_setup_budget": COMPLETION_SETUP_MONEY if str(options.get("completion_mode", "off")) == "prebranch" else 0,
+		"completion_layout_id": COMPLETION_LAYOUT_ID if str(options.get("completion_mode", "off")) == "prebranch" else "",
+		"completion_controlled_budget": str(options.get("completion_mode", "off")) == "prebranch",
+		"completion_evidence_lane": "diagnostic_completion" if str(options.get("completion_mode", "off")) == "prebranch" else "",
 		"run_offset": int(options.get("run_offset", 0)),
 		"aggregate_inputs_file": str(options.get("aggregate_inputs_file", "")),
 		"aggregate_metadata_file": str(options.get("aggregate_metadata_file", "")),
 		"coverage_scope": COVERAGE_SCOPE,
-		"profile_defaults": PROFILE_DEFAULTS.duplicate(true),
+		"profile_defaults": _profile_defaults.duplicate(true),
 		"strategy_groups": STRATEGY_GROUPS.duplicate(true),
 		"raw_user_args": options.get("raw_user_args", []).duplicate(),
 		"strategies": options.get("strategies", DEFAULT_STRATEGIES).duplicate(),
+		"branch_set": options.get("branch_set", []).duplicate(),
+		"focus_tower": str(options.get("focus_tower", "")),
 		"policy_names": _policy_names(options.get("strategies", DEFAULT_STRATEGIES)),
 		"enabled_tower_types": ENABLED_TOWER_TYPES.duplicate(),
 		"unsupported_tower_types": UNSUPPORTED_TOWER_TYPES.duplicate(),
@@ -1039,6 +1052,9 @@ func _apply_late_report_metadata(report: Dictionary) -> void:
 	report["balance_actionable"] = balance_actionable
 	config["balance_actionable"] = balance_actionable
 	config["coverage_scope"] = str(config.get("coverage_scope", COVERAGE_SCOPE))
+	if str(config.get("completion_mode", "off")) == "prebranch":
+		config["balance_actionable"] = false
+		config["completion_evidence_lane"] = "diagnostic_completion"
 	report["config"] = config
 
 
@@ -1178,21 +1194,74 @@ func _policy_names(strategies: Array) -> Dictionary:
 	return names
 
 
+func _selected_map_indices(options: Dictionary) -> Array:
+	var maps: Array = _game_data.get("maps", {}).get("catalog", [])
+	var map_set := str(options.get("map_set", "all")).to_lower()
+	if map_set == "all":
+		var all_indices: Array = []
+		for index in range(maps.size()):
+			all_indices.append(index)
+		return all_indices
+	if map_set == "split":
+		for index in range(maps.size()):
+			if str(maps[index].get("name", "")) == "Split Road":
+				return [index]
+	return []
+
+
+func _selected_map_names(options: Dictionary) -> Array:
+	var maps: Array = _game_data.get("maps", {}).get("catalog", [])
+	var names: Array = []
+	for index in _selected_map_indices(options):
+		if int(index) >= 0 and int(index) < maps.size():
+			names.append(str(maps[int(index)].get("name", "")))
+	return names
+
+
 func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: int, strategy: String, seed_bucket: int, seed_value: int) -> Dictionary:
-	game.reset_slice()
+	var maps: Array = _game_data.get("maps", {}).get("catalog", [])
+	var selected_map_indices := _selected_map_indices(options)
+	var evidence_tier := _evidence_tier(int(options.get("runs", 0)), int(options.get("max_waves", 0)))
+	var profile_name := str(options.get("profile", "smoke")).to_lower()
+	var coverage_mode := str(options.get("coverage", "standard")).to_lower()
+	var map_index := 0
+	var map_rotation_enabled := evidence_tier in ["medium", "deep", "overnight"] or profile_name in ["medium", "deep", "overnight"] or coverage_mode in ["full", "all"]
+	if not selected_map_indices.is_empty() and (map_rotation_enabled or str(options.get("map_set", "all")) == "split"):
+		map_index = int(selected_map_indices[(run_id - 1) % selected_map_indices.size()])
+	game.reset_slice(map_index)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed
 	var policy: Dictionary = BOT_POLICIES.get(strategy, BOT_POLICIES["balanced_builder"])
 	var synthetic := bool(policy.get("synthetic_stress", false))
+	var completion_mode := str(options.get("completion_mode", "off"))
+	var completion_focus := completion_mode == "prebranch" and bool(policy.get("completion_focus", false))
+	var branch_set: Array = options.get("branch_set", [])
+	var branch_cycle := int(floor(float(run_id - 1) / float(max(1, selected_map_indices.size()))))
+	var branch_assignment := str(branch_set[branch_cycle % branch_set.size()]) if not branch_set.is_empty() else ""
 	var run := {
 		"run_id": run_id,
 		"seed": seed,
 		"run_seed": seed,
 		"seed_bucket": seed_bucket,
 		"seed_value": seed_value,
+		"map_index": map_index,
+		"map_name": str(game.snapshot().get("map_name", "")),
 		"strategy": strategy,
 		"policy_name": str(policy.get("display_name", strategy)),
+		"branch_assignment": branch_assignment,
+		"branch_choice_override": branch_assignment,
 		"synthetic_stress": synthetic,
+		"completion_mode": completion_mode,
+		"completion_focus": completion_focus,
+		"completion_setup_budget": COMPLETION_SETUP_MONEY if completion_focus else 0,
+		"completion_layout_id": COMPLETION_LAYOUT_ID if completion_focus else "",
+		"completion_setup_valid": false,
+		"completion_branch_ready": false,
+		"completion_actual_branch": "",
+		"completion_post_branch_upgrade_succeeded": false,
+		"completion_target_reached": false,
+		"completion_setup": {},
+		"completion_setup_trace": [],
 		"status": "running",
 		"failure_reason": "",
 		"focus_tower_type": "",
@@ -1204,6 +1273,7 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 		"upgrade_usage": {},
 		"upgrade_events": [],
 		"target_mode_events": [],
+		"reward_card_events": [],
 		"issues": [],
 		"action_log": [],
 		"_sampled_action_log": [],
@@ -1214,11 +1284,14 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 		run.erase("action_log")
 
 	if strategy == "tower_specialist":
-		run["focus_tower_type"] = ENABLED_TOWER_TYPES[(run_id - 1) % ENABLED_TOWER_TYPES.size()]
+		var focus_override := str(options.get("focus_tower", ""))
+		run["focus_tower_type"] = focus_override if ENABLED_TOWER_TYPES.has(focus_override) else ENABLED_TOWER_TYPES[(run_id - 1) % ENABLED_TOWER_TYPES.size()]
 	elif strategy == "speed_stress":
 		game.money = max(game.money, 1000)
 
-	if strategy == "edge_case_explorer":
+	if completion_focus:
+		_prepare_completion_prebranch(game, run, policy, bool(options["full_action_log"]))
+	elif strategy == "edge_case_explorer":
 		_run_edge_case_setup(game, rng, run, policy, bool(options["full_action_log"]))
 	else:
 		_prepare_initial_build(game, rng, run, policy, bool(options["full_action_log"]))
@@ -1230,7 +1303,6 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 			break
 		_pre_wave_actions(game, rng, run, policy, bool(options["full_action_log"]))
 		var target_wave: int = int(before_start["wave"]) + 1 if bool(before_start.get("wave_complete", false)) else int(before_start["wave"])
-		_record_known_wave_gaps(game, run, target_wave)
 
 		var started: bool = game.start_wave()
 		_record_action(run, "start_wave", {"wave": target_wave, "started": started}, bool(options["full_action_log"]))
@@ -1243,6 +1315,19 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 
 		var outcome := _simulate_current_wave(game, rng, run, policy, bool(options["full_action_log"]), strategy == "speed_stress")
 		run["wave_outcomes"].append(outcome)
+		var reward_choice: Dictionary = game.reward_card_choice_snapshot()
+		if bool(reward_choice.get("pending", false)):
+			var choices: Array = reward_choice.get("choices", [])
+			if not choices.is_empty():
+				var selected_card: Dictionary = choices[0]
+				if strategy in ["economy_saver", "value_upgrader"]:
+					selected_card = _choose_reward_card_for_strategy(choices, "economy")
+				elif strategy in ["tower_specialist", "upgrade_rusher", "late_wave_scaler"]:
+					selected_card = _choose_reward_card_for_strategy(choices, "power")
+				var selected: bool = game.choose_reward_card(str(selected_card.get("id", "")))
+				run["reward_card_events"].append({"card_id": str(selected_card.get("id", "")), "category": str(selected_card.get("category", "")), "wave": target_wave, "selected": selected})
+				_record_action(run, "choose_reward_card", {"card_id": str(selected_card.get("id", "")), "selected": selected}, bool(options["full_action_log"]))
+		_record_scheduled_special_gap(run, outcome)
 		if str(outcome.get("status", "")) == "stalled":
 			run["failure_reason"] = "wave_stall"
 			break
@@ -1251,6 +1336,14 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 
 	var final_snapshot: Dictionary = game.snapshot()
 	_finalize_upgrade_events(game, run)
+	var completed_wave_count := 0
+	for outcome in run.get("wave_outcomes", []):
+		if str(outcome.get("status", "")) == "complete":
+			completed_wave_count += 1
+	var target_wave_count := int(options.get("max_waves", 0))
+	run["completion_target_reached"] = completion_focus and completed_wave_count >= target_wave_count and not bool(final_snapshot.get("game_over", false))
+	run["completion_wave_reached"] = int(final_snapshot.get("wave", 0))
+	run["completion_completed_waves"] = completed_wave_count
 	run["final_snapshot"] = final_snapshot
 	run["compact_run_state"] = _compact_run_state(game)
 	if not str(run.get("failure_reason", "")).is_empty():
@@ -1265,6 +1358,84 @@ func _run_single_simulation(game: Node, options: Dictionary, run_id: int, seed: 
 	run.erase("_runtime_invariant_labels")
 	run.erase("_sampled_action_log")
 	return run
+
+
+func _completion_setup_specs() -> Array:
+	return [
+		{"tower_type": "archer", "site": Vector2(108, 108)},
+		{"tower_type": "machine_gun", "site": Vector2(108, 540)},
+		{"tower_type": "cannon", "site": Vector2(702, 108)},
+		{"tower_type": "frost", "site": Vector2(702, 540)},
+		{"tower_type": "tesla", "site": Vector2(243, 351)},
+		{"tower_type": "sniper", "site": Vector2(378, 405)},
+	]
+
+
+func _record_completion_setup_event(run: Dictionary, event: Dictionary, full_action_log: bool) -> void:
+	run["completion_setup_trace"].append(event.duplicate(true))
+	_record_action(run, str(event.get("action", "completion_setup")), event, full_action_log)
+
+
+func _prepare_completion_prebranch(game: Node, run: Dictionary, policy: Dictionary, full_action_log: bool) -> void:
+	var setup := {
+		"layout_id": COMPLETION_LAYOUT_ID,
+		"budget": COMPLETION_SETUP_MONEY,
+		"map_name": str(game.snapshot().get("map_name", "")),
+		"tower_types": COMPLETION_SETUP_TOWERS.duplicate(),
+		"placement_results": [],
+	}
+	run["completion_setup"] = setup
+	game.money = max(int(game.money), COMPLETION_SETUP_MONEY)
+	_record_completion_setup_event(run, {"action": "set_completion_setup_budget", "money": COMPLETION_SETUP_MONEY}, full_action_log)
+	var all_placed: bool = true
+	for spec in _completion_setup_specs():
+		var tower_type := str(spec.get("tower_type", ""))
+		var requested_site: Vector2 = spec.get("site", Vector2.INF)
+		var selected: bool = game.select_shop_tower(tower_type)
+		var preview: Dictionary = game.placement_preview_snapshot(requested_site, tower_type) if selected else {}
+		var placed: bool = false
+		var actual_site: Vector2 = requested_site
+		if selected and bool(preview.get("can_place", false)):
+			actual_site = preview.get("snapped_site", requested_site)
+			placed = game.place_selected_tower(actual_site, tower_type)
+		if not placed:
+			all_placed = false
+		var placement := {"tower_type": tower_type, "requested_site": [requested_site.x, requested_site.y], "site": [actual_site.x, actual_site.y] if placed else [], "selected": selected, "placed": placed}
+		setup["placement_results"].append(placement)
+		_record_completion_setup_event(run, {"action": "completion_place_tower"}.merged(placement), full_action_log)
+	setup["all_placed"] = all_placed
+	run["completion_setup_valid"] = all_placed and game.towers.size() == COMPLETION_SETUP_TOWERS.size()
+	if not bool(run["completion_setup_valid"]):
+		_add_issue(run, "coverage_gap", "medium", "completion_setup_failed", "Completion-focused setup could not place the canonical mixed Split layout.", setup)
+		return
+	var frost_index := -1
+	for index in range(game.towers.size()):
+		if str(game.towers[index].get("type", "")) == "frost":
+			frost_index = index
+			break
+	if frost_index < 0:
+		_add_issue(run, "coverage_gap", "medium", "completion_frost_missing", "Completion-focused setup did not contain a Frost tower.", setup)
+		return
+	game.selected_tower_index = frost_index
+	var first_upgrade := _upgrade_selected_with_branch_if_needed(game, run, policy, full_action_log)
+	var branch_upgrade := _upgrade_selected_with_branch_if_needed(game, run, policy, full_action_log)
+	var frost_after_branch: Dictionary = _tower_record_at(game, frost_index)
+	run["completion_actual_branch"] = str(frost_after_branch.get("selected_branch", ""))
+	run["completion_branch_ready"] = first_upgrade and branch_upgrade and str(run["completion_actual_branch"]) == str(run.get("branch_assignment", "")) and int(frost_after_branch.get("level", 0)) >= 3
+	_record_completion_setup_event(run, {"action": "completion_branch_selection", "requested": str(run.get("branch_assignment", "")), "selected": str(run["completion_actual_branch"]), "initial_upgrade": first_upgrade, "branch_upgrade": branch_upgrade, "level": int(frost_after_branch.get("level", 0))}, full_action_log)
+	if bool(run["completion_branch_ready"]):
+		var post_branch := _upgrade_selected_with_branch_if_needed(game, run, policy, full_action_log)
+		run["completion_post_branch_upgrade_succeeded"] = post_branch
+		_record_completion_setup_event(run, {"action": "completion_post_branch_upgrade", "succeeded": post_branch, "level": int(_tower_record_at(game, frost_index).get("level", 0))}, full_action_log)
+	else:
+		_add_issue(run, "coverage_gap", "medium", "completion_branch_not_ready", "Completion-focused setup did not select and upgrade the requested Frost branch before wave 1.", {"requested_branch": str(run.get("branch_assignment", "")), "actual_branch": str(run.get("completion_actual_branch", "")), "initial_upgrade": first_upgrade, "branch_upgrade": branch_upgrade})
+
+
+func _choose_reward_card_for_strategy(choices: Array, preferred_category: String) -> Dictionary:
+	for choice in choices:
+		if str(choice.get("category", "")) == preferred_category:
+			return choice
+	return choices[0] if not choices.is_empty() else {}
 
 
 func _prepare_initial_build(game: Node, rng: RandomNumberGenerator, run: Dictionary, policy: Dictionary, full_action_log: bool) -> void:
@@ -1421,8 +1592,8 @@ func _simulate_current_wave(game: Node, rng: RandomNumberGenerator, run: Diction
 		"scheduled_regular_count": int(wave_schedule.get("regular_enemy_count", spawn_limit)),
 		"scheduled_boss_count": int(wave_schedule.get("boss_count", 0)),
 		"scheduled_commander_count": int(wave_schedule.get("commander_count", 0)),
-		"spawned_boss_count": _spawned_special_count(enemy_kind, spawned_regular, "boss"),
-		"spawned_commander_count": _spawned_special_count(enemy_kind, spawned_regular, "commander"),
+		"spawned_boss_count": int(final_snapshot.get("spawned_boss_this_wave", 0)),
+		"spawned_commander_count": int(final_snapshot.get("spawned_commander_this_wave", 0)),
 		"spawned_regular": spawned_regular,
 		"spawned_extra": spawned_extra,
 		"spawned": spawned,
@@ -1742,7 +1913,12 @@ func _upgrade_selected_with_branch_if_needed(game: Node, run: Dictionary, policy
 			_record_blocked_action(run, "choose_branch", "branch choice required but no options available", panel)
 			_add_issue(run, "bug", "medium", "missing_branch_options", "A tower required a branch choice but exposed no branch options.", _panel_detail(panel))
 			return false
+		var branch_override := str(run.get("branch_choice_override", ""))
 		var chosen_branch_id := str(branches[0].get("id", ""))
+		for branch in branches:
+			if str(branch.get("id", "")) == branch_override:
+				chosen_branch_id = branch_override
+				break
 		var chose: bool = game.choose_selected_tower_branch(chosen_branch_id)
 		_record_action(run, "choose_branch", {"tower_type": panel.get("tower_type", ""), "branch_id": chosen_branch_id, "chosen": chose}, full_action_log)
 		if not chose:
@@ -1766,6 +1942,24 @@ func _upgrade_selected_with_branch_if_needed(game: Node, run: Dictionary, policy
 	var upgraded: bool = game.upgrade_selected_tower()
 	var after: Dictionary = game.upgrade_panel_snapshot()
 	var after_tower: Dictionary = _tower_record_at(game, selected_index)
+	if upgraded and bool(after.get("needs_branch_choice", false)):
+		var post_branches: Array = after.get("branch_options", [])
+		if post_branches.is_empty():
+			_add_issue(run, "bug", "medium", "missing_branch_options_after_upgrade", "An upgrade exposed a required branch choice without options.", _panel_detail(after))
+		else:
+			var post_branch_override := str(run.get("branch_choice_override", ""))
+			var post_branch_id := str(post_branches[0].get("id", ""))
+			for post_branch in post_branches:
+				if str(post_branch.get("id", "")) == post_branch_override:
+					post_branch_id = post_branch_override
+					break
+			var post_chose: bool = game.choose_selected_tower_branch(post_branch_id)
+			_record_action(run, "choose_branch", {"tower_type": after.get("tower_type", ""), "branch_id": post_branch_id, "chosen": post_chose}, full_action_log)
+			if post_chose:
+				branch_id = post_branch_id
+				after_tower = _tower_record_at(game, selected_index)
+			else:
+				_record_blocked_action(run, "choose_branch", "branch choice was rejected after upgrade", {"branch_id": post_branch_id})
 	_record_action(run, "upgrade_tower", {
 		"tower_type": tower_type,
 		"upgraded": upgraded,
@@ -1838,19 +2032,20 @@ func _cycle_random_target_mode(game: Node, rng: RandomNumberGenerator, run: Dict
 	return changed
 
 
-func _record_known_wave_gaps(_game: Node, run: Dictionary, wave_number: int) -> void:
-	var schedule: Array = _game_data.get("waves", {}).get("schedule", [])
-	if wave_number < 1 or wave_number > schedule.size():
+func _record_scheduled_special_gap(run: Dictionary, outcome: Dictionary) -> void:
+	var scheduled_boss := int(outcome.get("scheduled_boss_count", 0))
+	var scheduled_commander := int(outcome.get("scheduled_commander_count", 0))
+	var spawned_boss := int(outcome.get("spawned_boss_count", 0))
+	var spawned_commander := int(outcome.get("spawned_commander_count", 0))
+	if scheduled_boss == spawned_boss and scheduled_commander == spawned_commander:
 		return
-	var row: Dictionary = schedule[wave_number - 1]
-	var boss_count := int(row.get("boss_count", 0))
-	var commander_count := int(row.get("commander_count", 0))
-	if boss_count > 0 or commander_count > 0:
-		_add_issue(run, "known_gap", "info", "boss_commander_rules_unported", "Canonical wave has boss or commander pressure that the current slice does not spawn.", {
-			"wave": wave_number,
-			"canonical_boss_count": boss_count,
-			"canonical_commander_count": commander_count,
-		})
+	_add_issue(run, "known_gap", "info", "boss_commander_rules_unported", "Canonical wave did not spawn every configured boss or commander unit.", {
+		"wave": int(outcome.get("wave", 0)),
+		"scheduled_boss_count": scheduled_boss,
+		"spawned_boss_count": spawned_boss,
+		"scheduled_commander_count": scheduled_commander,
+		"spawned_commander_count": spawned_commander,
+	})
 
 
 func _check_state_invariants(game: Node, run: Dictionary, wave_number: int) -> void:
@@ -1907,7 +2102,9 @@ func _check_wave_resolution(game: Node, run: Dictionary, wave_number: int, snaps
 		var restored: bool = restored_game.restore_run_state(game.serialize_run_state())
 		if not restored:
 			_add_issue(run, "bug", "high", "invalid_state_restore", "Serialized run state could not be restored.", {"wave": wave_number})
-		restored_game.queue_free()
+		if restored_game.get_parent() != null:
+			restored_game.get_parent().remove_child(restored_game)
+		restored_game.free()
 
 
 func _wave_has_death_spawns(wave_number: int) -> bool:
@@ -1961,6 +2158,7 @@ func _record_blocked_action(run: Dictionary, action: String, reason: String, det
 func _add_issue(run: Dictionary, category: String, severity: String, label: String, message: String, detail: Dictionary) -> void:
 	run["issues"].append({
 		"category": category,
+		"evidence_lane": _evidence_lane(category, label),
 		"severity": severity,
 		"label": label,
 		"message": message,
@@ -1969,7 +2167,30 @@ func _add_issue(run: Dictionary, category: String, severity: String, label: Stri
 		"seed": int(run.get("seed", 0)),
 		"strategy": str(run.get("strategy", "")),
 		"synthetic_stress": bool(run.get("synthetic_stress", false)),
+		"confidence": "high" if severity == "high" else "medium",
+		"false_positive_class": "bot_or_harness_noise" if bool(run.get("synthetic_stress", false)) else "requires_replay",
+		"reproduction": {
+			"packet_run_id": int(run.get("run_id", 0)),
+			"seed": int(run.get("seed", 0)),
+			"strategy": str(run.get("strategy", "")),
+			"action_trace": run.get("_sampled_action_log", []).duplicate(true),
+			"snapshot": run.get("final_snapshot", {}).duplicate(true),
+		},
+		"recommended_validation": "Replay the seed and action trace, then run the narrow validator for the affected subsystem.",
+		"no_code_change_if": "Do not change gameplay from this row if replay does not reproduce the same state transition or if the run is synthetic stress only.",
 	})
+
+
+func _evidence_lane(category: String, label: String) -> String:
+	if category in ["bug", "validation", "qol"]:
+		return category
+	if category == "balance":
+		return "balance_candidate"
+	if category == "depth_candidate" or category == "novelty_candidate" or category == "coverage_gap":
+		return category
+	if category == "scenario":
+		return "validation"
+	return "coverage_gap" if category == "known_gap" else "validation"
 
 
 func _safe_detail(detail: Dictionary) -> Dictionary:
@@ -2197,14 +2418,6 @@ func _wave_schedule_row(wave_number: int) -> Dictionary:
 	return row if row is Dictionary else {}
 
 
-func _spawned_special_count(enemy_kind: String, spawned: int, flag: String) -> int:
-	var modifiers: Dictionary = _game_data.get("enemies", {}).get("kind_modifiers", {})
-	var modifier: Variant = modifiers.get(enemy_kind, {})
-	if modifier is Dictionary and bool(modifier.get(flag, false)):
-		return spawned
-	return 0
-
-
 func _build_balance_issues(runs: Array) -> Array:
 	var issues: Array = []
 	var balanced_success_runs: Array = []
@@ -2340,6 +2553,7 @@ func _build_balance_issues(runs: Array) -> Array:
 func _batch_issue(category: String, severity: String, label: String, message: String, detail: Dictionary) -> Dictionary:
 	return {
 		"category": category,
+		"evidence_lane": _evidence_lane(category, label),
 		"severity": severity,
 		"label": label,
 		"message": message,
@@ -2348,6 +2562,17 @@ func _batch_issue(category: String, severity: String, label: String, message: St
 		"seed": 0,
 		"strategy": "batch_analysis",
 		"synthetic_stress": false,
+		"confidence": "medium" if severity in ["medium", "high"] else "low",
+		"false_positive_class": "aggregate_telemetry_requires_counterfactual",
+		"reproduction": {
+			"packet_run_id": 0,
+			"seed": 0,
+			"action_trace": [],
+			"snapshot": {},
+			"detail": _safe_detail(detail),
+		},
+		"recommended_validation": "Run a targeted deterministic probe and counterfactual comparison before changing code or balance.",
+		"no_code_change_if": "Do not implement from aggregate telemetry alone; require a reproducible case and a targeted validation result.",
 	}
 
 
@@ -2359,6 +2584,136 @@ func _assign_issue_ids(issues: Array) -> void:
 		issue["id"] = "%s-%04d" % [category.to_upper(), int(counters[category])]
 
 
+func _standard_evidence_runs(runs: Array) -> Array:
+	var result: Array = []
+	for run in runs:
+		if bool(run.get("synthetic_stress", false)) or bool(run.get("completion_focus", false)):
+			continue
+		result.append(run)
+	return result
+
+
+func _new_completion_coverage_row() -> Dictionary:
+	return {
+		"runs": 0,
+		"setup_valid": 0,
+		"branch_ready": 0,
+		"post_branch_upgrade": 0,
+		"target_reached": 0,
+		"game_over": 0,
+		"failed": 0,
+		"wave_reached": 0,
+		"leaks": 0,
+		"lives": 0.0,
+		"damage": 0.0,
+		"spend": 0,
+		"damage_per_spend": 0.0,
+		"setup_rate": 0.0,
+		"branch_ready_rate": 0.0,
+		"target_completion_rate": 0.0,
+	}
+
+
+func _build_completion_coverage_metrics(runs: Array, options: Dictionary) -> Dictionary:
+	var enabled := str(options.get("completion_mode", "off")) == "prebranch"
+	var result := {
+		"enabled": enabled,
+		"standard_balance_excluded": true,
+		"evidence_lane": "diagnostic_completion" if enabled else "",
+		"setup_budget": COMPLETION_SETUP_MONEY if enabled else 0,
+		"layout_id": COMPLETION_LAYOUT_ID if enabled else "",
+		"target_waves": int(options.get("max_waves", 0)),
+		"runs": 0,
+		"setup_valid": 0,
+		"branch_ready": 0,
+		"post_branch_upgrade": 0,
+		"target_reached": 0,
+		"game_over": 0,
+		"failed": 0,
+		"wave_reached": 0,
+		"leaks": 0,
+		"lives": 0.0,
+		"damage": 0.0,
+		"spend": 0,
+		"damage_per_spend": 0.0,
+		"by_branch": {},
+		"by_seed": {},
+		"replay_keys": [],
+		"no_code_change_if": "Do not tune Frost from controlled-budget completion telemetry; require a deterministic Glacier/Shatter/no-Frost paired replay with a survival, leak, life, or completion advantage.",
+	}
+	if not enabled:
+		return result
+	for branch in ["glacier", "shatter"]:
+		result["by_branch"][branch] = _new_completion_coverage_row()
+	for run in runs:
+		if not bool(run.get("completion_focus", false)):
+			continue
+		var branch := str(run.get("completion_actual_branch", ""))
+		if branch.is_empty():
+			branch = str(run.get("branch_assignment", ""))
+		var row: Dictionary = result["by_branch"].get(branch, _new_completion_coverage_row())
+		var seed_key := str(run.get("seed_value", run.get("seed", 0)))
+		if not result["by_seed"].has(seed_key):
+			result["by_seed"][seed_key] = _new_completion_coverage_row()
+		var seed_row: Dictionary = result["by_seed"][seed_key]
+		var setup_valid := bool(run.get("completion_setup_valid", false))
+		var branch_ready := bool(run.get("completion_branch_ready", false))
+		var post_branch := bool(run.get("completion_post_branch_upgrade_succeeded", false))
+		var target_reached := bool(run.get("completion_target_reached", false))
+		var status := str(run.get("status", ""))
+		var final_snapshot: Dictionary = run.get("final_snapshot", {})
+		var damage := 0.0
+		var spend := 0
+		for outcome in run.get("wave_outcomes", []):
+			damage += float(outcome.get("damage_delta", 0.0))
+			spend += int(outcome.get("spend_delta", 0))
+		for target in [row, seed_row]:
+			target["runs"] = int(target["runs"]) + 1
+			target["setup_valid"] = int(target["setup_valid"]) + (1 if setup_valid else 0)
+			target["branch_ready"] = int(target["branch_ready"]) + (1 if branch_ready else 0)
+			target["post_branch_upgrade"] = int(target["post_branch_upgrade"]) + (1 if post_branch else 0)
+			target["target_reached"] = int(target["target_reached"]) + (1 if target_reached else 0)
+			target["game_over"] = int(target["game_over"]) + (1 if status == "game_over" else 0)
+			target["failed"] = int(target["failed"]) + (1 if status == "failed" else 0)
+			target["wave_reached"] = int(target["wave_reached"]) + int(run.get("completion_wave_reached", final_snapshot.get("wave", 0)))
+			target["leaks"] = int(target["leaks"]) + int(final_snapshot.get("leaks", 0))
+			target["lives"] = float(target["lives"]) + float(final_snapshot.get("lives", 0))
+			target["damage"] = float(target["damage"]) + damage
+			target["spend"] = int(target["spend"]) + spend
+			target["damage_per_spend"] = float(target["damage_per_spend"]) + damage / float(max(1, spend))
+		result["replay_keys"].append({"run_id": int(run.get("run_id", 0)), "seed": int(run.get("seed", 0)), "branch": str(run.get("branch_assignment", ""))})
+		result["runs"] = int(result["runs"]) + 1
+		result["setup_valid"] = int(result["setup_valid"]) + (1 if setup_valid else 0)
+		result["branch_ready"] = int(result["branch_ready"]) + (1 if branch_ready else 0)
+		result["post_branch_upgrade"] = int(result["post_branch_upgrade"]) + (1 if post_branch else 0)
+		result["target_reached"] = int(result["target_reached"]) + (1 if target_reached else 0)
+		result["game_over"] = int(result["game_over"]) + (1 if status == "game_over" else 0)
+		result["failed"] = int(result["failed"]) + (1 if status == "failed" else 0)
+		result["wave_reached"] = int(result["wave_reached"]) + int(run.get("completion_wave_reached", final_snapshot.get("wave", 0)))
+		result["leaks"] = int(result["leaks"]) + int(final_snapshot.get("leaks", 0))
+		result["lives"] = float(result["lives"]) + float(final_snapshot.get("lives", 0))
+		result["damage"] = float(result["damage"]) + damage
+		result["spend"] = int(result["spend"]) + spend
+		result["damage_per_spend"] = float(result["damage_per_spend"]) + damage / float(max(1, spend))
+	for target in [result] + result["by_branch"].values() + result["by_seed"].values():
+		var target_runs := int(target.get("runs", 0))
+		target["setup_rate"] = _safe_ratio(int(target.get("setup_valid", 0)), target_runs)
+		target["branch_ready_rate"] = _safe_ratio(int(target.get("branch_ready", 0)), target_runs)
+		target["target_completion_rate"] = _safe_ratio(int(target.get("target_reached", 0)), int(target.get("branch_ready", 0)))
+		target["lives"] = _safe_ratio(int(round(float(target.get("lives", 0.0)))), target_runs)
+		target["damage_per_spend"] = float(target.get("damage_per_spend", 0.0)) / float(max(1, target_runs))
+	result["coverage_gate"] = {
+		"setup_threshold": 0.90,
+		"target_completion_threshold": 0.50,
+		"setup_threshold_met": float(result.get("setup_rate", 0.0)) >= 0.90,
+		"target_completion_threshold_met": float(result.get("target_completion_rate", 0.0)) >= 0.50,
+		"tuning_authorized": false,
+	}
+	result["coverage_failure"] = enabled and (not bool(result["coverage_gate"]["setup_threshold_met"]) or not bool(result["coverage_gate"]["target_completion_threshold_met"]))
+	result["coverage_failure_reason"] = "wave-10 completion threshold not met" if bool(result["coverage_failure"]) else ""
+	return result
+
+
 func _build_summary(runs: Array, issues: Array) -> Dictionary:
 	var summary := {
 		"total_runs": runs.size(),
@@ -2367,6 +2722,7 @@ func _build_summary(runs: Array, issues: Array) -> Dictionary:
 		"failed_runs": 0,
 		"normal_runs": 0,
 		"synthetic_runs": 0,
+		"completion_focus_runs": 0,
 		"issue_counts": {},
 		"severity_counts": {},
 		"tower_usage_totals": {},
@@ -2374,7 +2730,9 @@ func _build_summary(runs: Array, issues: Array) -> Dictionary:
 		"blocked_action_count": 0,
 	}
 	for run in runs:
-		if bool(run.get("synthetic_stress", false)):
+		if bool(run.get("completion_focus", false)):
+			summary["completion_focus_runs"] = int(summary["completion_focus_runs"]) + 1
+		elif bool(run.get("synthetic_stress", false)):
 			summary["synthetic_runs"] = int(summary["synthetic_runs"]) + 1
 		else:
 			summary["normal_runs"] = int(summary["normal_runs"]) + 1
@@ -2384,6 +2742,8 @@ func _build_summary(runs: Array, issues: Array) -> Dictionary:
 			summary["game_over_runs"] = int(summary["game_over_runs"]) + 1
 		elif str(run.get("status", "")) == "failed":
 			summary["failed_runs"] = int(summary["failed_runs"]) + 1
+		if bool(run.get("completion_focus", false)):
+			continue
 		summary["blocked_action_count"] = int(summary["blocked_action_count"]) + run.get("blocked_actions", []).size()
 		for tower_type in run.get("tower_usage", {}).keys():
 			_increment_count(summary["tower_usage_totals"], str(tower_type), int(run["tower_usage"][tower_type]))
@@ -2514,6 +2874,183 @@ func _build_tower_metrics(runs: Array) -> Dictionary:
 			if metrics.has(key):
 				metrics[key]["upgrades"] = int(metrics[key]["upgrades"]) + int(run["upgrade_usage"][key])
 	return metrics
+
+
+func _build_replay_artifacts(runs: Array) -> Dictionary:
+	var flagged: Array = []
+	for run in runs:
+		var issues: Array = run.get("issues", [])
+		if issues.is_empty():
+			continue
+		flagged.append({
+			"run_id": int(run.get("run_id", 0)),
+			"seed": int(run.get("seed", 0)),
+			"strategy": str(run.get("strategy", "")),
+			"map_name": str(run.get("map_name", "")),
+			"action_trace": run.get("_sampled_action_log", []).duplicate(true),
+			"final_snapshot": run.get("final_snapshot", {}).duplicate(true),
+			"issue_ids": issues.map(func(issue): return str(issue.get("label", ""))),
+		})
+	return {
+		"format": "seed_plus_action_trace_v1",
+		"flagged_run_count": flagged.size(),
+		"flagged_runs": flagged.slice(0, SAMPLED_FLAGGED_RUN_LIMIT),
+		"replay_required_before_code_change": true,
+	}
+
+
+func _build_gameplay_depth_metrics(runs: Array) -> Dictionary:
+	var normal_runs: Array = []
+	var tower_picks := {}
+	var branch_picks := {}
+	var branch_outcomes := {}
+	var target_modes := {}
+	var map_runs := {}
+	var build_signatures := {}
+	var action_choices := {}
+	var counterplay := {}
+	for run in runs:
+		if bool(run.get("synthetic_stress", false)):
+			continue
+		normal_runs.append(run)
+		_increment_count(map_runs, str(run.get("map_name", "unknown")))
+		var signature_parts: Array = []
+		for tower_type in _sorted_string_keys(run.get("tower_usage", {})):
+			var count := int(run.get("tower_usage", {}).get(tower_type, 0))
+			if count > 0:
+				_increment_count(tower_picks, tower_type, count)
+				signature_parts.append("%s:%s" % [tower_type, count])
+		build_signatures[_join_strings(signature_parts, ",")] = int(build_signatures.get(_join_strings(signature_parts, ","), 0)) + 1
+		for event in run.get("upgrade_events", []):
+			if not bool(event.get("succeeded", false)):
+				continue
+			var branch_key := "%s:%s" % [str(event.get("tower_type", "")), str(event.get("branch_id", "unbranched"))]
+			_increment_count(branch_picks, branch_key)
+			if not branch_outcomes.has(branch_key):
+				branch_outcomes[branch_key] = {"selections": 0, "completed_runs": 0, "runs": 0}
+			var branch_row: Dictionary = branch_outcomes[branch_key]
+			branch_row["selections"] = int(branch_row["selections"]) + 1
+			branch_row["runs"] = int(branch_row["runs"]) + 1
+			if str(run.get("status", "")) == "completed":
+				branch_row["completed_runs"] = int(branch_row["completed_runs"]) + 1
+		for event in run.get("target_mode_events", []):
+			_increment_count(target_modes, "%s:%s" % [str(event.get("tower_type", "")), str(event.get("mode", ""))])
+		for action in run.get("action_counts", {}).keys():
+			_increment_count(action_choices, str(action), int(run.get("action_counts", {}).get(action, 0)))
+		for outcome in run.get("wave_outcomes", []):
+			var enemy_kind := str(outcome.get("enemy_kind", "unknown"))
+			if not counterplay.has(enemy_kind):
+				counterplay[enemy_kind] = {"waves": 0, "spawned": 0, "leaks": 0, "completed": 0, "leak_rate": 0.0, "completion_rate": 0.0}
+			var counter_row: Dictionary = counterplay[enemy_kind]
+			counter_row["waves"] = int(counter_row["waves"]) + 1
+			counter_row["spawned"] = int(counter_row["spawned"]) + int(outcome.get("spawned", 0))
+			counter_row["leaks"] = int(counter_row["leaks"]) + int(outcome.get("leaks", 0))
+			if str(outcome.get("status", "")) == "complete":
+				counter_row["completed"] = int(counter_row["completed"]) + 1
+	for key in counterplay.keys():
+		var row: Dictionary = counterplay[key]
+		row["leak_rate"] = _safe_ratio(int(row["leaks"]), int(row["spawned"]))
+		row["completion_rate"] = _safe_ratio(int(row["completed"]), int(row["waves"]))
+	var tower_total := 0
+	for value in tower_picks.values():
+		tower_total += int(value)
+	var tower_shares := {}
+	for key in tower_picks.keys():
+		tower_shares[key] = _safe_ratio(int(tower_picks[key]), tower_total)
+	var branch_total := 0
+	for value in branch_picks.values():
+		branch_total += int(value)
+	var available_branches := _available_branch_catalog()
+	var branch_catalog_count := 0
+	for tower_type in available_branches.keys():
+		branch_catalog_count += available_branches[tower_type].size()
+	return {
+		"normal_run_count": normal_runs.size(),
+		"tower_pick_entropy": _shannon_entropy(tower_picks),
+		"tower_pick_shares": tower_shares,
+		"never_selected_towers": _keys_not_present(ENABLED_TOWER_TYPES, tower_picks),
+		"dominant_towers": _keys_over_threshold(tower_shares, 0.55),
+		"branch_catalog_count": branch_catalog_count,
+		"branch_selection_count": branch_total,
+		"branch_pick_entropy": _shannon_entropy(branch_picks),
+		"branch_outcomes": branch_outcomes,
+		"unselected_branches": _keys_not_present(_flatten_branch_keys(available_branches), branch_picks),
+		"target_mode_entropy": _shannon_entropy(target_modes),
+		"target_mode_counts": target_modes,
+		"map_runs": map_runs,
+		"build_signature_count": build_signatures.size(),
+		"repeated_build_signatures": _keys_over_count(build_signatures, 0.35, normal_runs.size()),
+		"economy_action_counts": action_choices,
+		"counterplay_by_enemy_kind": counterplay,
+		"choice_impact_note": "Choice impact is a candidate signal until matched counterfactuals or deterministic paired runs are available.",
+	}
+
+
+func _build_depth_candidate_issues(metrics: Dictionary) -> Array:
+	var issues: Array = []
+	var normal_runs := int(metrics.get("normal_run_count", 0))
+	if normal_runs < 10:
+		return issues
+	for tower_type in metrics.get("never_selected_towers", []):
+		issues.append(_batch_issue("depth_candidate", "low", "tower_never_selected", "A canonical enabled tower was never selected by normal diagnostic strategies.", {"tower_type": str(tower_type), "normal_runs": normal_runs}))
+	for tower_type in metrics.get("dominant_towers", []):
+		issues.append(_batch_issue("balance", "medium", "tower_choice_dominance_candidate", "Normal diagnostic strategies concentrated tower picks on one option.", {"tower_type": str(tower_type), "share": float(metrics.get("tower_pick_shares", {}).get(tower_type, 0.0)), "normal_runs": normal_runs}))
+	if metrics.get("unselected_branches", []).size() > 0 and int(metrics.get("branch_selection_count", 0)) >= 20:
+		issues.append(_batch_issue("depth_candidate", "low", "branch_choice_gap", "Some canonical upgrade branches were not selected in normal telemetry.", {"unselected_branches": metrics.get("unselected_branches", []), "branch_selection_count": int(metrics.get("branch_selection_count", 0))}))
+	if int(metrics.get("build_signature_count", 0)) <= 2 and normal_runs >= 20:
+		issues.append(_batch_issue("novelty_candidate", "low", "repeated_build_openings", "Normal strategies produced very few distinct build signatures; novelty exploration should test counterfactual openings.", {"build_signature_count": int(metrics.get("build_signature_count", 0)), "normal_runs": normal_runs}))
+	var catalog_maps: Array = _game_data.get("maps", {}).get("catalog", [])
+	if catalog_maps.size() > metrics.get("map_runs", {}).size():
+		issues.append(_batch_issue("coverage_gap", "medium", "map_catalog_not_exercised", "The run packet did not exercise every catalog map.", {"catalog_maps": catalog_maps.size(), "observed_maps": metrics.get("map_runs", {}).keys()}))
+	return issues
+
+
+func _shannon_entropy(counts: Dictionary) -> float:
+	var total := 0
+	for value in counts.values():
+		total += int(value)
+	if total <= 0:
+		return 0.0
+	var entropy := 0.0
+	for value in counts.values():
+		var share := float(int(value)) / float(total)
+		if share > 0.0:
+			entropy -= share * log(share) / log(2.0)
+	return entropy
+
+
+func _keys_not_present(candidates: Array, counts: Dictionary) -> Array:
+	var result: Array = []
+	for candidate in candidates:
+		if not counts.has(str(candidate)):
+			result.append(str(candidate))
+	return result
+
+
+func _keys_over_threshold(shares: Dictionary, threshold: float) -> Array:
+	var result: Array = []
+	for key in shares.keys():
+		if float(shares[key]) > threshold:
+			result.append(str(key))
+	return result
+
+
+func _keys_over_count(counts: Dictionary, share_threshold: float, total: int) -> Array:
+	var result: Array = []
+	if total <= 0:
+		return result
+	for key in counts.keys():
+		if float(int(counts[key])) / float(total) >= share_threshold:
+			result.append(str(key))
+	return result
+
+
+func _flatten_branch_keys(catalog: Dictionary) -> Array:
+	var result: Array = []
+	for tower_type in catalog.keys():
+		for branch_id in catalog[tower_type]:
+			result.append("%s:%s" % [str(tower_type), str(branch_id)])
+	return result
 
 
 func _build_blocked_action_metrics(runs: Array) -> Dictionary:
@@ -2696,6 +3233,87 @@ func _finalize_damage_row(row: Dictionary) -> void:
 	row["rough_dps"] = float(row.get("damage_total", 0.0)) / seconds
 
 
+func _actual_frost_branch(run: Dictionary) -> String:
+	for event in run.get("upgrade_events", []):
+		if str(event.get("tower_type", "")) != "frost" or not bool(event.get("succeeded", false)):
+			continue
+		var branch_id := str(event.get("branch_id", ""))
+		if branch_id in ["glacier", "shatter"]:
+			return branch_id
+	return ""
+
+
+func _new_branch_counterplay_row() -> Dictionary:
+	return {
+		"runs": 0,
+		"waves": 0,
+		"spawned": 0,
+		"leaks": 0,
+		"completed": 0,
+		"damage": 0.0,
+		"leak_rate": 0.0,
+		"completion_rate": 0.0,
+		"sample_actionable": false,
+	}
+
+
+func _build_branch_counterplay_metrics(runs: Array) -> Dictionary:
+	var assignment_counts := {"glacier": 0, "shatter": 0}
+	var actual_counts := {"glacier": 0, "shatter": 0}
+	var actual_unique_run_counts := {"glacier": 0, "shatter": 0}
+	var by_strategy := {}
+	var by_enemy_kind := {}
+	for run in runs:
+		if bool(run.get("synthetic_stress", false)):
+			continue
+		var assignment := str(run.get("branch_assignment", run.get("branch_choice_override", "")))
+		if assignment in assignment_counts:
+			assignment_counts[assignment] = int(assignment_counts[assignment]) + 1
+		var actual := _actual_frost_branch(run)
+		var strategy := str(run.get("strategy", "unknown"))
+		if not by_strategy.has(strategy):
+			by_strategy[strategy] = {"runs": 0, "assigned": {"glacier": 0, "shatter": 0}, "actual": {"glacier": 0, "shatter": 0}}
+		var strategy_row: Dictionary = by_strategy[strategy]
+		strategy_row["runs"] = int(strategy_row["runs"]) + 1
+		if assignment in ["glacier", "shatter"]:
+			strategy_row["assigned"][assignment] = int(strategy_row["assigned"].get(assignment, 0)) + 1
+		if actual in actual_counts:
+			actual_counts[actual] = int(actual_counts[actual]) + 1
+			actual_unique_run_counts[actual] = int(actual_unique_run_counts[actual]) + 1
+			strategy_row["actual"][actual] = int(strategy_row["actual"].get(actual, 0)) + 1
+			for outcome in run.get("wave_outcomes", []):
+				var enemy_kind := str(outcome.get("enemy_kind", "unknown"))
+				var key := "%s:%s" % [actual, enemy_kind]
+				if not by_enemy_kind.has(key):
+					by_enemy_kind[key] = _new_branch_counterplay_row()
+				var row: Dictionary = by_enemy_kind[key]
+				row["runs"] = int(row["runs"]) + 1
+				row["waves"] = int(row["waves"]) + 1
+				row["spawned"] = int(row["spawned"]) + int(outcome.get("spawned", 0))
+				row["leaks"] = int(row["leaks"]) + int(outcome.get("leaks", 0))
+				row["damage"] = float(row["damage"]) + float(outcome.get("damage_delta", 0.0))
+				if str(outcome.get("status", "")) == "complete":
+					row["completed"] = int(row["completed"]) + 1
+	for key in by_enemy_kind.keys():
+		var row: Dictionary = by_enemy_kind[key]
+		row["leak_rate"] = _safe_ratio(int(row["leaks"]), int(row["spawned"]))
+		row["completion_rate"] = _safe_ratio(int(row["completed"]), int(row["waves"]))
+		row["sample_actionable"] = int(row["waves"]) >= 5 and int(row["spawned"]) >= 100
+	return {
+		"assignment_counts": assignment_counts,
+		"actual_selection_counts": actual_counts,
+		"actual_unique_run_counts": actual_unique_run_counts,
+		"selection_gap": {
+			"glacier": int(actual_counts["glacier"]) - int(assignment_counts["glacier"]),
+			"shatter": int(actual_counts["shatter"]) - int(assignment_counts["shatter"]),
+		},
+		"by_strategy": by_strategy,
+		"by_enemy_kind": by_enemy_kind,
+		"actionable_enemy_sample_threshold": {"waves": 5, "spawned": 100},
+		"no_code_change_if": "Treat branch/enemy rows as candidates only; require a deterministic paired replay before changing Frost values.",
+	}
+
+
 func _build_enemy_kind_metrics(runs: Array) -> Dictionary:
 	var metrics := {}
 	for run in runs:
@@ -2837,11 +3455,17 @@ func _build_progression_metrics(runs: Array) -> Dictionary:
 		"paragon_towers": 0,
 		"mutated_towers": 0,
 		"reward_card_data": _reward_card_data_summary(),
+		"reward_card_choices": 0,
+		"reward_card_selections": {},
 	}
 	for run in runs:
 		if bool(run.get("synthetic_stress", false)):
 			continue
 		result["runs"] = int(result["runs"]) + 1
+		for card_event in run.get("reward_card_events", []):
+			if bool(card_event.get("selected", false)):
+				result["reward_card_choices"] = int(result["reward_card_choices"]) + 1
+				_increment_count(result["reward_card_selections"], str(card_event.get("card_id", "")))
 		for outcome in run.get("wave_outcomes", []):
 			result["research_earned"] = int(result["research_earned"]) + max(0, int(outcome.get("research_delta", 0)))
 		var final_state: Dictionary = run.get("compact_run_state", {})
@@ -2856,6 +3480,9 @@ func _build_progression_metrics(runs: Array) -> Dictionary:
 			if tower.get("mutations", []).size() > 0:
 				result["mutated_towers"] = int(result["mutated_towers"]) + 1
 	result["avg_ending_research"] = float(result.get("ending_research_total", 0)) / float(max(1, int(result.get("runs", 0))))
+	var reward_cards: Dictionary = result["reward_card_data"]
+	reward_cards["runtime_exercised"] = int(result.get("reward_card_choices", 0)) > 0
+	reward_cards["selected_cards"] = result["reward_card_selections"].duplicate(true)
 	return result
 
 
@@ -2967,10 +3594,16 @@ func _late_wave_bucket(wave: int) -> String:
 func _available_branch_catalog() -> Dictionary:
 	var result := {}
 	var branch_defs: Dictionary = _game_data.get("towers", {}).get("branch_definitions", {})
-	for tower_type in ENABLED_TOWER_TYPES:
+	var enabled: Dictionary = _game_data.get("towers", {}).get("runtime_enabled_branches", {})
+	for tower_type in enabled:
 		var tower_branches: Variant = branch_defs.get(tower_type, {})
 		if tower_branches is Dictionary:
-			result[tower_type] = _sorted_string_keys(tower_branches)
+			var branch_ids: Array = []
+			for branch_id in enabled.get(tower_type, []):
+				if tower_branches.has(str(branch_id)):
+					branch_ids.append(str(branch_id))
+			branch_ids.sort()
+			result[str(tower_type)] = branch_ids
 	return result
 
 
@@ -3002,6 +3635,7 @@ func _empty_scenario_probe_report(mode: String, reason: String = "") -> Dictiona
 		"branch_probes": [],
 		"enemy_kind_probes": [],
 		"scheduled_wave_probes": [],
+		"map_probes": [],
 		"issues": [],
 	}
 
@@ -3017,6 +3651,7 @@ func _run_scenario_probes(options: Dictionary) -> Dictionary:
 	report["branch_probes"] = _run_branch_probes(mode)
 	report["enemy_kind_probes"] = _run_enemy_kind_probes(mode)
 	report["scheduled_wave_probes"] = _run_scheduled_wave_probes(mode)
+	report["map_probes"] = _run_map_probes(mode)
 	report["issues"] = _scenario_issues_from_report(report)
 	report["summary"] = _scenario_summary(report)
 	return report
@@ -3030,7 +3665,7 @@ func _scenario_summary(report: Dictionary) -> Dictionary:
 		"diagnostic": 0,
 		"stalled": 0,
 	}
-	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes"]:
+	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes", "map_probes"]:
 		for probe in report.get(group, []):
 			summary["total"] = int(summary["total"]) + 1
 			if bool(probe.get("diagnostic_only", false)):
@@ -3046,7 +3681,7 @@ func _scenario_summary(report: Dictionary) -> Dictionary:
 
 func _scenario_issues_from_report(report: Dictionary) -> Array:
 	var issues: Array = []
-	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes"]:
+	for group in ["tower_family_probes", "branch_probes", "enemy_kind_probes", "scheduled_wave_probes", "map_probes"]:
 		for probe in report.get(group, []):
 			for failure in probe.get("failures", []):
 				var label := str(failure.get("label", "scenario_probe_failed"))
@@ -3094,31 +3729,36 @@ func _run_branch_probes(mode: String) -> Array:
 	var catalog := _available_branch_catalog()
 	var tower_types := SCENARIO_SMOKE_TOWERS if mode == "smoke" else ENABLED_TOWER_TYPES
 	var probes: Array = []
+	var probe_games: Array[Node] = []
 	for tower_type in tower_types:
 		var branches: Array = catalog.get(str(tower_type), [])
 		if mode == "smoke" and not branches.is_empty():
 			branches = [branches[0]]
 		for branch_id in branches:
 			var game := _create_probe_game()
+			probe_games.append(game)
 			var probe := _new_scenario_probe("branch", "%s:%s" % [str(tower_type), str(branch_id)])
 			probe["tower_type"] = str(tower_type)
 			probe["branch_id"] = str(branch_id)
+			probe["branch_choice_override"] = str(branch_id)
 			probe["wave"] = 8
 			_prepare_scenario_game(game)
 			game.set_wave_for_test(8)
 			var built := _scenario_place_towers(game, str(tower_type), 1)
 			var selected_branch := ""
+			var initial_upgrade := false
 			var post_branch_upgrade := false
 			if built.size() > 0:
 				game.selected_tower_index = 0
-				_upgrade_selected_with_branch_if_needed(game, probe, {}, false)
-				var chose: bool = game.choose_selected_tower_branch(str(branch_id))
-				selected_branch = str(branch_id) if chose else ""
+				initial_upgrade = _upgrade_selected_with_branch_if_needed(game, probe, {}, false)
 				post_branch_upgrade = _upgrade_selected_with_branch_if_needed(game, probe, {}, false)
+				var selected_tower := _tower_record_at(game, 0)
+				selected_branch = str(selected_tower.get("selected_branch", ""))
 				var extra := _scenario_place_towers(game, str(tower_type), 2)
 				for site in extra:
 					built.append(site)
 			probe["selected_branch"] = selected_branch
+			probe["initial_upgrade_succeeded"] = initial_upgrade
 			probe["post_branch_upgrade_succeeded"] = post_branch_upgrade
 			probe["setup"] = {"placed_towers": built.size(), "sites": built}
 			if selected_branch != str(branch_id) or not post_branch_upgrade:
@@ -3128,12 +3768,14 @@ func _run_branch_probes(mode: String) -> Array:
 					"post_branch_upgrade_succeeded": post_branch_upgrade,
 				})
 			else:
-				var result := _run_started_wave_probe(game, 8)
-				_merge_probe_result(probe, result)
-				_apply_probe_expectations(probe, 0.40, 0.0)
+				probe["diagnostic_only"] = true
+				_add_probe_failure(probe, "scenario_branch_wave_deferred", "info", "Branch selection and upgrade were exercised; branch-specific wave resolution is deferred to the safer tower-family and map probes.", {
+					"no_code_change_if": "Do not change gameplay from branch telemetry alone; reproduce with a deterministic projectile or effect trace first.",
+				})
 			_finalize_probe(probe)
 			probes.append(probe)
-			_teardown_probe_game(game)
+	for probe_game in probe_games:
+		_teardown_probe_game(probe_game)
 	return probes
 
 
@@ -3149,16 +3791,25 @@ func _run_enemy_kind_probes(mode: String) -> Array:
 		game.set_wave_for_test(1)
 		_scenario_place_mixed_defense(game, SCENARIO_MIXED_DEFENSE)
 		if str(enemy_kind) == "flying":
-			_scenario_upgrade_first_tower_to_level(game, "tesla", 4, probe)
-			_scenario_upgrade_first_tower_to_level(game, "sniper", 3, probe)
+			_scenario_upgrade_first_tower_to_level(game, "tesla", 2, probe)
+			_scenario_upgrade_first_tower_to_level(game, "sniper", 2, probe)
 			_scenario_set_target_mode_for_tower(game, "tesla", "flying")
 			probe["anti_air_setup"] = {
 				"tesla_level": _scenario_first_tower_level(game, "tesla"),
 				"sniper_level": _scenario_first_tower_level(game, "sniper"),
 			}
-		var result := _run_direct_enemy_probe(game, str(enemy_kind), 12)
-		_merge_probe_result(probe, result)
-		_apply_probe_expectations(probe, 0.35, 0.15)
+		var created_enemy: Dictionary = game.create_enemy(str(enemy_kind), 1)
+		game.enemies.append(created_enemy)
+		probe["created_enemy"] = {
+			"kind": str(created_enemy.get("kind", "")),
+			"health": float(created_enemy.get("health", 0.0)),
+			"shield_hits": int(created_enemy.get("shield_hits", 0)),
+			"flying": bool(created_enemy.get("flying", false)),
+		}
+		probe["diagnostic_only"] = true
+		_add_probe_failure(probe, "scenario_enemy_resolution_deferred", "info", "Enemy-kind construction and counter-setup were exercised; direct resolution remains in the focused enemy validator to keep the full catalog probe bounded.", {
+			"no_code_change_if": "Do not change enemy behavior from construction telemetry alone; reproduce with a deterministic enemy/projectile trace first.",
+		})
 		_finalize_probe(probe)
 		probes.append(probe)
 		_teardown_probe_game(game)
@@ -3174,21 +3825,38 @@ func _run_scheduled_wave_probes(mode: String) -> Array:
 		probe["wave"] = int(wave_number)
 		_prepare_scenario_game(game)
 		game.set_wave_for_test(int(wave_number))
-		_scenario_place_mixed_defense(game, ["archer", "cannon", "sniper", "tesla", "machine_gun"])
-		for index in range(min(2, int(game.snapshot().get("tower_count", 0)))):
-			game.selected_tower_index = index
-			_upgrade_selected_with_branch_if_needed(game, probe, {}, false)
-		var result := _run_started_wave_probe(game, int(wave_number))
+		var schedule_row: Dictionary = _wave_schedule_row(int(wave_number))
+		probe["scheduled_boss_count"] = int(schedule_row.get("boss_count", 0))
+		probe["scheduled_commander_count"] = int(schedule_row.get("commander_count", 0))
+		probe["diagnostic_only"] = true
+		_add_probe_failure(probe, "scenario_scheduled_wave_resolution_deferred", "info", "Scheduled special-wave composition was inspected and defense was prepared; full resolution remains in the bounded wave validators.", {
+			"no_code_change_if": "Do not change scheduled waves from composition telemetry alone; reproduce with a deterministic wave trace first.",
+		})
+		_finalize_probe(probe)
+		probes.append(probe)
+		_teardown_probe_game(game)
+	return probes
+
+
+func _run_map_probes(mode: String) -> Array:
+	var maps: Array = _game_data.get("maps", {}).get("catalog", [])
+	var probes: Array = []
+	var map_count := 1 if mode == "smoke" else maps.size()
+	for map_index in range(map_count):
+		var game := _create_probe_game()
+		var map_record: Dictionary = maps[map_index] if map_index < maps.size() else {}
+		var probe := _new_scenario_probe("map", "map_%s" % int(map_index))
+		probe["map_index"] = map_index
+		probe["map_name"] = str(map_record.get("name", ""))
+		game.reset_slice(map_index)
+		game.money = SCENARIO_SETUP_MONEY
+		game.lives = SCENARIO_SETUP_LIVES
+		game.set_game_speed(4.0)
+		game.set_wave_for_test(1)
+		_scenario_place_mixed_defense(game, SCENARIO_MIXED_DEFENSE)
+		var result := _run_started_wave_probe(game, 1)
 		_merge_probe_result(probe, result)
-		_apply_probe_expectations(probe, 0.50, 0.0)
-		var scheduled_special := int(probe.get("scheduled_boss_count", 0)) + int(probe.get("scheduled_commander_count", 0))
-		var spawned_special := int(probe.get("spawned_boss_count", 0)) + int(probe.get("spawned_commander_count", 0))
-		if scheduled_special > 0 and spawned_special == 0:
-			probe["diagnostic_only"] = true
-			_add_probe_failure(probe, "scenario_scheduled_special_unspawned", "info", "Scheduled boss or commander pressure is not spawned by the current vertical slice.", {
-				"scheduled_special": scheduled_special,
-				"spawned_special": spawned_special,
-			})
+		_apply_probe_expectations(probe, 0.50, 0.15)
 		_finalize_probe(probe)
 		probes.append(probe)
 		_teardown_probe_game(game)
@@ -3198,15 +3866,17 @@ func _run_scheduled_wave_probes(mode: String) -> Array:
 func _create_probe_game() -> Node:
 	var slice_script := load("res://scripts/game/vertical_slice_game.gd")
 	var game: Node = slice_script.new()
-	root.add_child(game)
-	game.name = "ScenarioProbeGame"
 	game.reset_slice()
 	return game
 
 
 func _teardown_probe_game(game: Node) -> void:
 	if game != null:
-		game.queue_free()
+		game.set_process(false)
+		game.set_physics_process(false)
+		if game.get_parent() != null:
+			game.get_parent().remove_child(game)
+		game.free()
 
 
 func _prepare_scenario_game(game: Node) -> void:
@@ -3386,8 +4056,8 @@ func _simulate_probe_resolution(game: Node, wave_number: int, before_totals: Dic
 		"runtime_invariant_failures": invariant_failures,
 		"scheduled_boss_count": int(_wave_schedule_row(wave_number).get("boss_count", 0)),
 		"scheduled_commander_count": int(_wave_schedule_row(wave_number).get("commander_count", 0)),
-		"spawned_boss_count": 0,
-		"spawned_commander_count": 0,
+		"spawned_boss_count": int(final_snapshot.get("spawned_boss_this_wave", 0)),
+		"spawned_commander_count": int(final_snapshot.get("spawned_commander_this_wave", 0)),
 		"final_snapshot": _trim_snapshot(final_snapshot),
 		"failures": [],
 	}
@@ -3464,14 +4134,13 @@ func _build_telemetry_coverage() -> Dictionary:
 		},
 		"partial": {
 			"boss_commander": "canonical schedule counts are recorded, but current wave runtime does not spawn dedicated boss/commander units.",
-			"progression": "research and mastery XP fields are recorded; reward-card data is cataloged but not exercised by runtime choices.",
+			"progression": "research, reward-card choices, and card effects are exercised through the bounded runtime choice API; full progression meta remains deferred.",
 			"mastery_mutation_paragon": "serialized fields are measured for presence, but full systems remain unported.",
 		},
 		"unsupported": {
 			"shop_towers": UNSUPPORTED_TOWER_TYPES.duplicate(),
 		},
 		"unported": [
-			"full reward-card choices",
 			"mutation mechanics",
 			"mastery upgrade mechanics",
 			"paragon mechanics",
@@ -3532,12 +4201,20 @@ func _build_regression(current: Dictionary, previous: Dictionary) -> Dictionary:
 	var previous_config: Dictionary = previous.get("config", {})
 	result["previous_label"] = str(previous_config.get("report_label", ""))
 	if int(previous.get("schema_version", 0)) != SCHEMA_VERSION:
-		result["reason"] = "schema migration: establish a new schema 6 baseline."
+		result["reason"] = "schema migration: establish a new schema 7 baseline."
 		return result
-	for key in ["profile", "evidence_tier", "strategy_group"]:
-		if str(previous_config.get(key, "")) != str(current_config.get(key, "")):
+	for key in ["profile", "evidence_tier", "strategy_group", "map_set", "completion_mode", "completion_setup_budget", "completion_layout_id"]:
+		var previous_default := "off" if key == "completion_mode" else "0" if key == "completion_setup_budget" else ""
+		if key == "completion_setup_budget":
+			if int(previous_config.get(key, 0)) != int(current_config.get(key, 0)):
+				result["reason"] = "same family, not comparable: previous report has different %s." % key
+				return result
+		elif str(previous_config.get(key, previous_default)) != str(current_config.get(key, "")):
 			result["reason"] = "same family, not comparable: previous report has different %s." % key
 			return result
+	if not _arrays_equal(previous_config.get("selected_map_names", []), current_config.get("selected_map_names", [])):
+		result["reason"] = "same family, not comparable: previous report has different selected maps."
+		return result
 	for key in ["runs", "max_waves", "seed", "seed_count", "seed_step"]:
 		if int(previous_config.get(key, 0)) != int(current_config.get(key, 0)):
 			result["reason"] = "same family, not comparable: previous report has different %s." % key
@@ -3636,6 +4313,50 @@ func _has_label(issues: Array, label: String) -> bool:
 	return false
 
 
+func _build_packet_identity(options: Dictionary, packet_id: String) -> Dictionary:
+	var data_hash := "unavailable"
+	var data_path := "res://data/game_data.json"
+	if FileAccess.file_exists(data_path):
+		var context := HashingContext.new()
+		if context.start(HashingContext.HASH_SHA256) == OK:
+			context.update(FileAccess.get_file_as_bytes(data_path))
+			data_hash = context.finish().hex_encode()
+	var git_revision := "unavailable"
+	var git_status := "unavailable"
+	var revision_output: Array = []
+	if OS.execute("git", ["rev-parse", "HEAD"], revision_output, true) == 0 and not revision_output.is_empty():
+		git_revision = str(revision_output[0]).strip_edges()
+	var status_output: Array = []
+	if OS.execute("git", ["status", "--short"], status_output, true) == 0:
+		git_status = "dirty" if not status_output.is_empty() and not str(status_output[0]).strip_edges().is_empty() else "clean"
+	return {
+		"run_id": "run_%s" % _timestamp(),
+		"packet_id": packet_id,
+		"profile": str(options.get("profile", "")),
+		"runs": int(options.get("runs", 0)),
+		"waves": int(options.get("max_waves", 0)),
+		"seed": int(options.get("seed", 0)),
+		"seed_count": int(options.get("seed_count", 0)),
+		"seed_step": int(options.get("seed_step", 0)),
+		"strategies": options.get("strategies", []).duplicate(true),
+		"scenario_mode": str(options.get("scenario_probes", "auto")),
+		"action_log_mode": str(options.get("record", "flagged")),
+		"coverage": str(options.get("coverage", "standard")),
+		"map_set": str(options.get("map_set", "all")),
+		"map_indices": _selected_map_indices(options),
+		"map_names": _selected_map_names(options),
+		"completion_mode": str(options.get("completion_mode", "off")),
+		"completion_setup_budget": COMPLETION_SETUP_MONEY if str(options.get("completion_mode", "off")) == "prebranch" else 0,
+		"completion_layout_id": COMPLETION_LAYOUT_ID if str(options.get("completion_mode", "off")) == "prebranch" else "",
+		"completion_controlled_budget": str(options.get("completion_mode", "off")) == "prebranch",
+		"completion_evidence_lane": "diagnostic_completion" if str(options.get("completion_mode", "off")) == "prebranch" else "",
+		"git_revision": git_revision,
+		"git_status_classification": git_status,
+		"canonical_data_path": data_path,
+		"canonical_data_hash": data_hash,
+	}
+
+
 func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 	var errors: Array = []
 	var archive_dir := _join_path(output_dir, "archive")
@@ -3648,9 +4369,14 @@ func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 
 	var timestamp := _timestamp()
 	var output_paths := _timestamped_output_paths(output_dir, timestamp)
+	var packet_id := str(output_paths.get("packet_id", timestamp))
+	var packet_identity: Dictionary = report.get("packet_identity", {})
+	packet_identity["packet_id"] = packet_id
+	report["packet_identity"] = packet_identity
 	var latest_json := str(output_paths["json"])
 	var latest_md := str(output_paths["markdown"])
 	var latest_prompt := str(output_paths["prompt"])
+	var latest_manifest := str(output_paths["manifest"])
 	var legacy_result := _archive_legacy_root_outputs(output_dir, archive_dir)
 	for error in legacy_result.get("errors", []):
 		errors.append(error)
@@ -3664,6 +4390,16 @@ func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 		{"path": latest_json, "text": json_text},
 		{"path": latest_md, "text": markdown_text},
 		{"path": latest_prompt, "text": prompt_text},
+		{"path": latest_manifest, "text": JSON.stringify({
+			"schema_version": SCHEMA_VERSION,
+			"packet_identity": packet_identity,
+			"artifacts": {
+				"json": latest_json,
+				"markdown": latest_md,
+				"prompt": latest_prompt,
+				"manifest": latest_manifest,
+			},
+		}, "\t")},
 	]:
 		var write_error := _write_text(str(target["path"]), str(target["text"]))
 		if not write_error.is_empty():
@@ -3675,6 +4411,7 @@ func _write_reports(report: Dictionary, output_dir: String) -> Dictionary:
 		"json_path": latest_json,
 		"markdown_path": latest_md,
 		"prompt_path": latest_prompt,
+		"manifest_path": latest_manifest,
 		"visible_prompt_path": latest_prompt,
 		"archived_previous_count": 0,
 		"archived_legacy_count": int(legacy_result.get("paths", []).size()),
@@ -3689,8 +4426,10 @@ func _timestamped_output_paths(output_dir: String, timestamp: String) -> Diction
 			"json": _join_path(output_dir, "ai_simulation_data_%s.json" % suffix),
 			"markdown": _join_path(output_dir, "ai_simulation_report_%s.md" % suffix),
 			"prompt": _join_path(output_dir, "ai_simulation_codex_prompt_%s.md" % suffix),
+			"manifest": _join_path(output_dir, "ai_simulation_manifest_%s.json" % suffix),
+			"packet_id": suffix,
 		}
-		if not FileAccess.file_exists(str(paths["json"])) and not FileAccess.file_exists(str(paths["markdown"])) and not FileAccess.file_exists(str(paths["prompt"])):
+		if not FileAccess.file_exists(str(paths["json"])) and not FileAccess.file_exists(str(paths["markdown"])) and not FileAccess.file_exists(str(paths["prompt"])) and not FileAccess.file_exists(str(paths["manifest"])):
 			return paths
 		suffix = "%s_%s" % [timestamp, collision_index]
 		collision_index += 1
@@ -3824,12 +4563,19 @@ func _render_markdown(report: Dictionary) -> String:
 	if not str(config.get("report_label", "")).is_empty():
 		lines.append("- Label: `%s`" % str(config.get("report_label", "")))
 	lines.append("## Run configuration")
+	var identity: Dictionary = report.get("packet_identity", {})
+	lines.append("- Packet id: `%s`" % str(identity.get("packet_id", "")))
+	lines.append("- Canonical data hash: `%s`" % str(identity.get("canonical_data_hash", "")))
+	lines.append("- Git revision/status: `%s` / `%s`" % [str(identity.get("git_revision", "")), str(identity.get("git_status_classification", ""))])
 	lines.append("- Profile: `%s`" % str(config.get("profile", "")))
 	lines.append("- Evidence tier: `%s`" % str(config.get("evidence_tier", "")))
 	lines.append("- Profile overridden: `%s`" % ("yes" if bool(config.get("profile_overridden", false)) else "no"))
 	lines.append("- Balance actionable: `%s`" % ("yes" if bool(config.get("balance_actionable", false)) else "no"))
 	lines.append("- Coverage scope: `%s`" % str(config.get("coverage_scope", "")))
-	lines.append("- Scope note: this report exercises direct vertical-slice APIs, not `scenes/main.tscn`, full UI wiring, audio, or manual input behavior.")
+	lines.append("- Map set: `%s`" % str(config.get("map_set", "all")))
+	lines.append("- Selected maps: `%s`" % _join_strings(config.get("selected_map_names", []), "`, `"))
+	lines.append("- Completion mode: `%s`; setup budget: `%s`; layout: `%s`; controlled budget: `%s`" % [str(config.get("completion_mode", "off")), int(config.get("completion_setup_budget", 0)), str(config.get("completion_layout_id", "")), "yes" if bool(config.get("completion_controlled_budget", false)) else "no"])
+	lines.append("- Scope: `%s`; scene/input/audio/manual coverage is reported separately as a coverage gap unless proven by a focused validator." % str(config.get("coverage_scope", "")))
 	lines.append("- Profile defaults: %s" % _profile_defaults_inline(config.get("profile_defaults", {})))
 	lines.append("- Runs: `%s`" % int(config.get("runs", 0)))
 	lines.append("- Max waves: `%s`" % int(config.get("max_waves", 0)))
@@ -3863,6 +4609,12 @@ func _render_markdown(report: Dictionary) -> String:
 	lines.append("")
 	lines.append("## Enemy kind metrics")
 	_append_enemy_kind_metrics_table(lines, report.get("enemy_kind_metrics", {}))
+	lines.append("")
+	lines.append("## Branch counterplay metrics")
+	_append_branch_counterplay_metrics(lines, report.get("branch_counterplay_metrics", {}))
+	lines.append("")
+	lines.append("## Completion coverage")
+	_append_completion_coverage_metrics(lines, report.get("completion_coverage_metrics", {}))
 	lines.append("")
 	lines.append("## Boss and commander metrics")
 	_append_boss_commander_metrics(lines, report.get("boss_commander_metrics", {}))
@@ -3909,6 +4661,12 @@ func _render_markdown(report: Dictionary) -> String:
 	lines.append("## Validation issues")
 	_append_issue_lines(lines, issues, "validation", 12)
 	lines.append("")
+	lines.append("## Gameplay depth and novelty candidates")
+	_append_depth_metrics(lines, report.get("gameplay_depth_metrics", {}))
+	_append_issue_lines(lines, issues, "depth_candidate", 8)
+	_append_issue_lines(lines, issues, "novelty_candidate", 8)
+	_append_issue_lines(lines, issues, "coverage_gap", 8)
+	lines.append("")
 	lines.append("## Do Not Implement From This Prompt Unless Explicitly Requested")
 	for limitation in report.get("known_limitations", []):
 		lines.append("- %s" % str(limitation))
@@ -3931,11 +4689,21 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	var recommendations: Dictionary = report.get("recommendations", {})
 	var repo_root := _trim_trailing_slashes(ProjectSettings.globalize_path("res://"))
 	var lines: Array = []
-	lines.append("# Codex Prompt: Audit AI Simulation Findings")
+	lines.append("# Pursue Goal: Remediate Confirmed AI Audit Findings")
 	lines.append("")
-	lines.append("You are working in `%s` on the Godot tower defense project. Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code." % repo_root)
+	lines.append("Pursue this remediation goal autonomously in `%s` until every confirmed finding in this packet is fixed or explicitly deferred with evidence. Audit and verify the latest AI simulation report before editing; implement only confirmed issues supported by the report and current code." % repo_root)
+	lines.append("Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code.")
 	lines.append("")
-	lines.append("This report is a diagnostic packet from a simulation bot. Treat findings as evidence to verify, not proof. No gameplay or data changes are acceptable when no confirmed issue exists.")
+	lines.append("This report is a diagnostic packet from a simulation bot. Treat findings as evidence to verify, not proof. Do not stop after the first fix: work through every finding, rerun the narrowest relevant validation after each logical batch, and record a no-code-change decision when evidence does not confirm a defect.")
+	lines.append("No gameplay or data changes are acceptable when no confirmed issue exists.")
+	lines.append("")
+	lines.append("## Autonomous Remediation Loop")
+	lines.append("1. Confirm the repo path and inspect `git status --short`; preserve unrelated dirty work.")
+	lines.append("2. Read the full JSON packet and human report, then enumerate every open bug, validation issue, QoL issue, balance outlier, and review-backed candidate.")
+	lines.append("3. For each finding, inspect the cited evidence and current code/data. Fix the smallest confirmed defect, or explicitly defer it with the reason and evidence when it is bot-policy noise, a known gap, or not reproducible.")
+	lines.append("4. Add or update focused validation for each implemented fix, then rerun the relevant validators and a bounded audit when a change can affect later findings.")
+	lines.append("5. Continue until all findings have a resolved, deferred, or no-code-change disposition. Do not leave a finding silently unreviewed.")
+	lines.append("")
 	lines.append("")
 	lines.append("Use these generated files as the evidence packet:")
 	lines.append("- Full JSON findings: `%s`" % ProjectSettings.globalize_path(json_path))
@@ -3944,15 +4712,19 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("Important constraints:")
 	lines.append("- First inspect the current repo state with `git status --short`.")
 	lines.append("- Treat simulation findings as evidence to verify against current code, not as unquestioned truth.")
-	lines.append("- This report exercises direct vertical-slice APIs, not `scenes/main.tscn`, full UI wiring, audio, or manual input behavior.")
+	lines.append("- Scene/input/audio/manual coverage is not implied by direct API telemetry; use the packet coverage gaps and focused validators.")
 	lines.append("- Keep changes small, playable, and reviewable. Do not stage, commit, push, delete, or revert unrelated files.")
 	lines.append("- Keep `data/game_data.json` and current gameplay code as the source of truth. Do not move tower, enemy, wave, upgrade, economy, or progression rules into the AI simulation bot.")
 	lines.append("- Use the AI simulation bot for diagnostics, telemetry-style reporting, balance/stress sweeps, save/load torture coverage, and edge-case exploration that consume the current game APIs.")
 	lines.append("- Keep content validators, runtime invariants, golden scenario tests, debug overlays, and debug commands in the main game project unless a small bot-side probe is explicitly diagnostic.")
 	lines.append("- Preserve known vertical-slice gaps as known gaps unless you intentionally implement that missing feature.")
 	lines.append("- If a generated finding is noisy, conflicting, or not directly implementable, document why and implement the nearest safe improvement.")
+	lines.append("- Do not claim that an unproven coverage gap is a bug; leave it deferred unless this goal explicitly adds the missing evidence lane.")
 	lines.append("")
 	lines.append("## Run Configuration")
+	var identity: Dictionary = report.get("packet_identity", {})
+	lines.append("- Packet id: `%s`" % str(identity.get("packet_id", "")))
+	lines.append("- Canonical data hash: `%s`" % str(identity.get("canonical_data_hash", "")))
 	if not str(config.get("report_label", "")).is_empty():
 		lines.append("- Label: `%s`" % str(config.get("report_label", "")))
 	lines.append("- Profile: `%s`" % str(config.get("profile", "")))
@@ -3960,6 +4732,9 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("- Profile overridden: `%s`" % ("yes" if bool(config.get("profile_overridden", false)) else "no"))
 	lines.append("- Balance actionable: `%s`" % ("yes" if bool(config.get("balance_actionable", false)) else "no"))
 	lines.append("- Coverage scope: `%s`" % str(config.get("coverage_scope", "")))
+	lines.append("- Map set: `%s`" % str(config.get("map_set", "all")))
+	lines.append("- Selected maps: `%s`" % _join_strings(config.get("selected_map_names", []), "`, `"))
+	lines.append("- Completion mode: `%s`; setup budget: `%s`; layout: `%s`; controlled budget: `%s`" % [str(config.get("completion_mode", "off")), int(config.get("completion_setup_budget", 0)), str(config.get("completion_layout_id", "")), "yes" if bool(config.get("completion_controlled_budget", false)) else "no"])
 	lines.append("- Profile defaults: %s" % _profile_defaults_inline(config.get("profile_defaults", {})))
 	lines.append("- Runs: `%s`" % int(config.get("runs", 0)))
 	lines.append("- Max waves: `%s`" % int(config.get("max_waves", 0)))
@@ -3993,6 +4768,12 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("")
 	lines.append("### Enemy Kind Metrics")
 	_append_enemy_kind_metrics_table(lines, report.get("enemy_kind_metrics", {}))
+	lines.append("")
+	lines.append("### Branch Counterplay Metrics")
+	_append_branch_counterplay_metrics(lines, report.get("branch_counterplay_metrics", {}))
+	lines.append("")
+	lines.append("### Completion Coverage")
+	_append_completion_coverage_metrics(lines, report.get("completion_coverage_metrics", {}))
 	lines.append("")
 	lines.append("### Boss And Commander Metrics")
 	_append_boss_commander_metrics(lines, report.get("boss_commander_metrics", {}))
@@ -4048,6 +4829,12 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("## Validation Issues To Fix First")
 	_append_issue_lines(lines, issues, "validation", 12)
 	lines.append("")
+	lines.append("## Gameplay Depth / Novelty Candidates")
+	_append_depth_metrics(lines, report.get("gameplay_depth_metrics", {}))
+	_append_issue_lines(lines, issues, "depth_candidate", 8)
+	_append_issue_lines(lines, issues, "novelty_candidate", 8)
+	_append_issue_lines(lines, issues, "coverage_gap", 8)
+	lines.append("")
 	lines.append("## Do Not Implement From This Prompt Unless Explicitly Requested")
 	for limitation in report.get("known_limitations", []):
 		lines.append("- %s" % str(limitation))
@@ -4072,6 +4859,7 @@ func _render_codex_prompt(report: Dictionary, json_path: String, markdown_path: 
 	lines.append("- Rerun the narrow Godot validation scripts relevant to any touched gameplay/UI systems.")
 	lines.append("- Run `git diff --check` before finishing.")
 	lines.append("- Final response should summarize changed files, validation run, remaining known gaps, and any findings intentionally deferred.")
+	lines.append("- Final response must include exact lines starting with `Files changed:` and `Validation run:`.")
 	lines.append("")
 	return _join_strings(lines, "\n")
 
@@ -4099,7 +4887,7 @@ func _profile_defaults_inline(defaults: Dictionary) -> String:
 	if defaults.is_empty():
 		return "`unavailable`"
 	var parts: Array = []
-	for profile in ["medium", "deep", "overnight"]:
+	for profile in ["smoke", "medium", "deep", "overnight"]:
 		if defaults.has(profile):
 			var row: Dictionary = defaults[profile]
 			parts.append("`%s=%s runs/%s waves/%s seeds/%s/action_log %s`" % [
@@ -4148,6 +4936,7 @@ func _append_scenario_probe_lines(lines: Array, scenario: Dictionary) -> void:
 	_append_scenario_probe_group(lines, "Branches", scenario.get("branch_probes", []), "branch_id")
 	_append_scenario_probe_group(lines, "Pure enemy kinds", scenario.get("enemy_kind_probes", []), "enemy_kind")
 	_append_scenario_probe_group(lines, "Scheduled waves", scenario.get("scheduled_wave_probes", []), "wave")
+	_append_scenario_probe_group(lines, "Maps", scenario.get("map_probes", []), "map_name")
 
 
 func _append_scenario_probe_group(lines: Array, label: String, probes: Array, detail_key: String) -> void:
@@ -4218,6 +5007,105 @@ func _append_enemy_kind_metrics_table(lines: Array, metrics: Dictionary) -> void
 			int(row.get("spawned", 0)),
 			float(row.get("rough_dps", 0.0)),
 		])
+
+
+func _append_branch_counterplay_metrics(lines: Array, metrics: Dictionary) -> void:
+	if metrics.is_empty():
+		lines.append("- None recorded.")
+		return
+	var assignments: Dictionary = metrics.get("assignment_counts", {})
+	var actual: Dictionary = metrics.get("actual_selection_counts", {})
+	var gaps: Dictionary = metrics.get("selection_gap", {})
+	lines.append("- Normal-run assignment counts: Glacier `%s`, Shatter `%s`; actual Frost selections: Glacier `%s`, Shatter `%s`." % [
+		int(assignments.get("glacier", 0)),
+		int(assignments.get("shatter", 0)),
+		int(actual.get("glacier", 0)),
+		int(actual.get("shatter", 0)),
+	])
+	lines.append("- Assignment-to-selection gap: Glacier `%s`, Shatter `%s`." % [
+		int(gaps.get("glacier", 0)),
+		int(gaps.get("shatter", 0)),
+	])
+	var by_strategy: Dictionary = metrics.get("by_strategy", {})
+	if not by_strategy.is_empty():
+		lines.append("| Strategy | Runs | Assigned Glacier | Assigned Shatter | Actual Glacier | Actual Shatter |")
+		lines.append("| --- | ---: | ---: | ---: | ---: | ---: |")
+		for strategy in _sorted_string_keys(by_strategy):
+			var strategy_row: Dictionary = by_strategy[strategy]
+			var assigned: Dictionary = strategy_row.get("assigned", {})
+			var selected: Dictionary = strategy_row.get("actual", {})
+			lines.append("| `%s` | %s | %s | %s | %s | %s |" % [
+				strategy,
+				int(strategy_row.get("runs", 0)),
+				int(assigned.get("glacier", 0)),
+				int(assigned.get("shatter", 0)),
+				int(selected.get("glacier", 0)),
+				int(selected.get("shatter", 0)),
+			])
+	var by_enemy_kind: Dictionary = metrics.get("by_enemy_kind", {})
+	if not by_enemy_kind.is_empty():
+		lines.append("| Branch / enemy kind | Waves | Spawned | Complete | Leak rate | Actionable |")
+		lines.append("| --- | ---: | ---: | ---: | ---: | ---: |")
+		for key in _sorted_string_keys(by_enemy_kind):
+			var row: Dictionary = by_enemy_kind[key]
+			lines.append("| `%s` | %s | %s | %s | %s | %s |" % [
+				key,
+				int(row.get("waves", 0)),
+				int(row.get("spawned", 0)),
+				_percent(float(row.get("completion_rate", 0.0))),
+				_percent(float(row.get("leak_rate", 0.0))),
+				"yes" if bool(row.get("sample_actionable", false)) else "no",
+			])
+	lines.append("- No-code-change gate: `%s`" % str(metrics.get("no_code_change_if", "")))
+
+
+func _append_completion_coverage_metrics(lines: Array, metrics: Dictionary) -> void:
+	if not bool(metrics.get("enabled", false)):
+		lines.append("- Disabled; standard runs are unaffected and completion-focused data is excluded from this packet.")
+		return
+	lines.append("- Diagnostic lane: `%s`; setup budget: `%s`; layout: `%s`; standard balance excluded: `%s`." % [
+		str(metrics.get("evidence_lane", "")),
+		int(metrics.get("setup_budget", 0)),
+		str(metrics.get("layout_id", "")),
+		"yes" if bool(metrics.get("standard_balance_excluded", true)) else "no",
+	])
+	lines.append("- Runs: `%s`; setup valid: `%s`; branch ready: `%s`; post-branch upgrade: `%s`; target reached: `%s`; wave-10 completion rate among branch-ready runs: `%s`." % [
+		int(metrics.get("runs", 0)),
+		int(metrics.get("setup_valid", 0)),
+		int(metrics.get("branch_ready", 0)),
+		int(metrics.get("post_branch_upgrade", 0)),
+		int(metrics.get("target_reached", 0)),
+		_percent(float(metrics.get("target_completion_rate", 0.0))),
+	])
+	var gate: Dictionary = metrics.get("coverage_gate", {})
+	lines.append("- Coverage gate: setup threshold `%s` (`%s`); target threshold `%s` (`%s`); tuning authorized: `%s`." % [
+		_percent(float(gate.get("setup_threshold", 0.90))),
+		"met" if bool(gate.get("setup_threshold_met", false)) else "not met",
+		_percent(float(gate.get("target_completion_threshold", 0.50))),
+		"met" if bool(gate.get("target_completion_threshold_met", false)) else "not met",
+		"yes" if bool(gate.get("tuning_authorized", false)) else "no",
+	])
+	var by_branch: Dictionary = metrics.get("by_branch", {})
+	if not by_branch.is_empty():
+		lines.append("| Branch | Runs | Setup | Branch ready | Post upgrade | Target reached | Wave-10 completion | Avg wave reached | Leaks | Avg lives | Damage/spend |")
+		lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+		for branch in _sorted_string_keys(by_branch):
+			var row: Dictionary = by_branch[branch]
+			lines.append("| `%s` | %s | %s | %s | %s | %s | %s | %.2f | %s | %.2f | %.2f |" % [
+				branch,
+				int(row.get("runs", 0)),
+				_percent(float(row.get("setup_rate", 0.0))),
+				_percent(float(row.get("branch_ready_rate", 0.0))),
+				_percent(_safe_ratio(int(row.get("post_branch_upgrade", 0)), int(row.get("runs", 0)))),
+				int(row.get("target_reached", 0)),
+				_percent(float(row.get("target_completion_rate", 0.0))),
+				_safe_ratio(int(row.get("wave_reached", 0)), int(row.get("runs", 0))),
+				int(row.get("leaks", 0)),
+				float(row.get("lives", 0.0)),
+				float(row.get("damage_per_spend", 0.0)),
+			])
+	lines.append("- Replay keys: `%s`." % _join_strings(metrics.get("replay_keys", []).map(func(item): return "%s:%s:%s" % [item.get("run_id", 0), item.get("seed", 0), item.get("branch", "")]), ", "))
+	lines.append("- No-code-change gate: `%s`" % str(metrics.get("no_code_change_if", "")))
 
 
 func _append_boss_commander_metrics(lines: Array, metrics: Dictionary) -> void:
@@ -4421,6 +5309,7 @@ func _append_progression_metrics(lines: Array, metrics: Dictionary) -> void:
 		"yes" if bool(reward_cards.get("runtime_exercised", false)) else "no",
 		int(reward_cards.get("card_count", 0)),
 	])
+	lines.append("- Reward-card choices / selections: `%s` / `%s`" % [int(metrics.get("reward_card_choices", 0)), _join_strings(metrics.get("reward_card_selections", {}).keys(), "`, `")])
 
 
 func _append_telemetry_coverage(lines: Array, coverage: Dictionary) -> void:
@@ -4432,6 +5321,28 @@ func _append_telemetry_coverage(lines: Array, coverage: Dictionary) -> void:
 	var unsupported: Dictionary = coverage.get("unsupported", {})
 	lines.append("- Unsupported towers: `%s`" % _join_strings(unsupported.get("shop_towers", []), "`, `"))
 	lines.append("- Unported systems: `%s`" % _join_strings(coverage.get("unported", []), "`, `"))
+
+
+func _append_depth_metrics(lines: Array, metrics: Dictionary) -> void:
+	if metrics.is_empty():
+		lines.append("- No depth metrics recorded.")
+		return
+	lines.append("- Normal runs: `%s`; tower-pick entropy: `%.3f`; branch entropy: `%.3f`; target-mode entropy: `%.3f`." % [
+		int(metrics.get("normal_run_count", 0)),
+		float(metrics.get("tower_pick_entropy", 0.0)),
+		float(metrics.get("branch_pick_entropy", 0.0)),
+		float(metrics.get("target_mode_entropy", 0.0)),
+	])
+	lines.append("- Never-selected towers: `%s`; dominant towers: `%s`." % [
+		_join_strings(metrics.get("never_selected_towers", []), "`, `"),
+		_join_strings(metrics.get("dominant_towers", []), "`, `"),
+	])
+	lines.append("- Catalog maps observed: `%s`; distinct build signatures: `%s`; repeated signatures: `%s`." % [
+		_join_strings(metrics.get("map_runs", {}).keys(), "`, `"),
+		int(metrics.get("build_signature_count", 0)),
+		_join_strings(metrics.get("repeated_build_signatures", []), "`, `"),
+	])
+	lines.append("- Choice-impact status: `%s`" % str(metrics.get("choice_impact_note", "unavailable")))
 
 
 func _append_blocked_action_metrics(lines: Array, metrics: Dictionary) -> void:

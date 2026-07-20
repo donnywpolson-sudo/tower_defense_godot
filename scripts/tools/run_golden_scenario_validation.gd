@@ -56,7 +56,7 @@ func _check_opening_wave_golden(game: Node, result: Dictionary) -> void:
 func _check_upgrade_restore_mid_combat_golden(game: Node, slice_script: Script, result: Dictionary) -> void:
 	game.reset_slice()
 	game.money = 1000
-	_record_check(result, "upgrade_restore_place_archer", game.place_archer(Vector2(300, 243)), game.snapshot())
+	_record_check(result, "upgrade_restore_place_supported_cannon", game.place_selected_tower(Vector2(300, 243), "cannon"), game.snapshot())
 	_record_check(result, "upgrade_restore_first_upgrade", game.upgrade_selected_tower(), _selected_tower_state(game))
 	var branch_options: Array = game.upgrade_panel_snapshot().get("branch_options", [])
 	var branch_id := str(branch_options[0].get("id", "")) if not branch_options.is_empty() else ""
@@ -101,11 +101,4 @@ func _selected_tower_state(game: Node) -> Dictionary:
 
 
 func _record_check(result: Dictionary, label: String, passed: bool, detail: Variant) -> void:
-	result["checks"].append({
-		"label": label,
-		"passed": passed,
-		"detail": detail,
-	})
-	if not passed:
-		result["ok"] = false
-		result["errors"].append("%s failed: %s" % [label, str(detail)])
+	ValidationHarness.record_check(result, label, passed, detail)

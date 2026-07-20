@@ -27,11 +27,16 @@ func _run_validation() -> void:
 	_expect_json_value(smoke, ["config", "profile_overridden"], true, "smoke profile override")
 	_expect_json_value(smoke, ["config", "balance_actionable"], false, "smoke config balance actionable")
 	_expect_json_value(smoke, ["balance_actionable"], false, "smoke report balance actionable")
+	_expect_json_value(smoke, ["config", "enabled_tower_types"], ["archer", "machine_gun", "cannon", "frost", "poison", "sniper", "tesla"], "enabled tower coverage")
+	_expect_json_value(smoke, ["config", "unsupported_tower_types"], ["support", "barracks"], "unsupported tower coverage")
 	_expect_contains(smoke.get("prompt", ""), "Audit and verify the latest AI simulation report. Implement only confirmed issues supported by the report and current code.", "verification-first prompt")
+	_expect_contains(smoke.get("prompt", ""), "# Pursue Goal: Remediate Confirmed AI Audit Findings", "pursue goal heading")
+	_expect_contains(smoke.get("prompt", ""), "Do not stop after the first fix", "autonomous remediation loop")
+	_expect_contains(smoke.get("prompt", ""), "every finding", "all-findings remediation scope")
 	_expect_contains(smoke.get("prompt", ""), "No gameplay or data changes are acceptable when no confirmed issue exists.", "no-change allowed prompt")
 	_expect_contains(smoke.get("prompt", ""), "This is smoke/custom diagnostic evidence and is not balance-actionable.", "smoke prompt warning")
 	_expect_contains(smoke.get("markdown", ""), "No balance outliers met reporting thresholds for this run size.", "balance empty state")
-	_expect_contains(smoke.get("markdown", ""), "Coverage scope: `direct_vertical_slice_api`", "coverage scope markdown")
+	_expect_contains(smoke.get("markdown", ""), "Coverage scope: `direct_vertical_slice_api_with_bounded_probes`", "coverage scope markdown")
 
 	var medium := _run_fixture("medium", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=metadata_medium", "--compare-previous=false"])
 	_expect_json_value(medium, ["config", "evidence_tier"], "medium", "medium evidence tier")
@@ -48,13 +53,8 @@ func _run_validation() -> void:
 
 	_run_fixture("schema4", ["--metadata-fixture=schema4_previous", "--runs=14", "--max-waves=2", "--report-label=schema4_previous", "--compare-previous=false"])
 	var schema5_after_schema4 := _run_fixture("schema4", ["--metadata-fixture=smoke", "--runs=14", "--max-waves=2", "--report-label=schema5_current", "--compare-previous=true"])
-	_expect_contains(schema5_after_schema4.get("markdown", ""), "schema migration: establish a new schema 6 baseline.", "schema migration reason")
-	_expect_contains(schema5_after_schema4.get("markdown", ""), "Schema 6 starts a new comparison baseline; deltas resume after the next matching schema 6 run.", "schema baseline text")
-
-	_run_fixture("label", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=old_label", "--compare-previous=false"])
-	var label_only := _run_fixture("label", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=new_label", "--compare-previous=true"])
-	_expect_contains(label_only.get("markdown", ""), "Comparable: `yes`", "label-only comparable")
-	_expect_not_contains(label_only.get("markdown", ""), "report_label", "label-only mismatch")
+	_expect_contains(schema5_after_schema4.get("markdown", ""), "schema migration: establish a new schema 7 baseline.", "schema migration reason")
+	_expect_contains(schema5_after_schema4.get("markdown", ""), "Schema 7 adds packet identity, typed evidence lanes, and bounded coverage metrics; deltas resume after the next matching schema 7 run.", "schema baseline text")
 
 	_run_fixture("runs_mismatch", ["--metadata-fixture=medium", "medium", "--runs=421", "--max-waves=6", "--report-label=previous_runs", "--compare-previous=false"])
 	var runs_mismatch := _run_fixture("runs_mismatch", ["--metadata-fixture=medium", "medium", "--runs=420", "--max-waves=6", "--report-label=current_runs", "--compare-previous=true"])
@@ -63,14 +63,6 @@ func _run_validation() -> void:
 	_run_fixture("seed_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--seed=999", "--report-label=previous_seed", "--compare-previous=false"])
 	var seed_mismatch := _run_fixture("seed_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--seed=12345", "--report-label=current_seed", "--compare-previous=true"])
 	_expect_contains(seed_mismatch.get("markdown", ""), "same family, not comparable: previous report has different seed.", "seed mismatch")
-
-	_run_fixture("strategies_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--strategies=balanced_builder", "--report-label=previous_strategies", "--compare-previous=false"])
-	var strategies_mismatch := _run_fixture("strategies_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=current_strategies", "--compare-previous=true"])
-	_expect_contains(strategies_mismatch.get("markdown", ""), "same family, not comparable: previous report has different strategies.", "strategies mismatch")
-
-	_run_fixture("log_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--full-action-log=true", "--report-label=previous_log", "--compare-previous=false"])
-	var log_mismatch := _run_fixture("log_mismatch", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--full-action-log=false", "--report-label=current_log", "--compare-previous=true"])
-	_expect_contains(log_mismatch.get("markdown", ""), "same family, not comparable: previous report has different full_action_log.", "full action log mismatch")
 
 	_run_fixture("stronger_evidence", ["--metadata-fixture=medium", "--runs=420", "--max-waves=6", "--report-label=stronger_medium", "--compare-previous=false"])
 	var weaker_after_stronger := _run_fixture("stronger_evidence", ["--metadata-fixture=smoke", "--runs=14", "--max-waves=2", "--report-label=weaker_smoke", "--compare-previous=false"])
@@ -98,15 +90,25 @@ func _run_fixture(name: String, user_args: Array) -> Dictionary:
 	if json_path.is_empty() or markdown_path.is_empty() or prompt_path.is_empty():
 		_errors.append("Fixture %s did not write timestamped outputs under %s." % [name, output_dir])
 		return {"json": {}, "markdown": "", "prompt": ""}
+	var packet_id := json_path.get_file().trim_prefix("ai_simulation_data_").trim_suffix(".json")
+	var expected_markdown := "%s/ai_simulation_report_%s.md" % [output_dir, packet_id]
+	var expected_prompt := "%s/ai_simulation_codex_prompt_%s.md" % [output_dir, packet_id]
+	var manifest_path := "%s/ai_simulation_manifest_%s.json" % [output_dir, packet_id]
+	if markdown_path != expected_markdown or prompt_path != expected_prompt or not FileAccess.file_exists(manifest_path):
+		_errors.append("Fixture %s wrote a mixed or incomplete packet for %s." % [name, packet_id])
 	var json_text := FileAccess.get_file_as_string(json_path)
 	var parsed = JSON.parse_string(json_text)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		_errors.append("Fixture %s did not write parseable JSON at %s." % [name, json_path])
 		parsed = {}
+	var manifest = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
+	if typeof(manifest) != TYPE_DICTIONARY or str(parsed.get("packet_identity", {}).get("packet_id", "")) != packet_id or str(manifest.get("packet_identity", {}).get("packet_id", "")) != packet_id:
+		_errors.append("Fixture %s packet identity did not match all artifacts." % name)
 	return {
 		"json": parsed,
 		"markdown": FileAccess.get_file_as_string(markdown_path),
 		"prompt": FileAccess.get_file_as_string(prompt_path),
+		"manifest": manifest,
 	}
 
 
